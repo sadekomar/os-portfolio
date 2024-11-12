@@ -4,24 +4,22 @@ import Link from "next/link";
 export default function Home() {
   return (
     <>
-      <div className="mx-20 my-2 flex items-center justify-between font-medium text-gray-500">
-        <Link href={"/"}>Omar Sadek</Link>
-        <div className="flex gap-4">
-          <Link href={"/"}>Home</Link>
-          <Link href={"/about"}>About</Link>
-          <Link href={"/work"}>Work</Link>
-          <Link href={"/contact"}>Contact</Link>
-          <Link href={"/blog"}>Blog</Link>
-        </div>
+      <div className="mx-20 my-40 flex flex-col items-start justify-center gap-4">
+        <h2 className="max-w-md text-4xl font-medium">
+          I’m a Full-Stack Software Engineer, UI/UX Designer, and Founder
+        </h2>
+        <p className="max-w-md text-2xl">
+          I build web apps that aren’t just delightful and intuitive, but also also technically
+          robust.
+        </p>
+        <Link
+          className="flex h-10 items-center justify-center rounded-full border border-solid border-black/[.08] px-4 text-sm transition-colors hover:border-transparent hover:bg-[rgb(242,242,242)] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] sm:h-12 sm:min-w-44 sm:px-5 sm:text-base"
+          href="/work"
+        >
+          View work
+        </Link>
       </div>
 
-      <div className="flex flex-col items-start justify-center gap-4">
-        <h2>I’m a Full-Stack Software Engineer, UI/UX Designer, and Founder</h2>
-        <p>
-          I build web apps that aren’t just delightful and intuitive, but also
-          also technically robust.
-        </p>
-      </div>
       <div className="grid min-h-screen grid-rows-[20px_1fr_20px] items-center justify-items-center gap-16 p-8 pb-20 font-[family-name:var(--font-geist-sans)] sm:p-20">
         <main className="row-start-2 flex flex-col items-center gap-8 sm:items-start">
           <Image
@@ -45,7 +43,7 @@ export default function Home() {
 
           <div className="flex flex-col items-center gap-4 sm:flex-row">
             <a
-              className="flex h-10 items-center justify-center gap-2 rounded-full border border-solid border-transparent bg-foreground px-4 text-sm text-background transition-colors hover:bg-[#383838] sm:h-12 sm:px-5 sm:text-base dark:hover:bg-[#ccc]"
+              className="flex h-10 items-center justify-center gap-2 rounded-full border border-solid border-transparent bg-foreground px-4 text-sm text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] sm:h-12 sm:px-5 sm:text-base"
               href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
               target="_blank"
               rel="noopener noreferrer"
@@ -59,14 +57,6 @@ export default function Home() {
               />
               Deploy now
             </a>
-            <a
-              className="flex h-10 items-center justify-center rounded-full border border-solid border-black/[.08] px-4 text-sm transition-colors hover:border-transparent hover:bg-[#f2f2f2] sm:h-12 sm:min-w-44 sm:px-5 sm:text-base dark:border-white/[.145] dark:hover:bg-[#1a1a1a]"
-              href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Read our docs
-            </a>
           </div>
         </main>
         <footer className="row-start-3 flex flex-wrap items-center justify-center gap-6">
@@ -76,13 +66,7 @@ export default function Home() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <Image
-              aria-hidden
-              src="/file.svg"
-              alt="File icon"
-              width={16}
-              height={16}
-            />
+            <Image aria-hidden src="/file.svg" alt="File icon" width={16} height={16} />
             Learn
           </a>
           <a
@@ -91,13 +75,7 @@ export default function Home() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <Image
-              aria-hidden
-              src="/window.svg"
-              alt="Window icon"
-              width={16}
-              height={16}
-            />
+            <Image aria-hidden src="/window.svg" alt="Window icon" width={16} height={16} />
             Examples
           </a>
           <a
@@ -106,13 +84,7 @@ export default function Home() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <Image
-              aria-hidden
-              src="/globe.svg"
-              alt="Globe icon"
-              width={16}
-              height={16}
-            />
+            <Image aria-hidden src="/globe.svg" alt="Globe icon" width={16} height={16} />
             Go to nextjs.org →
           </a>
         </footer>
