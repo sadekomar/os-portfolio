@@ -1,7 +1,7 @@
-import { contacts } from "@/app/(data)/contact";
-import { menuPages } from "@/app/(data)/menuPages";
+import { contacts } from "@/data/contact";
+import { menuPages } from "@/data/menuPages";
+import { Inbox } from "lucide-react";
 import Link from "next/link";
-import { IoMdMail } from "react-icons/io";
 
 export function Footer() {
   return (
@@ -30,7 +30,7 @@ export function Footer() {
           {contacts.map((contact, index) => (
             <a
               href={contact.url}
-              className="flex items-center gap-2 hover:underline"
+              className="flex items-center gap-2 hover:underline hover:underline-offset-2"
               target="_blank"
               key={index}
               rel="noopener noreferrer"
@@ -41,9 +41,10 @@ export function Footer() {
           ))}
           <a
             href="mailto:sadekm.omar@gmail.com"
-            className="flex items-center gap-2 text-sm hover:underline"
+            className="flex items-center gap-2 text-sm hover:underline hover:underline-offset-2"
           >
-            <IoMdMail /> sadekm.omar@gmail.com
+            <Inbox className="h-4 w-4" />
+            sadekm.omar@gmail.com
           </a>
         </div>
       </div>

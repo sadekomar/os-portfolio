@@ -1,6 +1,6 @@
 "use client";
 
-import { menuPages } from "@/app/(data)/menuPages";
+import { menuPages } from "@/data/menuPages";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
