@@ -1,3 +1,4 @@
+import { Inbox, Download } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -5,7 +6,7 @@ export default function Home() {
   return (
     <>
       <div className="mx-20 my-40 flex flex-col items-start justify-center gap-4">
-        <h2 className="max-w-md text-4xl font-medium">
+        <h2 className="max-w-md font-sans text-4xl font-medium">
           I’m a Full-Stack Software Engineer, UI/UX Designer, and Founder
         </h2>
         <p className="max-w-md text-2xl">
@@ -18,9 +19,21 @@ export default function Home() {
         >
           View work
         </Link>
+        <a
+          href="mailto:sadekm.omar@gmail.com"
+          className="flex h-10 w-fit items-center gap-2 rounded-xl bg-[#E4E4E4] px-4"
+        >
+          Contact
+        </a>
+        <a
+          className="gap flex h-10 items-center gap-2 rounded-xl border-2 border-solid border-gray-700 px-2 font-medium transition-colors hover:bg-gray-700 hover:text-white"
+          href="./resume.pdf"
+          download={"resume-omar-sadek.pdf"}
+        >
+          <Download height={16} width={16} />
+          Resume
+        </a>
       </div>
-
-      <div></div>
 
       <div className="grid min-h-screen grid-rows-[20px_1fr_20px] items-center justify-items-center gap-16 p-8 pb-20 font-[family-name:var(--font-geist-sans)] sm:p-20">
         <main className="row-start-2 flex flex-col items-center gap-8 sm:items-start">
