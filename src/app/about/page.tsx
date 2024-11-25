@@ -17,9 +17,10 @@ export default function About() {
         <div className="mx-4 my-10 md:mx-auto">
           <h1 className="mb-4 text-3xl font-semibold">About Me</h1>
           <p className="mb-4 max-w-[600px] font-medium leading-6 tracking-[-0.02em]">
-            I was born on the 20th of April, 2000 in Cairo, Egypt. When I was 9, I discovered
-            YouTube and my journey with technology began. I never stopped liking technology since
-            then.
+            I was born on the 20th of April, 2000 in{" "}
+            <span className="rounded-sm bg-gray-200 px-2 py-1">Cairo, Egypt.</span> When I was 9, I
+            discovered YouTube and my journey with technology began. I never stopped liking
+            technology since then.
           </p>
           <p className="mb-4 max-w-[600px] font-medium leading-6 tracking-[-0.02em]">
             In 2021, I started programming by taking CS50. I love working on stuff and figuring out
