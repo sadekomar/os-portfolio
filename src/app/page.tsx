@@ -31,6 +31,13 @@ export default function Home() {
         </div>
       </div>
 
+      <Work />
+    </>
+  );
+}
+function Work() {
+  return (
+    <>
       <h2 className="mx-4 mb-4 text-2xl font-medium underline-offset-4 group-hover:underline">
         Work
       </h2>

@@ -17,7 +17,7 @@ export function NavBar() {
   const pathname = usePathname();
 
   return (
-    <div className="flex items-center justify-between px-4 py-2 font-medium text-gray-600 md:px-20">
+    <div className="flex items-center justify-between border-b-[1px] border-solid border-gray-200 px-4 py-2 font-medium text-gray-600 md:px-20">
       <Link
         href={"/"}
         className="rounded-xl px-4 py-2 font-bold transition-colors hover:bg-gray-100"
