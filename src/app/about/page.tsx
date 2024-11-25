@@ -1,3 +1,15 @@
+import Image from "next/image";
+
+import bigShort from "./(images)/big-short.jpg";
+import brol from "./(images)/brol.jpeg";
+import cadavreExquis from "./(images)/cadavre-exquis.jpeg";
+import dune from "./(images)/dune.jpg";
+import euphories from "./(images)/euphories.jpeg";
+import foundation from "./(images)/foundation.jpg";
+import prideAndPrejudice from "./(images)/pride-and-prejudice.jpg";
+import sapiens from "./(images)/sapiens.jpg";
+import steveJobs from "./(images)/steve-jobs.jpg";
+
 export default function About() {
   return (
     <>
@@ -17,26 +29,29 @@ export default function About() {
         <p>{`Books I've been enjoying lately.`}</p>
         <div className="flex gap-4 overflow-auto">
           <div className="flex-shrink-0">
-            <img
+            <Image
               className="h-[200px] rounded-lg border border-solid border-gray-500"
-              src="/about/sapiens.jpg"
+              src={sapiens}
               alt="Foundation Poster"
+              height={200}
             />
             <h3 className="font-medium">Sapiens</h3>
           </div>
           <div className="flex-shrink-0">
-            <img
+            <Image
               className="h-[200px] rounded-lg border border-solid border-gray-500"
-              src="/about/pride-and-prejudice.jpg"
+              src={prideAndPrejudice}
               alt="Dune Poster"
+              height={200}
             />
             <h3 className="font-medium">Pride And Prejudice</h3>
           </div>
           <div className="flex-shrink-0">
-            <img
+            <Image
               className="h-[200px] rounded-lg border border-solid border-gray-500"
-              src="/about/steve-jobs.jpg"
+              src={steveJobs}
               alt="The Big Short Poster"
+              height={200}
             />
             <h3 className="font-medium">Steve Jobs</h3>
           </div>
@@ -47,26 +62,29 @@ export default function About() {
         <h2 className="text-lg font-medium">Series & Films</h2>
         <div className="flex gap-4 overflow-auto">
           <div className="flex-shrink-0">
-            <img
+            <Image
               className="h-[200px] rounded-lg border border-solid border-gray-500"
-              src="/about/foundation.jpg"
+              src={foundation}
               alt="Foundation Poster"
+              height={200}
             />
             <h3 className="font-medium">Foundation</h3>
           </div>
           <div className="flex-shrink-0">
-            <img
+            <Image
               className="h-[200px] rounded-lg border border-solid border-gray-500"
-              src="/about/dune.jpg"
+              src={dune}
               alt="Dune Poster"
+              height={200}
             />
             <h3 className="font-medium">Dune</h3>
           </div>
           <div className="flex-shrink-0">
-            <img
+            <Image
               className="h-[200px] rounded-lg border border-solid border-gray-500"
-              src="/about/big-short.jpg"
+              src={bigShort}
               alt="The Big Short Poster"
+              height={200}
             />
             <h3 className="font-medium">The Big Short</h3>
           </div>
@@ -77,26 +95,32 @@ export default function About() {
         <h2 className="text-lg font-medium">Music</h2>
         <div className="flex gap-4 overflow-auto">
           <div className="flex-shrink-0">
-            <img
+            <Image
               className="h-[150px] rounded-lg border border-solid border-gray-500"
-              src="/about/euphories.jpeg"
+              src={euphories}
               alt="Euphories"
+              height={150}
+              width={150}
             />
             <h3 className="font-medium">Euphories</h3>
           </div>
           <div className="flex-shrink-0">
-            <img
+            <Image
               className="h-[150px] rounded-lg border border-solid border-gray-500"
-              src="/about/brol.jpeg"
+              src={brol}
               alt="Dune Poster"
+              height={150}
+              width={150}
             />
             <h3 className="font-medium">Brol</h3>
           </div>
           <div className="flex-shrink-0">
-            <img
+            <Image
               className="h-[150px] rounded-lg border border-solid border-gray-500"
-              src="/about/cadavre-exquis.jpeg"
+              src={cadavreExquis}
               alt="Cadavre exquis"
+              height={150}
+              width={150}
             />
             <h3 className="font-medium">Cadavre exquis</h3>
           </div>
