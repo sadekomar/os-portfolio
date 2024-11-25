@@ -1,22 +1,43 @@
-import { allProjects, ProjectKeys } from "@/data/projects";
+import { allProjects, ProjectKeys } from "@/app/work/[project]/projects";
+import loomPreview from "./loom/loom-preview.png";
+import loomAPI from "./loom/loom-api.png";
+import loomBooks from "./loom/loom-books.png";
+import loomBrands from "./loom/loom-brands.png";
+import loomDb from "./loom/loom-db.png";
 
-export default function Project({ params }: { params: { project: string } }) {
+import ladsBooks from "./lads/ll-books.png";
+import ladsNavigation from "./lads/ll-navigation.png";
+import ladsPreview from "./lads/ll-preview.png";
+import ladsProblem from "./lads/ll-problem.png";
+import ladsTestimonials from "./lads/ll-testimonials.png";
+
+import unPreview from "./un/un-preview.png";
+import unActions from "./un/un-actions.png";
+import unBooks from "./un/un-books.png";
+import unDoubleDiamond from "./un/un-double-diamond.png";
+import unWebApp from "./un/un-web-app.png";
+
+import Image from "next/image";
+
+export default async function Project({ params }: { params: Promise<{ project: string }> }) {
   const availableProjects = ["loom-cairo", "little-lads", "activity-management-platform"];
 
-  if (!availableProjects.includes(params.project))
+  const { project: key } = await params;
+  console.log(key);
+
+  if (!availableProjects.includes(key))
     return (
       <div className="mx-4 mt-10 md:mx-20">
         <h1 className="mb-2 text-4xl font-bold tracking-tight">Project not found</h1>
       </div>
     );
 
-  // string literal union
-
-  const key: ProjectKeys = params.project as ProjectKeys;
-  const project = allProjects[key];
+  const project = allProjects[key as ProjectKeys];
 
   return (
     <>
+      <Image src={project.image} alt={project.imageAlt} placeholder="blur" priority />
+
       <div className="mx-4 mt-10 md:mx-20">
         <h1 className="mb-2 text-4xl font-bold tracking-tight">{project.title}</h1>
         <a
@@ -64,7 +85,6 @@ export default function Project({ params }: { params: { project: string } }) {
           )}
         </div>
       </div>
-      <img src={project.image} alt={project.imageAlt} className="mb-10" />
 
       {project.paragraphs.map((paragraph, index) => (
         <div key={index} className="mb-8">
@@ -80,7 +100,9 @@ export default function Project({ params }: { params: { project: string } }) {
               ))}
             </div>
           </div>
-          <img src={paragraph.image} alt="" />
+          {paragraph.image && (
+            <Image src={paragraph.image} alt={paragraph.title} className="mb-10" />
+          )}
         </div>
       ))}
     </>

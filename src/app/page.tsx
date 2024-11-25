@@ -1,5 +1,4 @@
 import { Inbox, Download } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 
 export default function Home() {
@@ -7,11 +6,11 @@ export default function Home() {
     <>
       <div className="mx-4 mb-10 flex flex-col items-start justify-center gap-4 md:mx-20">
         <h2 className="max-w-md text-4xl font-medium">
-          I’m a Full-Stack Software Engineer, UI/UX Designer, and Founder.
+          {`I’m a Full-Stack Software Engineer, UI/UX Designer, and Founder.`}
         </h2>
         <p className="max-w-md text-2xl font-medium">
-          I build web apps that aren’t just delightful and intuitive, but also also technically
-          robust.
+          {`I build web apps that aren’t just delightful and intuitive, but also also technically
+          robust.`}
         </p>
         <div className="flex gap-2">
           <a

@@ -1,5 +1,25 @@
 export type ProjectKeys = "loom-cairo" | "little-lads" | "activity-management-platform";
 
+import loomPreview from "./loom/loom-preview.png";
+import loomAPI from "./loom/loom-api.png";
+import loomWebApp from "./loom/loom-web-app.png";
+import loomBooks from "./loom/loom-books.png";
+import loomBrands from "./loom/loom-brands.png";
+import loomDb from "./loom/loom-db.png";
+
+import ladsBooks from "./lads/ll-books.png";
+import ladsNavigation from "./lads/ll-navigation.png";
+import ladsPreview from "./lads/ll-preview.png";
+import ladsProblem from "./lads/ll-problem.png";
+import ladsTestimonials from "./lads/ll-testimonials.png";
+
+import unPreview from "./un/un-preview.png";
+import unActions from "./un/un-actions.png";
+import unBooks from "./un/un-books.png";
+import unDoubleDiamond from "./un/un-double-diamond.png";
+import unWebApp from "./un/un-web-app.png";
+import { StaticImageData } from "next/image";
+
 export const allProjects: Record<
   ProjectKeys,
   {
@@ -10,9 +30,9 @@ export const allProjects: Record<
       backend: string[];
       frontend: string[];
     };
-    image: string;
+    image: StaticImageData;
     imageAlt: string;
-    paragraphs: { title: string; content: string[]; image?: string }[];
+    paragraphs: { title: string; content: string[]; image?: StaticImageData }[];
   }
 > = {
   "loom-cairo": {
@@ -32,7 +52,7 @@ export const allProjects: Record<
         "framer-motion",
       ],
     },
-    image: "/loom/loom-preview.png",
+    image: loomPreview,
     imageAlt: "Loom Preview",
     paragraphs: [
       {
@@ -68,7 +88,7 @@ export const allProjects: Record<
           "I used SQLite to create my database. It started with the database schema. I created a database that was performant and scalable. To achieve this, I ensured that my database was normalized by using lookup tables for values that are repeated such as brands (this way i could have a single source of truth) and relating the various things using many-to-many relationships.",
           "I also used constraints to ensure data integrity at the database level. I also implemented triggers to ensure data is synced across related tables. Indices were used to speed up the performance of certain queries by orders of magnitude. A de-normalized view was created to simplify interaction with the database in the API.",
         ],
-        image: "/loom/loom-db.png",
+        image: loomDb,
       },
       {
         title: "API",
@@ -76,7 +96,7 @@ export const allProjects: Record<
           "I created the API with flask. There are various endpoints. The search endpoint parses out words to detect if filters exist for those words otherwise it does a Full-Text Search. Other endpoints fetch metadata that’s needed for filters. The SQL queries are quite optimized as I have deep knowledge of the database schema, using the proper indices (based on B Trees).",
           "The explain query plan and timer come in really handy for optimization in those scenarios. I was able to get most queries down to sub 50ms response, especially the ones that do a lot of heavy lifting.",
         ],
-        image: "/loom/loom-api.png",
+        image: loomAPI,
       },
       {
         title: "UX/UI Design with Figma",
@@ -84,7 +104,7 @@ export const allProjects: Record<
           "Because the majority of users will be on mobile, and it’s easier to add complexity rather than it is to simplify a complex thing. A mobile-first approach was the apparent way to go for design.",
           "I researched the patterns that users are used to. I picked the brand colors, typography, a typescale and created the main layouts. I also created a design system to ensure consistency of design throughout the app using figma components. The designs respected the rules of hierarchy, consistency, white space, contrast, alignment, and balance.",
         ],
-        image: "/loom/loom-brands.png",
+        image: loomBrands,
       },
       {
         title: "React Web App",
@@ -92,7 +112,7 @@ export const allProjects: Record<
           "For the web app, I used React, vite, react-router, radix-ui, and vanilla CSS. I made use of CSS resets. global variables to ensure consistency of styles, and a typescale system. The website displays the items in a really unique way and has a bunch of cool stuff. Reusable components and pages of course, and a bunch of steps to ensure optimal performance. There’s search with autofill. History, likes, followed brands and a cart they can all keep track without the user having to login.",
           "This web app received praise from numerous users.",
         ],
-        image: "/loom/loom-web-app.png",
+        image: loomWebApp,
       },
       {
         title: "Books I read that were relevant to this project",
@@ -100,7 +120,7 @@ export const allProjects: Record<
           "Clean Code by Robert C Martin came in especially handy for structuring code and laying out everything when it came to OOP.",
           "Thoughts on Design by Paul Rand talks about well-renowned designer Paul Rand’s approach to design and how he tackles everything.",
         ],
-        image: "/loom/loom-books.png",
+        image: loomBooks,
       },
     ],
   },
@@ -113,7 +133,7 @@ export const allProjects: Record<
       backend: [],
       frontend: ["Figma", "HTML/CSS", "JavaScript", "Shopify Liquid"],
     },
-    image: "/lads/ll-preview.png",
+    image: ladsPreview,
     imageAlt: "Little Lads Preview",
     paragraphs: [
       {
@@ -126,7 +146,7 @@ export const allProjects: Record<
           "The product pages were lacking essential features like product videos and customer testimonials, which are key drivers for conversion",
           "I was tasked with revitalizing their Shopify website to improve brand equity, increase engagement and boost conversions.",
         ],
-        image: "/lads/ll-problem.png",
+        image: ladsProblem,
       },
       {
         title: "Figma Design",
@@ -135,21 +155,21 @@ export const allProjects: Record<
           "By social proof (testimonials, best sellers), building a narrative (behind the name), and showing the quality of the items the users will ultimately start to trust the brand.",
           "Also, navigation is very important and it was shown in various AB tests to increase traffic by a substantial amount. Thus, I designed a mega menu and created a rich footer with links to the various categories and items.",
         ],
-        image: "/lads/ll-navigation.png",
+        image: ladsNavigation,
       },
       {
         title: "Shopify Components",
         content: [
           "Since certain components were either locked behind expensive themes, not available in the exact styles I was going for, or not available at all, I created custom components. I created a customer reviews marquee, autoplaying video, mega menu, and hotspots component. Shopify Liquid uses plain HTML, CSS, and JavaScript and it has an object to expose certain variables so that the Shopify admin can interface with the component without having to change the source code, making it much more maintainable.",
         ],
-        image: "/lads/ll-testimonials.png",
+        image: ladsTestimonials,
       },
       {
         title: "Books I read that were relevant to this project",
         content: [
           "Thinking With Type By Ellen Lupton was such an interesting read and it was really instrumental in changing the way I perceive typography and its immense importance, paying attention to concepts such as modulation, line height, weight, x-height, and so much more...",
         ],
-        image: "/lads/ll-books.png",
+        image: ladsBooks,
       },
     ],
   },
@@ -162,7 +182,7 @@ export const allProjects: Record<
       backend: [],
       frontend: ["Figma", "React", "TypeScript", "Tailwind", "HTML", "MUI"],
     },
-    image: "/un/un-preview.png",
+    image: unPreview,
     imageAlt: "UN Preview",
     paragraphs: [
       {
@@ -180,7 +200,7 @@ export const allProjects: Record<
 
           "The goal was to transform complex data into an intuitive, user-friendly interface. The main aim to get a sense of what users will expect and layout the information in a structure that aligns with those expectations. For instance, how administrators would add certain things and improve them. The design should be as intuitive as possible.",
         ],
-        image: "/un/un-double-diamond.png",
+        image: unDoubleDiamond,
       },
       {
         title: "Figma Design",
@@ -190,7 +210,7 @@ export const allProjects: Record<
           "Good design is about iteration and constant improvement. I worked in Figma to test out various colors, logos and typefaces, striving to get an aesthetically pleasing yet efficient, functional look and feel.",
           "Ultimately, this translates into much better user satisfaction, conversion rates, and because we catch usability issues early on in the development cycle, development costs are reduced.",
         ],
-        image: "/un/un-actions.png",
+        image: unActions,
       },
       {
         title: "React Web App",
@@ -199,7 +219,7 @@ export const allProjects: Record<
           "From the app initialization – handling login tokens and route guards – to the services and custom hooks that maintain best practices, every aspect was designed with flexibility and maintainability. A really neat trick was the use of a single state variable in the AppContext to manage modals app-wide. This minimized memory usage by eliminating the need to store a state variable for each edit, view, or add modal.  The upshot is a much more performant and efficient app.",
           "Overall, this project was an eye-opening experience that deepened my understanding of advanced React patterns, state management, and optimizing component architecture.",
         ],
-        image: "/un/un-web-app.png",
+        image: unWebApp,
       },
       {
         title: "Result",
@@ -214,7 +234,7 @@ export const allProjects: Record<
         content: [
           "Change by Design By Tim Brown was an awesome read to learn more about design thinking and how the whole process works.",
         ],
-        image: "/un/un-books.png",
+        image: unBooks,
       },
     ],
   },
