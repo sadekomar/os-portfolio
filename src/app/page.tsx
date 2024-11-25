@@ -1,5 +1,10 @@
 import { Inbox, Download } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
+
+import unThumbnail from "../../public/un-thumbnail.png";
+import ladsThumbnail from "../../public/lads-thumbnail.png";
+import loomThumbnail from "../../public/loom-thumbnail.png";
 
 export default function Home() {
   return (
@@ -46,7 +51,7 @@ function Work() {
           href={"/work/loom-cairo"}
           className="group flex flex-col items-start gap-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-950"
         >
-          <img src="./loom-thumbnail.png" alt="" />
+          <Image src={loomThumbnail} alt="Loom Cairo Preview" priority />
           <div>
             <h3 className="text-xl font-medium underline-offset-4 group-hover:underline">
               Loom Cairo
@@ -60,7 +65,7 @@ function Work() {
           href={"/work/activity-management-platform"}
           className="group flex flex-col items-start gap-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-950"
         >
-          <img src="./un-thumbnail.png" alt="" />
+          <Image src={unThumbnail} alt="UN Activity Management Platform" />
           <div>
             <h3 className="text-xl font-medium underline-offset-4 group-hover:underline">
               UN Activity Management Platform
@@ -74,7 +79,7 @@ function Work() {
           href={"/work/little-lads"}
           className="group flex flex-col items-start gap-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-950"
         >
-          <img src="./lads-thumbnail.png" alt="" />
+          <Image src={ladsThumbnail} alt="Little Lads Preview" />
           <div>
             <h3 className="text-xl font-medium underline-offset-4 group-hover:underline">
               Little Lads

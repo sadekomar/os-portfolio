@@ -2,6 +2,14 @@ import { allProjects, ProjectKeys } from "@/app/work/[project]/projects";
 
 import Image from "next/image";
 
+export async function generateStaticParams() {
+  return [
+    { project: "loom-cairo" },
+    { project: "little-lads" },
+    { project: "activity-management-platform" },
+  ];
+}
+
 export default async function Project({ params }: { params: Promise<{ project: string }> }) {
   const availableProjects = ["loom-cairo", "little-lads", "activity-management-platform"];
 
