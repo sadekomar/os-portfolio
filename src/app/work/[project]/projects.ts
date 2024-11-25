@@ -1,23 +1,24 @@
 export type ProjectKeys = "loom-cairo" | "little-lads" | "activity-management-platform";
 
-import loomPreview from "./loom/loom-preview.png";
-import loomAPI from "./loom/loom-api.png";
-import loomWebApp from "./loom/loom-web-app.png";
-import loomBooks from "./loom/loom-books.png";
-import loomBrands from "./loom/loom-brands.png";
-import loomDb from "./loom/loom-db.png";
+import loomPreview from "./(loom)/loom-preview.png";
+import loomAPI from "./(loom)/loom-api.png";
+import loomWebApp from "./(loom)/loom-web-app.png";
+import loomBooks from "./(loom)/loom-books.png";
+import loomBrands from "./(loom)/loom-brands.png";
+import loomDb from "./(loom)/loom-db.png";
 
-import ladsBooks from "./lads/ll-books.png";
-import ladsNavigation from "./lads/ll-navigation.png";
-import ladsPreview from "./lads/ll-preview.png";
-import ladsProblem from "./lads/ll-problem.png";
-import ladsTestimonials from "./lads/ll-testimonials.png";
+import ladsBooks from "./(lads)/ll-books.png";
+import ladsNavigation from "./(lads)/ll-navigation.png";
+import ladsPreview from "./(lads)/ll-preview.png";
+import ladsProblem from "./(lads)/ll-problem.png";
+import ladsTestimonials from "./(lads)/ll-testimonials.png";
 
-import unPreview from "./un/un-preview.png";
-import unActions from "./un/un-actions.png";
-import unBooks from "./un/un-books.png";
-import unDoubleDiamond from "./un/un-double-diamond.png";
-import unWebApp from "./un/un-web-app.png";
+import unPreview from "./(un)/un-preview.png";
+import unActions from "./(un)/un-actions.png";
+import unBooks from "./(un)/un-books.png";
+import unDoubleDiamond from "./(un)/un-double-diamond.png";
+import unWebApp from "./(un)/un-web-app.png";
+
 import { StaticImageData } from "next/image";
 
 export const allProjects: Record<
