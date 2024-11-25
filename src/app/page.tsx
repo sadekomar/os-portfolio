@@ -1,6 +1,6 @@
-import { Inbox, Download } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { Inbox, Download } from "lucide-react";
 
 import unThumbnail from "../../public/un-thumbnail.png";
 import ladsThumbnail from "../../public/lads-thumbnail.png";
@@ -9,7 +9,7 @@ import loomThumbnail from "../../public/loom-thumbnail.png";
 export default function Home() {
   return (
     <>
-      <div className="mx-4 mb-10 flex flex-col items-start justify-center gap-4 md:mx-20">
+      <div className="mx-4 my-16 flex flex-col items-start justify-center gap-4 md:mx-20">
         <h2 className="max-w-md text-4xl font-medium">
           {`I’m a Full-Stack Software Engineer, UI/UX Designer, and Founder.`}
         </h2>
@@ -43,21 +43,19 @@ export default function Home() {
 function Work() {
   return (
     <>
-      <h2 className="mx-4 mb-4 text-2xl font-medium underline-offset-4 group-hover:underline">
-        Work
-      </h2>
-      <div className="mx-4 mb-10 grid gap-4 md:grid-cols-3">
+      <h2 className="mx-4 mb-4 text-3xl font-bold underline-offset-4 md:mx-20">Work</h2>
+      <div className="mx-4 mb-10 grid gap-4 md:mx-20 md:grid-cols-3">
         <Link
           href={"/work/loom-cairo"}
           className="group flex flex-col items-start gap-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-950"
         >
           <Image src={loomThumbnail} alt="Loom Cairo Preview" priority />
           <div>
-            <h3 className="text-xl font-medium underline-offset-4 group-hover:underline">
-              Loom Cairo
-            </h3>
-            <p className="font-medium tracking-[-0.02em]">
-              A fashion search engine that aggregates more than 300 local brands.
+            <h3 className="mb-2 text-xl font-bold underline-offset-4">Loom Cairo</h3>
+            <p className="mr-4 font-medium tracking-[-0.02em]">
+              Loom is a search engine for local fashion. It collects data from over 300 websites and
+              aggregates them all into a single platform for ease of use. It makes local brands much
+              more accessible for users.
             </p>
           </div>
         </Link>
@@ -67,11 +65,12 @@ function Work() {
         >
           <Image src={unThumbnail} alt="UN Activity Management Platform" />
           <div>
-            <h3 className="text-xl font-medium underline-offset-4 group-hover:underline">
+            <h3 className="mb-2 text-xl font-bold underline-offset-4">
               UN Activity Management Platform
             </h3>
-            <p className="font-medium tracking-[-0.02em]">
-              A platform to streamline event tracking for a UN agency.
+            <p className="mr-4 font-medium tracking-[-0.02em]">
+              A platform created to help a UN Agency manage and coordinate activities across
+              different regions, varying scales, and various stakeholders.
             </p>
           </div>
         </Link>
@@ -81,11 +80,11 @@ function Work() {
         >
           <Image src={ladsThumbnail} alt="Little Lads Preview" />
           <div>
-            <h3 className="text-xl font-medium underline-offset-4 group-hover:underline">
-              Little Lads
-            </h3>
-            <p className="font-medium tracking-[-0.02em]">
-              A fashion search engine that aggregates more than 300 local brands.
+            <h3 className="mb-2 text-xl font-bold underline-offset-4">Little Lads</h3>
+            <p className="mr-4 font-medium tracking-[-0.02em]">
+              Little Lads is a growing fashion brand focused on boys’ apparel. I was tasked with
+              revitalizing their website to improve brand equity, increase engagement and boost
+              conversions.
             </p>
           </div>
         </Link>

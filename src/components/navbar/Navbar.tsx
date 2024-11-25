@@ -1,6 +1,6 @@
 "use client";
 
-import { menuPages } from "@/data/menuPages";
+import { Fragment, useState } from "react";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -8,35 +8,28 @@ import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
-import { Fragment, useState } from "react";
-
 import { Menu, X } from "lucide-react";
 
-export function NavBar() {
-  const [isOpen, setIsOpen] = useState(false);
-  const pathname = usePathname();
+import { menuPages } from "@/data/menuPages";
 
+export function NavBar() {
   return (
-    <div className="flex items-center justify-between border-b-[1px] border-solid border-gray-200 px-4 py-2 font-medium text-gray-600 md:px-20">
+    <div className="fixed inset-x-0 top-0 z-10 flex h-16 items-center justify-between border-b-[1px] border-solid border-gray-200 bg-gray-50/90 px-4 py-2 font-medium text-gray-600 backdrop-blur-sm md:px-20">
       <Link
         href={"/"}
-        className="rounded-xl px-4 py-2 font-bold transition-colors hover:bg-gray-100"
+        className="rounded-xl px-4 py-2 text-lg font-semibold transition-colors hover:bg-gray-100"
       >
         Omar Sadek
       </Link>
-      <div className="hidden md:flex">
-        {menuPages.map((page) => (
-          <Link
-            key={page.slug}
-            href={page.slug}
-            className={`rounded-xl px-4 py-2 transition-colors ${
-              pathname === page.slug ? "bg-gray-300" : "hover:bg-gray-100"
-            }`}
-          >
-            {page.name}
-          </Link>
-        ))}
-      </div>
+      <DesktopNav />
+      <MobileNav />
+    </div>
+  );
+
+  function MobileNav() {
+    const [isOpen, setIsOpen] = useState(false);
+
+    return (
       <div className="md:hidden">
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>
@@ -71,6 +64,24 @@ export function NavBar() {
           </SheetContent>
         </Sheet>
       </div>
-    </div>
-  );
+    );
+  }
+
+  function DesktopNav() {
+    const pathname = usePathname();
+
+    return (
+      <div className="hidden md:flex">
+        {menuPages.map((page) => (
+          <Link
+            key={page.slug}
+            href={page.slug}
+            className={`rounded-xl px-4 py-2 transition-colors ${pathname === page.slug ? "bg-gray-300" : "hover:bg-gray-100"}`}
+          >
+            {page.name}
+          </Link>
+        ))}
+      </div>
+    );
+  }
 }

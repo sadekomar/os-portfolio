@@ -2,14 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-  font-family: "San Francisco";
-  src: url("https://applesocial.s3.amazonaws.com/assets/styles/fonts/sanfrancisco/sanfranciscodisplay-regular-webfont.woff");
-  src: url("https://applesocial.s3.amazonaws.com/assets/styles/fonts/sanfrancisco/sanfranciscodisplay-medium-webfont.woff");
-}
-
 body {
-  font-family: "SF Pro Display", "Times New Roman", "San Francisco", Arial, Helvetica, sans-serif;
+  font-family: "SF Pro Display", Arial, Helvetica, sans-serif;
   background-color: #fcfcfc;
 }
 
