@@ -16,7 +16,7 @@ export default function Home() {
     <>
       <div className="mx-4 my-16 flex flex-col items-start justify-center gap-4 md:mx-20">
         <h2 className="max-w-md text-4xl font-medium text-gray-500">
-          I’m a<span className="font-bold text-gray-950"> Full-Stack Software Engineer</span>, UI/UX
+          I’m a<span className="font-bold text-gray-950"> Full-Stack Software Engineer</span>, UX/UI
           Designer, and Founder.
         </h2>
         <p className="max-w-md text-2xl font-medium text-gray-700">
@@ -44,26 +44,6 @@ export default function Home() {
 
       <Work />
       <TechStack />
-
-      {/* <div>
-        <h2 className="mx-4 mb-4 text-3xl font-bold underline-offset-4 md:mx-20">Services</h2>
-
-        <div className="mx-4 grid gap-4 md:mx-20 md:grid-cols-3">
-          <div>
-            <h3 className="mb-2 text-xl font-bold underline-offset-4">Full-stack Development</h3>
-            <p className="mb-4 max-w-[600px] font-medium leading-6 tracking-[-0.02em]">
-              Project file structure state management reusable components separation of concerns
-              React
-            </p>
-          </div>
-          <div>
-            <h3 className="mb-2 text-xl font-bold underline-offset-4">UI/UX Design</h3>
-            <p className="mb-4 max-w-[600px] font-medium leading-6 tracking-[-0.02em]">
-              I turn complex ideas into intuitive experiences.
-            </p>
-          </div>
-        </div>
-      </div> */}
 
       <div className="mx-4 mb-10 grid gap-10 md:mx-20 md:grid-cols-[3fr_1fr]">
         <div className="flex gap-3 md:flex">
@@ -207,6 +187,7 @@ function Work() {
           imgAlt="Loom Cairo Preview"
           title="Loom Cairo"
           description="Loom is a search engine for local fashion. It collects data from over 300 websites and aggregates them all into a single platform for ease of use. It makes local brands much more accessible for users."
+          priority={true}
         />
         <WorkProject
           href="/work/activity-management-platform"
@@ -233,16 +214,18 @@ function WorkProject({
   imgAlt,
   title,
   description,
+  priority = false,
 }: {
   href: string;
   imgSrc: StaticImageData;
   imgAlt: string;
   title: string;
   description: string;
+  priority?: boolean;
 }) {
   return (
     <div className="mb-10 grid items-center gap-2 md:grid-cols-2 md:gap-10">
-      <Image src={imgSrc} alt={imgAlt} priority />
+      <Image src={imgSrc} alt={imgAlt} priority={priority} />
       <div className="mx-auto max-w-sm">
         <h3 className="mb-2 text-xl font-bold underline-offset-4">{title}</h3>
         <p className="mb-6 font-medium leading-6 tracking-[-0.02em]">{description}</p>
