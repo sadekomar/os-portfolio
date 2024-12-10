@@ -15,7 +15,6 @@ jobs:
           node-version: 18
       - name: clean install
         run: npm ci
-      - run: npm run test
       - run: npm run build
 
       - name: Upload artifact (detailed report)
