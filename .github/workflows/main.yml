@@ -1,7 +1,7 @@
 name: OS Portfolio CI/CD
 
 on:
-  push: 
+  push:
     branches:
       - main
 
@@ -11,17 +11,15 @@ jobs:
     steps:
       - use: actions/checkout@v3
       - use: actions/setup-node@v3
-      with:
-        node-version: 18
+        with:
+          node-version: 18
       - name: clean install
         run: npm ci
       - run: npm run test
       - run: npm run build
 
-      - name: Upload artificat (detailed report)
+      - name: Upload artifact (detailed report)
         uses: actions/upload-artifact@v3
         with:
           name: next-report
-          path: next-reports/
-
-
+          path: next-report/
