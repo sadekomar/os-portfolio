@@ -5,6 +5,8 @@ import { Inbox, Download, ArrowRight, ExternalLink } from "lucide-react";
 import unThumbnail from "../../public/un-thumbnail.png";
 import ladsThumbnail from "../../public/lads-thumbnail.png";
 import loomThumbnail from "../../public/loom-thumbnail.png";
+import instatusIcon from "../../public/instatus.svg";
+import dellIcon from "../../public/dell.svg";
 
 import me from "../../public/me.png";
 import museum from "../../public/museum.png";
@@ -19,7 +21,7 @@ export default function Home() {
           I’m a<span className="font-bold text-gray-950"> Full-Stack Software Engineer</span>, UX/UI
           Designer, and Founder.
         </h2>
-        <p className="max-w-md text-2xl font-medium text-gray-700">
+        <p className="max-w-md text-xl font-medium text-gray-700">
           {`I build web apps that aren’t just delightful and intuitive, but also also technically
           robust.`}
         </p>
@@ -42,9 +44,10 @@ export default function Home() {
         </div>
       </div>
 
+      <Experience />
       <Work />
-      <TechStack />
 
+      <TechStack />
       <div className="mx-4 mb-10 grid gap-10 md:mx-20 md:grid-cols-[3fr_1fr]">
         <div className="flex gap-3 md:flex">
           <div>
@@ -92,6 +95,48 @@ export default function Home() {
     </>
   );
 }
+function Experience() {
+  return (
+    <>
+      <h2 className="mx-4 mb-4 text-3xl font-bold underline-offset-4 md:mx-20">Experience</h2>
+      <div className="mb-14 flex flex-col items-center justify-center bg-[#F2F2F2] py-16">
+        <div className="mx-4 grid gap-2">
+          <a
+            href="https://instatus.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-10 rounded-3xl border border-gray-300 bg-white px-10 py-5 shadow-[81px_49px_38px_rgba(0,0,0,0.01),_46px_28px_32px_rgba(0,0,0,0.02),_20px_12px_24px_rgba(0,0,0,0.04),_5px_3px_13px_rgba(0,0,0,0.04)] transition-transform duration-300 hover:scale-[0.98] hover:border-gray-500"
+          >
+            <Image src={instatusIcon} alt="Instatus Icon" />
+            <div className="grid gap-2">
+              <h3 className="font-bold">Instatus</h3>
+              <div>
+                <div className="font-medium">Full-Stack Software Engineer</div>
+                <div className="font-medium">Dec 2024 - Present</div>
+              </div>
+            </div>
+          </a>
+          <a
+            href="https://dell.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-10 rounded-3xl border border-gray-300 bg-white px-10 py-5 shadow-[81px_49px_38px_rgba(0,0,0,0.01),_46px_28px_32px_rgba(0,0,0,0.02),_20px_12px_24px_rgba(0,0,0,0.04),_5px_3px_13px_rgba(0,0,0,0.04)] transition-transform duration-300 hover:scale-[0.98] hover:border-gray-500"
+          >
+            <Image src={dellIcon} alt="Dell Icon" />
+            <div className="grid gap-2">
+              <h3 className="font-bold">Dell Technologies</h3>
+              <div>
+                <div className="font-medium">SA Internship</div>
+                <div className="font-medium">Aug 2022 - Sep 2022</div>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </>
+  );
+}
+
 function TechStack() {
   return (
     <>

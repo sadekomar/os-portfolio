@@ -18,7 +18,7 @@ jobs:
       - run: npm run build
 
       - name: Upload artifact (detailed report)
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: next-report
           path: next-artifacts/
