@@ -7,6 +7,9 @@ import ladsThumbnail from "../../public/lads-thumbnail.png";
 import loomThumbnail from "../../public/loom-thumbnail.png";
 import instatusIcon from "../../public/instatus.svg";
 import dellIcon from "../../public/dell.svg";
+import argonautIcon from "../../public/argonaut.svg";
+import argotempIcon from "../../public/argotemp.svg";
+import univyrIcon from "../../public/univyr.svg";
 
 import me from "../../public/me.png";
 import museum from "../../public/museum.png";
@@ -45,6 +48,8 @@ export default function Home() {
       </div>
 
       <Experience />
+      <CompaniesWorkedWith />
+      <VideoSection />
       <Work />
 
       <TechStack />
@@ -131,6 +136,51 @@ function Experience() {
               </div>
             </div>
           </a>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function CompaniesWorkedWith() {
+  return (
+    <>
+      <h2 className="mx-4 mb-4 text-3xl font-bold underline-offset-4 md:mx-20">
+        Companies I've Worked With
+      </h2>
+      <div className="mb-14 bg-[#F2F2F2] py-16">
+        <div className="mx-4 grid grid-cols-2 gap-4 md:mx-auto md:max-w-4xl md:grid-cols-3 lg:grid-cols-5">
+          <div className="flex items-center justify-center rounded-2xl bg-white p-8 shadow-[81px_49px_38px_rgba(0,0,0,0.01),_46px_28px_32px_rgba(0,0,0,0.02),_20px_12px_24px_rgba(0,0,0,0.04),_5px_3px_13px_rgba(0,0,0,0.04)] transition-transform duration-300 hover:scale-105">
+            <Image src={instatusIcon} alt="Instatus" />
+          </div>
+          <div className="flex items-center justify-center rounded-2xl bg-white p-8 shadow-[81px_49px_38px_rgba(0,0,0,0.01),_46px_28px_32px_rgba(0,0,0,0.02),_20px_12px_24px_rgba(0,0,0,0.04),_5px_3px_13px_rgba(0,0,0,0.04)] transition-transform duration-300 hover:scale-105">
+            <Image src={dellIcon} alt="Dell" />
+          </div>
+          <div className="flex items-center justify-center rounded-2xl bg-white p-8 shadow-[81px_49px_38px_rgba(0,0,0,0.01),_46px_28px_32px_rgba(0,0,0,0.02),_20px_12px_24px_rgba(0,0,0,0.04),_5px_3px_13px_rgba(0,0,0,0.04)] transition-transform duration-300 hover:scale-105">
+            <Image src={argonautIcon} alt="Argonaut" />
+          </div>
+          <div className="flex items-center justify-center rounded-2xl bg-white p-8 shadow-[81px_49px_38px_rgba(0,0,0,0.01),_46px_28px_32px_rgba(0,0,0,0.02),_20px_12px_24px_rgba(0,0,0,0.04),_5px_3px_13px_rgba(0,0,0,0.04)] transition-transform duration-300 hover:scale-105">
+            <Image src={argotempIcon} alt="Argotemp" />
+          </div>
+          <div className="flex items-center justify-center rounded-2xl bg-white p-8 shadow-[81px_49px_38px_rgba(0,0,0,0.01),_46px_28px_32px_rgba(0,0,0,0.02),_20px_12px_24px_rgba(0,0,0,0.04),_5px_3px_13px_rgba(0,0,0,0.04)] transition-transform duration-300 hover:scale-105">
+            <Image src={univyrIcon} alt="Univyr" />
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function VideoSection() {
+  return (
+    <>
+      <h2 className="mx-4 mb-4 text-3xl font-bold underline-offset-4 md:mx-20">Video</h2>
+      <div className="mb-14 flex items-center justify-center bg-[#F2F2F2] py-16">
+        <div className="mx-4 flex h-[400px] w-full max-w-4xl items-center justify-center rounded-2xl bg-white shadow-[81px_49px_38px_rgba(0,0,0,0.01),_46px_28px_32px_rgba(0,0,0,0.02),_20px_12px_24px_rgba(0,0,0,0.04),_5px_3px_13px_rgba(0,0,0,0.04)] md:h-[500px]">
+          <div className="text-center">
+            <p className="text-lg font-medium text-gray-400">Video embed placeholder</p>
+            <p className="mt-2 text-sm text-gray-300">YouTube video will be embedded here</p>
+          </div>
         </div>
       </div>
     </>
