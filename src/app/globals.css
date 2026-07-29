@@ -1,74 +1,1446 @@
-@import url("https://rsms.me/inter/inter.css");
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import "tw-animate-css";
 
-body {
-  font-family: "Inter", "SF Pro Display", Helvetica, Arial, sans-serif;
-  background-color: #fcfcfc;
-}
+/* Dark mode is class-driven, not media-driven. v4 has no `darkMode: ["class"]`
+   config key, so the variant is declared here instead. `:where()` keeps its
+   specificity at zero so a `dark:` utility still loses to a later plain one,
+   matching how v3's variant behaved. */
+@custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
+  /* ── Quiet tonal ──────────────────────────────────────────────────────
+     The whole system is one axis: lightness. There are no borders and no
+     shadows anywhere, so the *only* thing that separates one surface from
+     the next is a step along this scale. Everything else in this block
+     exists to make that step the path of least resistance.
+
+     Four rungs, outermost first:
+
+       page      the canvas: near-white, never pure white, so that a
+                 raised surface still has somewhere to go
+       sunken    the gray container. Holds things; is never itself content
+       raised    white. The content sits here, inset inside `sunken`
+       recessed  gray again, but *inside* a raised surface. The de-
+                 emphasised state (completed, disabled, secondary rows)
+
+     Note that gray does double duty: as a container it's the parent of
+     white, as a recess it's the child of white. Which one it reads as is
+     decided entirely by nesting, which is why the insets need real
+     padding around them. Remove the gutter and the depth cue goes with
+     it. */
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
+    /* Tells the engine which way this document is lit, which is the only
+       thing that makes native UI (form controls, the scrollbar gutter,
+       the caret, `Highlight`) follow the theme. It has to be a real CSS
+       declaration on both scopes rather than a media query, because the
+       `.dark` class can disagree with the OS. */
+    color-scheme: light;
+
+    --surface: 0 0% 98.4%; /* #fbfbfb */
+    --surface-sunken: 0 0% 94.1%; /* #f0f0f0 */
+    --surface-raised: 0 0% 100%; /* #ffffff */
+    --surface-recessed: 0 0% 96.5%; /* #f6f6f6 */
+
+    /* The case-study sheet. Not a fifth rung of the nesting scale; it is
+       the *canvas* of the work pages, which sit outside the container→
+       inset relationship entirely (see work/[project]/page.tsx).
+
+       Its job is to be one barely-there step brighter than the page, so a
+       screenshot running to its own edges doesn't turn into a faint grey
+       rectangle. In light that means pure white against the 98.4% canvas,
+       1.6%. Dark keeps the *relationship* rather than the value: 9% against
+       the 7% canvas is the same 2% lift. Reaching for `surface-raised`
+       here instead would be an 8% jump, and the sheet would read as a slab
+       sitting on the page rather than as the page's own paper. */
+    --surface-paper: 0 0% 100%;
+
+    /* The tile a logo mark sits on in dark mode. Transparent here, because
+       in light there is no tile: the marks are dark ink on nothing and the
+       page is already the lightest thing they could want. See Logo.tsx. */
+    --surface-mark: 0 0% 100% / 0;
+
+    /* The gutter is the padding a container leaves around its insets, and
+       it is also what relates the two radii: an inset's corner is
+       concentric with its parent's only when
+       inner = outer − gutter (24 − 8 = 16). Change one, change all three,
+       or the corners stop nesting and start merely coexisting. */
+    --surface-gutter: 0.5rem; /* 8px */
+    --radius-outer: 1.5rem; /* 24px, containers */
+    --radius: 1rem; /* 16px, insets */
+    --radius-inner: 0.75rem; /* 12px, controls within an inset */
+
+    /* One content width for the whole site. See the Measure section
+       below for why it's a flat value and not a `ch` measure. */
+    --measure: 40rem; /* 640px */
+    --measure-gutter: 1.5rem; /* 24px, the px-6 a column carries */
+
+    /* ── Ink ────────────────────────────────────────────────────────────
+       The text scale, and the second axis this system has. Surfaces step
+       one way from the canvas; ink steps the other, and between them they
+       are the whole palette. There is no third colour except the wave
+       under a case-study link.
+
+       Five rungs, loudest first. They were `text-gray-950 / 600 / 500 /
+       400 / 300` at ~70 call sites until dark mode needed them, which is
+       the tell: a literal grey is a value that only knows how to be right
+       on one canvas.
+
+         foreground  titles, the name in the nav, an inline link's own text
+         muted       body copy, the paragraphs under a heading
+         subtle      secondary text: a row's description, a footer link
+         faint       labels and glyphs that name a thing they sit beside
+         ghost       marks that are only there to be *not quite absent*,
+                     an underline at rest, the dot in a markless pill, the
+                     spent arrow at the end of the pager
+
+       Dark is not the inverse of these values, it is its own ramp: the
+       spread is wider at the quiet end (34% → 98%, against light's 84% →
+       10%) because a dim grey on black loses its shape long before a light
+       grey on white does. */
+    --foreground: 240 6% 10%;
+    --foreground-muted: 240 5% 34%;
+    --foreground-subtle: 240 4% 46%;
+    --foreground-faint: 240 5% 65%;
+    --foreground-ghost: 240 6% 84%;
+
+    /* shadcn's name for the same rung as `subtle`. Aliased rather than
+       duplicated so the imported primitives and the site's own call sites
+       can't drift apart. */
+    --muted-foreground: var(--foreground-subtle);
+
+    /* The hover fill under a row, a nav link, a pager arrow. Ink at 3.5%
+       in light; in dark it has to invert *and* open up, because a wash
+       darker than a 7% canvas has nowhere left to go. */
+    --wash: 240 6% 10% / 0.035;
+
+    /* The wave under a case-study link, and the one saturated colour in
+       the system. Same value in both themes: it is a decoration rather
+       than text (the sentence stays ink-coloured, see `.case-link`), so
+       it is read as a mark, not for contrast, and 42% lightness clears
+       both canvases without either one tinting it. */
+    --wave: 169 100% 42%; /* #00d4ad */
+
+    /* shadcn's surface tokens are re-pointed at the scale above rather
+       than deleted, so its primitives inherit the language without each
+       one needing to be rewritten. `card` and `popover` are things that
+       sit *on* the page, hence raised; `muted`/`secondary`/`accent` are
+       all fills behind content, hence sunken. */
+    --background: var(--surface);
+    --card: var(--surface-raised);
+    --card-foreground: var(--foreground);
+    --popover: var(--surface-raised);
+    --popover-foreground: var(--foreground);
+    --secondary: var(--surface-sunken);
+    --secondary-foreground: var(--foreground);
+    --muted: var(--surface-sunken);
+    --accent: var(--surface-sunken);
+    --accent-foreground: var(--foreground);
+
+    --primary: 240 6% 10%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 10% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
+
+    /* Transparent, deliberately. Tailwind colours every border through
+       this token (see the `*` rule below), so `border` and `border-b`
+       still lay out; they just don't draw. The system's answer to "this
+       needs separating" is a tonal step or a gap, not a line.
+
+       The escape hatch, for the rare case that genuinely needs a hairline:
+       name a colour explicitly at the call site. That way an exception
+       reads as an exception in the diff. */
+    --border: 0 0% 50% / 0;
+    --input: 0 0% 50% / 0;
+
+    --ring: 240 6% 10%;
   }
+
+  /* Dark inverts the *direction* of the scale, not just the values: on a
+     dark canvas, nesting inward means getting lighter, so `raised` is the
+     brightest rung and `recessed` falls back toward the container. The
+     steps are also tighter (3–4% vs 4–6%) because equal lightness deltas
+     read louder against dark. */
   .dark {
-    --background: 240 10% 3.9%;
+    color-scheme: dark;
+
+    --surface: 240 6% 7%;
+    --surface-sunken: 240 5% 10.5%;
+    --surface-raised: 240 5% 15%;
+    --surface-recessed: 240 5% 12.5%;
+
+    /* 2% over the canvas, mirroring light's 1.6% over its own. */
+    --surface-paper: 240 5% 9%;
+
+    /* 90%, not 100%. Nine of these run down the Work column, and a pure
+       white tile at 20px is the brightest thing on a 7% page, and a row of
+       them would out-shout the titles they are there to help find. */
+    --surface-mark: 0 0% 90%;
+
     --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
+    --foreground-muted: 240 5% 76%;
+    --foreground-subtle: 240 5% 65%;
+    --foreground-faint: 240 4% 52%;
+    --foreground-ghost: 240 4% 34%;
+    --muted-foreground: var(--foreground-subtle);
+
+    /* White rather than ink, and 6% rather than 3.5%: the same 3.5% of a
+       light wash on a near-white page moves it about a point and a half of
+       lightness, and matching that move upward from 7% takes roughly
+       double the alpha. */
+    --wash: 0 0% 100% / 0.06;
+
     --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --primary-foreground: 240 6% 10%;
+    --destructive: 0 63% 45%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+
+    --ring: 240 5% 84%;
   }
 }
 
+/* ── The theme ────────────────────────────────────────────────────────────
+   What used to be `tailwind.config.ts`. `inline` is load-bearing rather than
+   stylistic: it makes each generated utility emit the *value* below
+   (`hsl(var(--surface))`) instead of a reference to a frozen `--color-*` var.
+   Only the inline form re-resolves per scope, which is what lets the `.dark`
+   block above retarget every surface by rewriting four raw triplets. Drop
+   `inline` and dark mode silently stops working. */
+@theme inline {
+  /* --font-inter already expands to `"Inter", "Inter Fallback"`, where the
+     second is local Arial re-scaled onto Inter's metrics by next/font, and that
+     pair is what makes the swap shift-free. The faces below only come into
+     play if both of those fail, so they are the last resort, not the metric
+     match. Order matters: this must stay *after* the var, never in place of
+     it. */
+  --font-sans:
+    var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial,
+    sans-serif;
+
+  /* Case-study headings only. Loaded italic-only (see layout.tsx), so
+     `font-serif` on its own would render the browser's synthetic oblique of
+     a face that isn't there. Always pair it with `italic`. */
+  --font-serif: var(--font-newsreader), Georgia, "Times New Roman", serif;
+
+  /* ── Type scale ─────────────────────────────────────────────────────────
+     Semantic names, not t-shirt sizes, so a call site says what the text *is*
+     rather than how big it happens to be. Tailwind's own text-xs…text-3xl are
+     left untouched underneath for the primitives that already depend on them.
+
+     Every step carries its own line-height and letter-spacing, which is the
+     whole point: tracking is a function of size, not a value anyone types by
+     hand. Type tightens as it grows (a headline set at default tracking reads
+     loose and gappy) and opens back up as it shrinks (13px at -0.02em turns
+     into mush). The curve runs -0.028em at 32px to +0.004em at 11px.
+
+     Sizes are rem so they still scale if the reader has raised their browser's
+     default font size. The `--text-*--line-height` / `--text-*--letter-spacing`
+     suffixes are v4's replacement for v3's `[size, { ... }]` tuple. */
+  --text-display: 2rem; /* 32px */
+  --text-display--line-height: 1.15;
+  --text-display--letter-spacing: -0.028em;
+  --text-title: 1.75rem; /* 28px */
+  --text-title--line-height: 1.18;
+  --text-title--letter-spacing: -0.025em;
+  --text-headline: 1.5rem; /* 24px */
+  --text-headline--line-height: 1.25;
+  --text-headline--letter-spacing: -0.022em;
+  --text-lede: 1.1875rem; /* 19px */
+  --text-lede--line-height: 1.55;
+  --text-lede--letter-spacing: -0.016em;
+  --text-body: 1.0625rem; /* 17px */
+  --text-body--line-height: 1.7;
+  --text-body--letter-spacing: -0.011em;
+  --text-body-sm: 0.9375rem; /* 15px */
+  --text-body-sm--line-height: 1.6;
+  --text-body-sm--letter-spacing: -0.007em;
+  --text-meta: 0.8125rem; /* 13px */
+  --text-meta--line-height: 1.5;
+  --text-meta--letter-spacing: -0.002em;
+  --text-micro: 0.6875rem; /* 11px */
+  --text-micro--line-height: 1.45;
+  --text-micro--letter-spacing: 0.004em;
+
+  /* ── Case-study scale ───────────────────────────────────────────────────
+     A separate, deliberately looser scale for the work pages. Three sizes
+     and nothing else: 16 for prose, 13 for the caption under a scroller, 24
+     for the section title. Two things set it apart from the site scale
+     above, and both are the point rather than an oversight:
+
+       leading  1.9 on the body, against 1.7 elsewhere. A 640px measure at
+                16px is ~72 characters, wider than the site's 65, and a
+                long line needs more air between the lines to stay trackable.
+
+       tracking 0. The site scale tightens as type grows because Inter set
+                solid at 32px reads gappy. This scale tops out at 24px in a
+                serif italic, which is drawn with its own fit; pulling it in
+                would fight the face. */
+  --text-case: 1rem; /* 16px */
+  --text-case--line-height: 1.9; /* 30.4px */
+  --text-case--letter-spacing: 0em;
+  --text-case-caption: 0.8125rem; /* 13px */
+  --text-case-caption--line-height: 1.5;
+  --text-case-caption--letter-spacing: 0em;
+  --text-case-heading: 1.5rem; /* 24px */
+  --text-case-heading--line-height: 1.25;
+  --text-case-heading--letter-spacing: 0em;
+  --text-case-title: 2.5rem; /* 40px */
+  --text-case-title--line-height: 1.15;
+  --text-case-title--letter-spacing: -0.01em;
+
+  /* ── Quiet tonal surfaces ───────────────────────────────────────────────
+     The scale is defined in `:root` above; these are the utilities that reach
+     it. Prefer the `surface` / `surface-inset` classes below when you're
+     building the container→child relationship, and drop to `bg-surface-*` only
+     for one-off fills that aren't part of a nesting. */
+  --color-surface: hsl(var(--surface));
+  --color-surface-sunken: hsl(var(--surface-sunken));
+  --color-surface-raised: hsl(var(--surface-raised));
+  --color-surface-recessed: hsl(var(--surface-recessed));
+  --color-surface-paper: hsl(var(--surface-paper));
+  --color-surface-mark: hsl(var(--surface-mark));
+
+  /* `hover:bg-wash`. A single named fill rather than `hover:bg-gray-950/
+     [0.035]` repeated at each call site, where the alpha drifted by a
+     thousandth between the nav, the rows and the pager, and where none of
+     the three had any way to become white in dark. */
+  --color-wash: hsl(var(--wash));
+
+  /* `decoration-wave`. */
+  --color-wave: hsl(var(--wave));
+
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-foreground-muted: hsl(var(--foreground-muted));
+  --color-foreground-subtle: hsl(var(--foreground-subtle));
+  --color-foreground-faint: hsl(var(--foreground-faint));
+  --color-foreground-ghost: hsl(var(--foreground-ghost));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  /* ── Nested radii ───────────────────────────────────────────────────────
+     Three named rungs rather than the usual lg/md/sm arithmetic, because the
+     relationship isn't "2px tighter than the last one", it's "one level
+     further inside". Each step is the parent's radius minus the gutter that
+     separates them, which is what keeps the corners concentric instead of
+     merely similar.
+
+       outer  24px  the gray container
+       lg     16px  a white card inset in it   (= 24 − 8)
+       md     12px  a control inside that card
+       sm      8px  the smallest chip or checkbox
+
+     lg/md/sm keep their names so the imported primitives land on the scale
+     without being rewritten. */
+  --radius-outer: 1.5rem;
+  --radius-lg: var(--radius);
+  --radius-md: var(--radius-inner);
+  --radius-sm: calc(var(--radius-inner) - 4px);
+}
+
+/* ── Quiet tonal: the surface classes ────────────────────────────────────
+   These describe the *relationship* between a container and what's inset in
+   it, so the three numbers involved (fill, radius, gutter) are written once
+   rather than re-typed as `bg-neutral-100 rounded-3xl p-2` at each call site,
+   where one of them eventually drifts and the corners quietly stop nesting.
+
+   Under v3 these were an `addComponents` plugin, and the components layer was
+   purged against the content scan, so they needed a `safelist` entry or they
+   silently didn't exist. (Not hypothetical: `.surface` survived only because
+   the substring turns up inside `bg-surface-sunken` elsewhere, while
+   `.surface-inset` vanished.) `@utility` removes that trap: v4 scans for these
+   names the same way it scans every other utility, so the safelist is gone.
+
+   The cascade still works out. v4 orders utilities by declaration count, so
+   these multi-property rules sort *before* single-property ones, so a utility at
+   the call site (`bg-surface-recessed`, `rounded-md`) still overrides them. */
+
+/* The gray container. Its padding is the gutter, which is the thing that makes
+   children read as *inset* rather than merely stacked. Take it away and the
+   depth cue goes with it. */
+@utility surface {
+  background-color: hsl(var(--surface-sunken));
+  border-radius: var(--radius-outer);
+  padding: var(--surface-gutter);
+}
+
+/* Siblings are separated by exactly one gutter, so the rhythm between two
+   cards matches the rhythm between a card and the container edge. Gaps, never
+   dividers. */
+@utility surface-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--surface-gutter);
+}
+
+/* White content sitting inside `surface`. */
+@utility surface-inset {
+  background-color: hsl(var(--surface-raised));
+  border-radius: var(--radius);
+}
+
+/* The inverse: gray inside white. Reads as recessed: completed, disabled,
+   secondary. Same radius as `surface-inset` because it sits at the same depth,
+   just approached from the other side. */
+@utility surface-recessed {
+  background-color: hsl(var(--surface-recessed));
+  border-radius: var(--radius);
+}
+
+/* ── Measure ──────────────────────────────────────────────────────────────
+   One 640px column, on every page, in the nav and in the footer. `--measure`
+   at the top of the file is the only place the number lives.
+
+   This used to be two systems: a 48ch measure on the index, nav and footer,
+   and a flat 640px on the case studies. 48ch resolved to a 512px column, so
+   the index ran 128px narrower than the work pages and the wordmark in the
+   nav sat on a different left edge depending on which page you were on. A
+   shared column is worth more than a per-page optimum: the chrome is the
+   thing that repeats, and it can only feel fixed if it doesn't move.
+
+   Flat rather than `ch` because the two scales that use it disagree about
+   what a character is (the index sets 17px Inter, the case studies 16px) and
+   so no single `ch` value describes both. The px value is the thing they
+   actually share. 640 is ~85 characters at 17px and ~72 at 16px, past the
+   Bringhurst optimum on the index, which is why the leading is open on both
+   scales (1.7 and 1.9) rather than tightened to match the extra width.
+
+   Two utilities because max-width is a border-box measurement, so a column
+   with its own gutter needs that gutter added back or the text comes out
+   short. Written as `@utility` rather than theme keys because v4 routes
+   `max-w-*` through the `--container-*` namespace, which these are not. */
+@utility max-w-measure {
+  max-width: var(--measure);
+}
+@utility max-w-measure-gutter {
+  /* for columns carrying px-6 */
+  max-width: calc(var(--measure) + var(--measure-gutter) * 2);
+}
+
 @layer base {
+  /* v4 defaults every border to `currentColor` rather than a theme gray, so
+     this rule does more work than it did under v3: it is the only thing
+     pointing borders at the (transparent) `--border` token. */
   * {
     @apply border-border;
   }
+
+  /* ── Type rendering ───────────────────────────────────────────────────
+     Set once on the root so nothing downstream has to remember it. */
+  html {
+    /* Inter carries a real `kern` feature in GPOS. Engines disable it at
+       small sizes under `optimizeSpeed`, so ask for it explicitly. This
+       is what tightens pairs like "Wa", "Ty" and "r." in the headings. */
+    font-kerning: normal;
+
+    /* Drives Inter's opsz axis from the computed font-size of each
+       element, so the design of the letterforms tracks the type scale. */
+    font-optical-sizing: auto;
+
+    /* Only "calt" is listed, and deliberately so. The Inter that Google
+       Fonts serves is a subset: its GSUB carries calt, ccmp, locl, frac,
+       numr, dnom, pnum and tnum, and nothing else. The character
+       variants people usually reach for here (cv02 open 4, cv03 open 6,
+       cv04 open 9, cv11 single-storey a) and the stylistic sets (ss01–
+       ss04, incl. ss03 round quotes) are NOT in this build; declaring
+       them would be a comment claiming an effect that never renders.
+       They only exist in the full Inter from rsms.me, which would mean
+       self-hosting and giving up next/font's per-subset splitting.
+
+       calt is on by default, but naming it pins it: font-feature-settings
+       is all-or-nothing, so any later addition to this list would
+       silently switch off whatever wasn't named. */
+    font-feature-settings: "calt" 1;
+
+    /* Greyscale AA. Inter at 15–17px on a near-white ground renders
+       heavy with subpixel rendering; this is what keeps 400 and 500
+       distinguishable from each other rather than both reading bold. */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* ── Widows and orphans ───────────────────────────────────────────────
+     Headings balance: the browser evens out line lengths instead of
+     leaving one stranded word on the last line. Capped at ~6 lines by
+     spec, which is exactly the heading case.
+
+     Body copy gets `pretty`, which only guards the final line. Cheap
+     enough for long text, where `balance` would not be. */
+  h1,
+  h2,
+  h3,
+  h4,
+  figcaption,
+  dt {
+    text-wrap: balance;
+  }
+
+  p,
+  li,
+  dd {
+    text-wrap: pretty;
+  }
+}
+
+/* ── Lightbox (react-medium-image-zoom) ──────────────────────────────────
+   The library hardcodes a white overlay, which would flash white on the way
+   into a dark-mode zoom. These three rules are the whole theme integration:
+   repoint the overlay at the canvas and put the enlarged image on the inset
+   radius. Scoped to `.lightbox-dialog` (passed as `classDialog`) rather than
+   written against `[data-rmiz-*]` globally, so the override travels with the
+   component that asked for it. */
+.lightbox-dialog [data-rmiz-modal-overlay="hidden"] {
+  background-color: transparent;
+}
+.lightbox-dialog [data-rmiz-modal-overlay="visible"] {
+  background-color: hsl(var(--background));
+}
+.lightbox-dialog [data-rmiz-modal-img] {
+  border-radius: var(--radius);
+}
+
+/* Case-study image strips scroll horizontally on a snap track; the
+   scrollbar itself is noise, the overflowing tile is the affordance. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* A scroller tile owns its own size: height from the track, width from the
+   image's ratio (see Scroller.tsx). The lightbox wraps every image in two
+   divs of its own, and those default to auto height, so `h-full` on the img
+   would resolve against a box that shrank to fit and the tile would collapse
+   back to its intrinsic height. This makes the two wrappers pass the tile's
+   size through untouched. */
+.case-tile [data-rmiz],
+.case-tile [data-rmiz-content] {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+/* ── Case-study links ─────────────────────────────────────────────────────
+   Inline links in case-study prose keep the text black and put all of the
+   signal in the rule underneath: a 1px wavy underline in teal, dropped 4px
+   clear of the baseline so the wave never touches a descender.
+
+   A colour change would tint the sentence; the wave leaves the line reading
+   as one voice and still marks the link unmistakably. It is the only wavy
+   thing on the page. Hover swaps the wave to the ink rather than adding
+   anything, so the hit state is a change in the mark that is already there.
+
+   "Black" was the literal value here until the work pages learned to
+   invert. It is `--foreground` now, which is the same near-black in light
+   and near-white in dark. The rule's argument (all of the signal is in the
+   wave, none of it in the text colour) is what has to survive the theme,
+   not the colour that happened to express it. */
+.case-link {
+  color: hsl(var(--foreground));
+  text-decoration-line: underline;
+  text-decoration-style: wavy;
+  text-decoration-thickness: 1px;
+  text-decoration-color: hsl(var(--wave));
+  text-underline-offset: 4px;
+  transition: text-decoration-color 150ms ease-out;
+}
+.case-link:hover {
+  text-decoration-color: hsl(var(--foreground));
+}
+
+/* ── Spinner ──────────────────────────────────────────────────────────────
+   One arc travelling around a faint track.
+
+   A spoked wheel was tried here first and is the wrong drawing at this size.
+   Eight spokes at 45° steps are rotationally symmetric, so a rotating wheel
+   looks identical at 45° as at 0° and reads as juddering rather than
+   turning; the eye has no feature to track. An arc is the fix: it is
+   asymmetric by construction, so there is exactly one thing on screen to
+   follow and its position at any instant is unambiguous.
+
+   The numbers are measured off the reference recording rather than picked:
+   110° of sweep, a track at ~11% of the arc's own ink, and 499ms per turn
+   (see the constants in ui/spinner.tsx, which carry the same figures).
+
+   The arc is a *uniform* stroke, not a tapered one. That was the surprise on
+   inspection. The reference's brightness is flat across the whole 110° and
+   drops off a cliff at both ends, and what reads as a taper at a glance is
+   just the round caps. A real gradient here would need a second element or
+   an SVG <linearGradient> that has to rotate with the arc, for an effect
+   nobody asked for.
+
+   Transform-only, so it is compositor-driven and runs off the main thread,
+   which is the point for a spinner, since the reason one is on screen is
+   usually that the main thread is busy.
+
+   Deliberately not gated behind `motion-reduce`, unlike every other
+   animation in this codebase. The rotation *is* the message, and a spinner
+   held still is not a calmer spinner, it is a wheel that says nothing while
+   the user waits. Reduced-motion exempts animation that carries essential
+   information, and this is the case that exemption is for: the ring spins
+   in place and nothing travels across the screen. */
+@keyframes spinner-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner-rotate {
+  /* 500ms is fast for a spinner and that is the point, measured off the
+     reference at 499ms. Slower reads as a progress indicator estimating
+     something; this reads as work happening. Linear, because any easing
+     would give the ring a top and a bottom, and a circle rotating at a
+     varying rate looks like a mechanism catching rather than turning. */
+  animation: spinner-rotate 500ms linear infinite;
+  /* The SVG is square and the arc is concentric, so the box centre is the
+     circle's centre. Stated anyway: the default `50% 50%` is right by
+     coincidence of the viewBox, not by intent, and a later size change
+     should not be able to quietly send the ring into orbit. */
+  transform-origin: 50% 50%;
+}
+
+.case-link:focus-visible {
+  outline: 2px solid hsl(var(--foreground) / 0.2);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ── transitions.dev, Tabs sliding ──────────────────────────────
+   Pill indicator follows the active tab. The pill's transform and
+   width are written inline by JS so the CSS transition tweens
+   between the previous and next measured positions. */
+.t-tabs {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px;
+  border-radius: 48px;
+  background: hsl(var(--secondary));
+}
+.t-tab {
+  position: relative;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  height: 30px;
+  padding: 4px 12px;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  border-radius: 48px;
+  z-index: 1;
+  transition: color 250ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.t-tab:not([aria-selected="true"]):hover,
+.t-tab[aria-selected="true"] {
+  color: hsl(var(--foreground));
+}
+.t-tabs-pill {
+  position: absolute;
+  top: 3px;
+  left: 0;
+  height: 30px;
+  width: 0;
+  /* The track is `sunken`, so the pill is what's inset in it: raised,
+     not page. On a near-white canvas the difference is a couple of
+     percent; in dark it is the whole effect. */
+  background: hsl(var(--surface-raised));
+  border-radius: 48px;
+  transform: translateX(0);
+  transition:
+    transform 250ms cubic-bezier(0.22, 1, 0.36, 1),
+    width 250ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, width;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── transitions.dev, Accordion expand ──────────────────────────
+   Height animates via grid-template-rows 0fr ↔ 1fr, so no JS
+   measurement is needed. The chevron flips vertically (scaleY)
+   from a "v" to a "^", because the path is symmetric about the viewBox
+   centre, and scaleY animates everywhere, unlike CSS `d:` morphing
+   which is Chromium-only. */
+.t-acc-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 250ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.t-acc[data-open="true"] .t-acc-panel {
+  grid-template-rows: 1fr;
+}
+.t-acc-panel-inner {
+  overflow: hidden;
+  opacity: 0;
+  filter: blur(2px);
+  transition:
+    opacity 250ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 250ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.t-acc[data-open="true"] .t-acc-panel-inner {
+  opacity: 1;
+  filter: blur(0);
+}
+.t-acc-chevron {
+  display: inline-flex;
+  transform: scaleY(1);
+  transform-origin: center;
+  transition: transform 250ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* `vector-effect: non-scaling-stroke` used to live here. It has to go now
+   that the icon system owns stroke weight: it reinterprets stroke-width as
+   device pixels rather than grid units, which silently discards the
+   counter-scaling in Icon.tsx: a 24-grid master at 16px would render at
+   1.95px instead of the 1.3px the size table asks for. The scaleY(-1) flip
+   below has |determinant| = 1 and so does not alter stroke width anyway,
+   which is what the rule was guarding against. */
+.t-acc[data-open="true"] .t-acc-chevron {
+  transform: scaleY(-1);
+}
+
+/* ── Theme switch ─────────────────────────────────────────────────────────
+   The same instrument as `.t-tabs` above (sunken track, raised pill, tone
+   for the selected state) at footer scale and with the pill driven by
+   arithmetic instead of by measurement.
+
+   `.t-tabs` measures each tab and writes the pill's transform from JS
+   because its labels are arbitrary and unequal. This control has exactly
+   three options, forever, so the segments are equal thirds and the pill's
+   position is `index × 100%` of its own width. That removes the whole
+   measurement path: no ResizeObserver, no `document.fonts.ready` resnap,
+   and, the reason it matters here, no first-paint snap. The switch can't
+   know the stored theme until the client has read it, so a measured pill
+   would land in the wrong third and then jump on hydration.
+
+   Widths come from the grid, not from the text, so "System" and "Dark"
+   occupy the same segment. At 11px the difference is a few pixels of air
+   inside a pill and the eye reads the row as a control rather than as
+   three words of different lengths. */
+.t-switch {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 3px;
+  border-radius: 48px;
+  background: hsl(var(--surface-sunken));
+}
+.t-switch-pill {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  /* The track minus its own 3px of padding either side, in thirds. */
+  width: calc((100% - 6px) / 3);
+  border-radius: 48px;
+  background: hsl(var(--surface-raised));
+  transform: translateX(calc(var(--t-switch-index) * 100%));
+  transition: transform 250ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+  z-index: 0;
+}
+.t-switch-option {
+  position: relative;
+  z-index: 1;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 4px 10px;
+  border-radius: 48px;
+  color: hsl(var(--foreground-faint));
+  cursor: pointer;
+  transition: color 250ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.t-switch-option:hover,
+.t-switch-option[aria-checked="true"] {
+  color: hsl(var(--foreground));
+}
+.t-switch-option:focus-visible {
+  outline: 2px solid hsl(var(--ring) / 0.2);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-tabs-pill,
+  .t-tab,
+  .t-acc-panel,
+  .t-acc-panel-inner,
+  .t-acc-chevron,
+  .t-switch-pill,
+  .t-switch-option {
+    transition: none !important;
+  }
+}
+
+/* ── Command palette ──────────────────────────────────────────────────────
+   The palette arrives; it does not fly in. Two properties move, opacity and
+   a 2% scale, over 200ms on the same cubic-bezier(0.22, 1, 0.36, 1) the
+   tabs, the accordion and the theme switch all use, so the one new modal on
+   the site is on the site's existing curve rather than on a library's.
+
+   The 6px of travel is the smallest amount that reads as "this came from
+   somewhere" at a glance; anything more and a panel that appears under the
+   reader's hands starts to feel like it has to be waited for. Exit runs at
+   150ms because a dismissal has no information in it. The only job is to
+   not blink.
+
+   `translate` rather than `transform`: Tailwind v4 emits the centring
+   `-translate-x-1/2` through the standalone `translate` property, so these
+   frames have to carry the -50% along or the panel would jump to the left
+   edge for the length of the animation. Scale stays on its own property for
+   the same reason: the three are independent in v4 and mixing them into one
+   `transform` shorthand is what would clobber the layout.
+
+   Radix's Presence waits for `animationend` before unmounting, which is what
+   makes the exit frames run at all; without them the panel would vanish on
+   the same tick Escape was pressed. */
+@keyframes cmd-overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes cmd-overlay-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes cmd-panel-in {
+  from {
+    opacity: 0;
+    scale: 0.98;
+    translate: -50% -6px;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+    translate: -50% 0;
+  }
+}
+@keyframes cmd-panel-out {
+  from {
+    opacity: 1;
+    scale: 1;
+    translate: -50% 0;
+  }
+  to {
+    opacity: 0;
+    scale: 0.98;
+    translate: -50% -4px;
+  }
+}
+
+.cmd-overlay[data-state="open"] {
+  animation: cmd-overlay-in 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cmd-overlay[data-state="closed"] {
+  animation: cmd-overlay-out 150ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cmd-panel[data-state="open"] {
+  animation: cmd-panel-in 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cmd-panel[data-state="closed"] {
+  animation: cmd-panel-out 150ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Not `animation: none`, since Presence would then never hear `animationend` and
+   the panel would stay in the DOM after closing, trapping focus. The frames
+   still run, they just run in one tick and only on opacity, so nothing
+   travels or scales across the screen. */
+@media (prefers-reduced-motion: reduce) {
+  .cmd-overlay[data-state],
+  .cmd-panel[data-state] {
+    animation-duration: 1ms;
+  }
+  .cmd-panel[data-state="open"] {
+    animation-name: cmd-overlay-in;
+  }
+  .cmd-panel[data-state="closed"] {
+    animation-name: cmd-overlay-out;
+  }
+}
+
+/* ══ Print ════════════════════════════════════════════════════════════════
+   ⌘P on the index gives you a résumé, not a screenshot of a website.
+
+   The whole thing is CSS over the site's own DOM. There is no second tree
+   rendered for paper and no `isPrinting` prop anywhere. The printed
+   document is the same elements, restyled, so a row added to Work on Tuesday
+   is on the résumé on Tuesday. The single exception is the letterhead (see
+   components/print/PrintIdentity.tsx), which carries the one thing the
+   screen genuinely has no reason to say: how to reach the person holding the
+   page.
+
+   ── Why this block is unlayered ──────────────────────────────────────────
+   Everything Tailwind emits lives inside `@layer utilities`, and an
+   unlayered rule beats a layered one no matter what the specificities are.
+   That is what lets a plain `.text-body { font-size: 9.5pt }` below override
+   `text-body` at every call site without a single `!important`, and it is
+   the reason this block sits at the foot of the file outside every `@layer`.
+   Move it inside one and the whole thing silently stops applying.
+
+   Reaching for utility class names as selectors (`.text-body`, `.px-3`) is
+   deliberate and is the cheapest correct tool here. The alternative is a
+   `print:` variant at every one of ~60 call sites in files three other
+   people are editing. A print stylesheet's job has always been to
+   reinterpret a document it does not own; this is that, and the coupling it
+   creates is to the type scale in `@theme` above, which is a scale, i.e.
+   the thing that is supposed to be shared. */
+@media print {
+  /* No `size`. Paper is the reader's decision: a US résumé is going onto
+     Letter and this one onto A4, and forcing either produces a scaled,
+     off-centre page for half the people who try it. The margins are stated
+     because Chrome's default is ~0.4in on all four sides, which is a memo
+     rather than a document.
+
+     12mm/13mm is narrower than a letter would take and that is deliberate:
+     the horizontal figure is what decides how many of the nine work
+     descriptions wrap to a second line, and every millimetre of column here
+     is worth about a millimetre of page down there. It was 14/15 until the
+     Stack table was landing 40px onto a second sheet with nothing else on
+     it. Trading 2mm of margin for a whole page is not a close call. The
+     result is a ~184mm column, ~100 characters at 9pt, which is why the
+     leading below sits at 1.38 rather than tight. */
+  @page {
+    margin: 12mm 13mm;
+  }
+
+  /* ── Force light ────────────────────────────────────────────────────────
+     The theme is a `.dark` class written onto `<html>` before first paint
+     (see lib/theme.ts), and it survives into print, so a dark-mode reader
+     would otherwise get a black page, or, once the browser drops the
+     background, near-white text on white paper.
+
+     `:root, .dark` rather than `.dark` alone: both are one class of
+     specificity, and this block is later in the file, so re-declaring the
+     tokens here wins over both scopes at once. Every surface collapses to
+     white because paper is already the lightest thing available, and the ink
+     ramp is re-cut for reflected light rather than emitted: the quiet end
+     goes *darker* than the screen's (42% here against 65% on screen),
+     because a grey that reads as "secondary" on a backlit panel reads as
+     "underexposed" in a laser printer's dither. */
+  :root,
+  .dark {
+    color-scheme: light;
+
+    --surface: 0 0% 100%;
+    --surface-sunken: 0 0% 100%;
+    --surface-raised: 0 0% 100%;
+    --surface-recessed: 0 0% 100%;
+    --surface-paper: 0 0% 100%;
+    --surface-mark: 0 0% 100% / 0;
+
+    --foreground: 0 0% 0%;
+    --foreground-muted: 0 0% 18%;
+    --foreground-subtle: 0 0% 28%;
+    --foreground-faint: 0 0% 42%;
+    --foreground-ghost: 0 0% 58%;
+
+    /* The chip fill behind a Stack pill. Kept as a real value rather than
+       zeroed, because the pills are the one place on the page where the
+       fill is doing structural work; see the note further down. */
+    --wash: 0 0% 92%;
+  }
+
+  html {
+    background: #fff;
+
+    /* 9.5pt, and this is the lever that shrinks the *spacing* as well as the
+       type: every margin, gap and padding in the system is authored in rem,
+       so re-basing the root from 16px to 12.67px pulls the whole vertical
+       rhythm in by ~21% before a single margin below is touched. The
+       explicit pt sizes further down then set the type independently, which
+       is what makes the printed page denser rather than merely smaller. */
+    font-size: 9.5pt;
+
+    /* Greyscale AA is a screen fix. It exists because Inter renders heavy
+       against a backlit near-white. A printer has no subpixels to smooth
+       and hinting is the renderer's business, so hand it back. */
+    -webkit-font-smoothing: auto;
+    -moz-osx-font-smoothing: auto;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  /* ── What doesn't earn a place on paper ─────────────────────────────────
+     Navigation is the obvious one: a sticky bar and a footer sitemap are
+     ways of getting somewhere else, and paper has nowhere else. `header` is
+     qualified with `.sticky` so the case-study and blog `<header>` elements,
+     which are the title block of the document, not chrome, survive.
+
+     The rest are controls: the ⌘K hint and the theme switch (both inside the
+     two elements above), the command palette in the pathological case where
+     someone hits ⌘P with it open, and any tooltip or popover that happened
+     to be open when they did.
+
+     Note what is deliberately *not* here: a blanket `main button`. That rule
+     was written first and it was wrong within the hour: the Stack pills are
+     `<button>`s, because each one opens a note about the tool, so hiding
+     every button in `main` silently deleted the entire Stack section from
+     the page. "A control is meaningless on paper" is a true statement about
+     affordances and a false one about elements; what matters is whether the
+     *content* survives the control being dead, and a pill's does. */
+  header.sticky,
+  footer,
+  .cmd-overlay,
+  .cmd-panel,
+  [data-radix-popper-content-wrapper],
+  .spinner-rotate {
+    display: none;
+  }
+
+  /* The hover-preview layer. It is empty unless a pointer is resting on a
+     row, and a pointer resting on a row while the print dialog is open is
+     exactly the case that would print a floating card over the middle of the
+     Work list. */
+  main [aria-hidden].absolute {
+    display: none;
+  }
+
+  /* The greeting. "Hey, I'm Omar." is how you open a page someone chose to
+     visit; the letterhead above is how you open a document someone is
+     holding, and the two in sequence read as a stutter.
+
+     Index only; see the note on the `data-index` hook in PrintIdentity.tsx.
+     On /about and /blog the h1 is the document's own title and is the last
+     thing that should go. */
+  html:has(.print-identity[data-index]) main > section:first-of-type > h1 {
+    display: none;
+  }
+
+  /* The two controls in the intro, which are the ones that actually have to
+     go: a button offering to fetch the document you are holding is a joke
+     the paper can't get, and one offering to put an address on your
+     clipboard is worse, since the address is printed in the letterhead four
+     lines above it. Scoped to the intro block rather than found by class,
+     because the class lists are DownloadResume's and CopyEmail's business
+     and this needs to keep working when they change. */
+  html:has(.print-identity[data-index]) main > section:first-of-type button {
+    display: none;
+  }
+
+  /* The status line, "Lately: …", closes the intro on screen and is the
+     freshest thing on the page. That is exactly why it can't be printed:
+     its whole contract is that it is current, and a sheet of paper has no
+     way to stop being current. Everything else here is true for years; this
+     one is true for weeks, and the copy of it in someone's drawer will be
+     confidently wrong long before the rest of the page is. */
+  html:has(.print-identity[data-index]) main > section:first-of-type > p:last-child {
+    display: none;
+  }
+
+  /* ── The letterhead ─────────────────────────────────────────────────────
+     Name at document size, then two lines of address. `break-after: avoid`
+     is not decoration: without it a page break can land between the name and
+     the email, which is the one break on the page that would actually lose
+     information. */
+  .print-identity {
+    margin-bottom: 7pt;
+    break-after: avoid;
+  }
+  .print-identity-name {
+    font-size: 16pt;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    font-weight: 600;
+    color: #000;
+  }
+  .print-identity-role {
+    margin-top: 2pt;
+    font-size: 9.5pt;
+    line-height: 1.35;
+    color: hsl(var(--foreground-muted));
+  }
+  .print-identity-contact {
+    margin-top: 3pt;
+    font-size: 8.5pt;
+    line-height: 1.35;
+    color: hsl(var(--foreground-subtle));
+  }
+  .print-identity a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* ── The column becomes the page ────────────────────────────────────────
+     On screen the content sits in a 640px measure with 24px of gutter, and
+     every row bleeds 12px outside it (`-mx-3` on the section, `px-3` on the
+     row) so that the hover fill can be wider than the text without moving
+     the text. On paper there is no hover, and a 640px measure inside a 180mm
+     page would print a narrow strip up the left of a mostly empty sheet.
+
+     So both systems are collapsed: the measure is dropped, and the ±12px
+     bleed is zeroed on both sides so every line (heading, title, body)
+     starts on one flush left edge. Reaching for `.px-3` / `.-mx-3` by name
+     is how one rule retires the whole mechanism instead of eleven. */
+  main {
+    max-width: none;
+    width: auto;
+    margin: 0;
+    padding: 0;
+  }
+  main .px-3 {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  main .-mx-3 {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  /* ── Type for paper ─────────────────────────────────────────────────────
+     The screen scale is authored in rem at 1.7 leading, which is right for
+     reading a lit column at arm's length and wrong for scanning a sheet of
+     paper. pt because paper has a physical size and pt is the unit that
+     describes it; 1.35–1.4 leading because the eye is tracking a dense page
+     for facts rather than reading it end to end.
+
+     The steps stay in the same relationship they have on screen (body >
+     body-sm > meta), which is what keeps the printed hierarchy legible as
+     the same hierarchy. This is a change of medium, not of design. */
+  .text-body {
+    font-size: 9pt;
+    line-height: 1.38;
+    letter-spacing: -0.006em;
+  }
+  .text-body-sm {
+    font-size: 8.5pt;
+    line-height: 1.31;
+    letter-spacing: -0.004em;
+  }
+  .text-meta {
+    font-size: 7.5pt;
+    line-height: 1.3;
+    letter-spacing: 0;
+  }
+  .text-micro {
+    font-size: 7pt;
+    line-height: 1.3;
+  }
+
+  p,
+  li {
+    orphans: 3;
+    widows: 3;
+  }
+
+  /* The intro's three paragraphs. `space-y-4` is a 16px gap chosen for a
+     column being read at leisure; here they are the opening of a document
+     that has one sheet to make its case, and a paragraph break only has to
+     be visible, not restful. */
+  main .space-y-4 > * + * {
+    margin-top: 3.5pt;
+  }
+
+  /* ── Sections ───────────────────────────────────────────────────────────
+     A section heading on screen is 13px of faint grey doing the quietest
+     possible job of naming a block. On paper that reads as an afterthought:
+     the reader is scanning for "Experience" and "Stack" as landmarks, and a
+     grey 8pt word set at body tracking is not a landmark.
+
+     Caps at 7.5pt with 0.09em of tracking is the print convention for
+     exactly this, and it is not a betrayal of the quiet-tonal language. The
+     screen version separates by tone because it can (a hover fill, a colour
+     ramp, 60fps of feedback), and print has neither tone nor interaction, so
+     it separates by case and letterfit instead. Same intent, the medium's
+     own vocabulary.
+
+     `break-after: avoid` on the heading, `break-inside: avoid` on the
+     section, so a landmark is never the last line of a page. */
+  main > section {
+    margin-bottom: 4.5pt;
+    break-inside: auto;
+  }
+  main > section > h2 {
+    margin-bottom: 3pt;
+    font-size: 7.5pt;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: #000;
+    break-after: avoid;
+  }
+  /* The sub-heads one rung inside a section: Product / Founded / Client
+     work in the Work list, and the six category names in Stack. They are
+     the same rung and get the same treatment: the section heading's caps, so
+     it reads as the same *kind* of label, but a step smaller, a step lighter
+     and grey, so it can't be mistaken for a peer of "Work" or "Stack". */
+  main > section h3 {
+    margin-bottom: 1pt;
+    font-size: 7pt;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: hsl(var(--foreground-faint));
+    break-after: avoid;
+  }
+  /* The gap between Work's three groups. `mt-8` is 32px on screen and comes
+     down to 25px with the root re-base, still a paragraph of white space
+     between three-row clusters that are already labelled. */
+  main > section .mt-8 {
+    margin-top: 3pt;
+  }
+
+  /* ── Rows ───────────────────────────────────────────────────────────────
+     `.group` is the Row anchor (components/index/Row.tsx) and nothing else
+     on the index uses it. Its 12px of padding was the hover fill's inset;
+     with no fill to inset, it becomes the row's own leading gap instead.
+
+     `break-inside: avoid` is the point of the rule: a job or a project split
+     across a page boundary (title on one sheet, what it was on the next)
+     is the single most common way a printed résumé fails. */
+  main a.group {
+    display: block;
+    padding: 0 0 2pt 0;
+    break-inside: avoid;
+  }
+  main a.group p {
+    margin-top: 0;
+  }
+  /* The ↗ that marks an external row. It says "this opens somewhere else",
+     which on paper is a promise nothing can keep. */
+  main a.group svg {
+    display: none;
+  }
+  /* The logo marks. A 20px mark plus its 12px gutter is 32px of the column
+     spent, on paper, telling the reader that Instatus has a logo, which the
+     row already says in words directly beside it. On screen the marks are a
+     scanning aid for a list you are moving a pointer down; on a static sheet
+     the eye scans the titles, which are already a column. The gutter goes
+     with them so every row's title lands on the same flush left edge as the
+     section heading above it. */
+  main a.group > div {
+    gap: 0;
+  }
+  main a.group > div > span:first-child {
+    display: none;
+  }
+
+  /* ── Code ───────────────────────────────────────────────────────────────
+     The contribution graph is 365 rounded rectangles in five tones of grey.
+     On screen it is a year read at a glance; printed, the browser drops
+     backgrounds by default and the five levels dither into two, so it stops
+     being a graph and becomes a grey smear that costs 20mm of a page with
+     one sheet to give. The legend goes with it: a key to a chart that is no
+     longer there.
+
+     What stays is the sentence underneath, and that is the real content of
+     the section anyway: a number of contributions and the date of the last
+     one. Two lines of fact in place of a picture of the same fact. */
+  main .no-scrollbar,
+  main .ml-auto {
+    display: none;
+  }
+  /* The sentence that survives. It carries an inline `font-size: 13px` from
+     the graph's own sizing prop, the one place on the index where a
+     declaration outranks a stylesheet, so it has to be named rather than
+     inherited, or it prints a point and a half louder than the work
+     descriptions above it and reads as a headline. The attribute substring
+     match is the handle precisely because the declaration is the problem:
+     anything in `main` that sizes itself from JS wants re-sizing for paper
+     for the same reason this does. */
+  main [style*="font-size"] {
+    /* The one `!important` in the file, and the only place it is the correct
+       tool rather than a shortcut: an inline declaration outranks every
+       stylesheet rule, layered or not, so the unlayered trick this whole
+       block relies on does not reach it. */
+    font-size: 8.5pt !important;
+  }
+
+  /* ── Stack ──────────────────────────────────────────────────────────────
+     The one section on the site written to be scanned rather than read, and
+     the one a recruiter with a keyword in mind goes to first, so it stays,
+     and it stays as a table.
+
+     The pills keep their fill, which is the only ink this document spends on
+     something that isn't a letterform. It is load-bearing: with the fill
+     gone, "TypeScript JavaScript Python SQL" separated by 6px of nothing is
+     four words that could be one phrase. The chip is what makes each entry a
+     discrete item, and 92% grey is about two percent of coverage: cheaper
+     to print than the comma-separated alternative is to read.
+
+     `print-color-adjust: exact` because backgrounds are dropped by default
+     in every browser's print path, which is normally correct and here would
+     delete the structure along with the decoration. */
+  main .bg-wash {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    padding: 0.5pt 4pt;
+  }
+  main .bg-wash svg {
+    display: none;
+  }
+  /* A Stack row is the one element on the page that owns a list of pills,
+     a `:has()` on the fill is a more durable handle than the arbitrary-value
+     grid class the row actually carries, and it can't collide with the Work
+     groups, which have the same h3 + ul shape but no chips.
+
+     Descendant rather than child combinators on purpose: the depth from
+     `section` to a row is four levels here and three in Work, and both are
+     an implementation detail of components other people are editing. A rule
+     that counts `>` is a rule that breaks the next time either of them
+     wraps something in a div, which is exactly how the first draft of this
+     silently did nothing at all. */
+  main > section div:has(> ul > li > .bg-wash) {
+    padding-top: 1pt;
+    padding-bottom: 1pt;
+    row-gap: 1.5pt;
+    break-inside: avoid;
+  }
+  main > section div:has(> ul > li > .bg-wash) > ul {
+    gap: 2.5pt;
+  }
+  /* The 4px stack gap between the six category rows. */
+  main > section div:has(> div > ul > li > .bg-wash) {
+    gap: 1.5pt;
+  }
+
+  /* ── Elsewhere ──────────────────────────────────────────────────────────
+     Hidden, and it is the only whole section that is. It reads "more about
+     me, some writing, or the résumé. The quickest way to reach me is
+     email", followed by four profile links. Every one of those is either a
+     link to a page that isn't in the reader's hands, or a contact detail
+     that the letterhead at the top of the sheet has already given them in
+     full. A cross-reference to the résumé, printed inside the résumé, is the
+     tell that this section is a navigation aid rather than content. */
+  /* "Last shipped yesterday." goes for the same reason the status line above
+     it does, and more sharply: it is a relative date. On screen it is
+     recomputed against the reader's own clock every render (see
+     LastShippedLine.tsx, which goes to some trouble to make that true); on
+     paper it freezes at whatever it said the moment ⌘P was pressed, and is
+     wrong by tomorrow. The `<time>` element is the handle because it is the
+     thing that makes the claim: anything on this page that has to state a
+     relative date is, by construction, something paper cannot carry. */
+  main p:has(> time) {
+    display: none;
+  }
+  html:has(.print-identity[data-index]) main > section:last-of-type {
+    display: none;
+  }
+
+  /* ── Links ──────────────────────────────────────────────────────────────
+     Underlines go: a printed link is not clickable, so the rule is marking
+     nothing, and eleven of them down a page of otherwise clean text read as
+     corrections. The text stays black: on paper, ink is the only channel
+     there is, and spending it on "this was blue on screen" tells the reader
+     something they cannot use.
+
+     URL expansion is deliberately down to one rule and one match. The
+     general form (`a[href^="http"]::after`) applied everywhere on this page
+     would print eighteen addresses: nine work rows, two employers, four
+     profiles, the GitHub link, the résumé. That is the soup: a page where
+     every second line is a URL nobody will type is strictly worse than a
+     page with none, because it hides the two that matter.
+
+     So it is scoped to prose paragraphs only: an inline link inside a
+     sentence is the one case where the destination is genuinely invisible on
+     paper *and* the reader has been given a reason to want it. On the index
+     that is exactly one link, Instatus, in the second paragraph. The row
+     links are excluded because a row's destination is a case study on this
+     same site, and the letterhead already says where the site is; the
+     letterhead's own addresses are excluded because their text is already
+     the URL. */
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+  main > section > div > p a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 8pt;
+    color: hsl(var(--foreground-faint));
+    word-break: break-all;
+  }
+
+  /* Focus rings are a keyboard affordance; there is no keyboard here. They
+     would only ever appear on the element that happened to be focused when
+     ⌘P was pressed, i.e. at random. */
+  *:focus,
+  *:focus-visible {
+    outline: none;
+  }
+
+  /* Nothing animates on paper. Transitions and animations mid-flight when
+     the print snapshot is taken would freeze at whatever frame they were on:
+     a half-faded label, a pill between two positions. */
+  *,
+  *::before,
+  *::after {
+    transition: none;
+    animation: none;
+    scroll-behavior: auto;
+  }
+
+  /* ── Case studies ───────────────────────────────────────────────────────
+     Secondary to the index, and note they do not sit in a `<main>` at all,
+     work/[project] renders an `<article>`, which is why none of the rules
+     above touch them. They must still not print broken.
+
+     The sheet's own canvas goes white with the surfaces above. What is left
+     is the image scrollers: horizontal snap tracks that, printed, show one
+     tile and a hard clip where the rest of the row was. A clipped image is
+     worse than no image, so the track releases: it wraps, and every image
+     is capped so a hero can't take a page to itself. The floating side rail
+     (`min-[1440px]` sticky nav) is chrome and goes the way the navbar did. */
+  article .overflow-x-auto,
+  article .snap-x {
+    overflow: visible;
+    flex-wrap: wrap;
+  }
+  article .sticky {
+    position: static;
+  }
+  /* The row that opens a case study: "‹ Work" on the left, the prev/next
+     pager on the right. Both are ways out of the document, and the printed
+     copy is the whole document. Found by the link that names the index
+     rather than by position, so it survives the header being rearranged. */
+  article header div:has(> a[href="/#work"]) {
+    display: none;
+  }
+  /* The wavy teal rule under an inline case-study link is the one saturated
+   colour in the system, and on screen it is doing real work: it marks a
+     link without tinting the sentence. Printed it is a coloured squiggle
+     under text that cannot be clicked, and on a mono printer it is a
+     squiggle in grey. The link text on these pages is already the
+     destination ("instatus.com"), so nothing is lost by dropping it. */
+  .case-link {
+    text-decoration: none;
+    color: inherit;
+  }
+  img {
+    max-width: 100%;
+    max-height: 90mm;
+    break-inside: avoid;
+  }
+  figure,
+  blockquote,
+  article h2,
+  article h3 {
+    break-inside: avoid;
   }
 }
