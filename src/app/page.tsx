@@ -1,287 +1,427 @@
+import type { Metadata } from "next";
+import { Suspense } from "react";
+
 import Link from "next/link";
-import Image, { StaticImageData } from "next/image";
-import { Inbox, Download, ArrowRight, ExternalLink } from "lucide-react";
 
-import unThumbnail from "../../public/un-thumbnail.png";
-import ladsThumbnail from "../../public/lads-thumbnail.png";
-import loomThumbnail from "../../public/loom-thumbnail.png";
-import instatusIcon from "../../public/instatus.svg";
-import dellIcon from "../../public/dell.svg";
+import {
+  GitHubContributions,
+  GitHubContributionsFallback,
+} from "@/components/contributions/GitHubContributions";
+import { LastShipped } from "@/components/contributions/LastShipped";
+import { getContributions } from "@/lib/contributions";
+import { differenceInCalendarDays, parseISO } from "date-fns";
+import { now, NOW_MAX_AGE_DAYS } from "@/data/now";
+import { Row } from "@/components/index/Row";
+import { WorkRows, type WorkItem } from "@/components/index/WorkRows";
+import { allProjects, type ProjectKeys } from "@/app/work/[project]/projects";
+import { CopyEmail } from "@/components/contact/CopyEmail";
+import { DownloadResume } from "@/components/resume/DownloadResume";
+import { Stack } from "@/components/stack/Stack";
+import { contacts } from "@/data/contact";
 
-import me from "../../public/me.png";
-import museum from "../../public/museum.png";
-import skatePark from "../../public/skate.png";
-import sushi from "../../public/sushi.png";
+/* The canonical lives here rather than in the root layout, and that is the
+   whole point: metadata merges shallowly from the root down, so a canonical
+   declared once in the layout is inherited *verbatim* by every page that
+   doesn't override it, and /about and /blog each spent their life telling
+   Google they were a duplicate of this page. Declared per-route, it can
+   only ever be right. Everything else the index needs (title, description,
+   openGraph, twitter) is already correct in the layout default, and
+   restating it here would only create a second copy to keep in sync. */
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
+
+/* The index is a single column of text in a hierarchy: no thumbnails, no
+   logo grid, no photo strip. Depth lives one click down, in the case
+   studies. The one graphic is the 20px mark at the head of each row, which
+   is a scanning aid rather than decoration; see the note in
+   components/logo/Logo.tsx and docs/north-stars.md.
+
+   The Work list has one qualification to that, added deliberately: hovering a
+   row floats a preview of its case study. It stays inside the rule because
+   none of it is in the layout. The page still loads and prints as a column
+   of text, and the image is summoned by a pointer resting on one row rather
+   than offered to everyone scanning past. The argument is in full in
+   components/index/WorkRows.tsx. */
+
+const GITHUB_USERNAME = "sadekomar";
 
 export default function Home() {
   return (
-    <>
-      <div className="mx-4 my-16 flex flex-col items-start justify-center gap-4 md:mx-20">
-        <h2 className="max-w-md text-4xl font-medium text-gray-500">
-          I’m a<span className="font-bold text-gray-950"> Full-Stack Software Engineer</span>, UX/UI
-          Designer, and Founder.
-        </h2>
-        <p className="max-w-md text-xl font-medium text-gray-700">
-          {`I build web apps that aren’t just delightful and intuitive, but also also technically
-          robust.`}
-        </p>
-        <div className="flex gap-2">
-          <a
-            className="gap flex h-10 items-center gap-2 rounded-3xl border-2 border-solid border-gray-700 px-4 font-semibold transition-colors hover:bg-gray-700 hover:text-white"
-            href="./resume.pdf"
-            download={"resume-omar-sadek.pdf"}
-          >
-            <Download height={16} width={16} />
-            Download Resume
-          </a>
-          <a
-            href="mailto:sadekm.omar@gmail.com"
-            className="flex h-10 w-fit items-center gap-2 rounded-3xl bg-[#E4E4E4] px-4 font-semibold transition-colors hover:bg-gray-300"
-          >
-            <Inbox height={16} width={16} />
-            Contact
-          </a>
-        </div>
-      </div>
-
+    /* text-body on the column so `measure` (65ch) resolves against 17px
+       type rather than the 16px root, so the column is as wide as 65
+       characters of the text actually set in it. */
+    <main className="max-w-measure-gutter text-body mx-auto w-full px-6 pt-16 pb-24 md:pt-24">
+      <Intro />
+      {/* Experience before Work: two rows of employment are the fastest
+          answer to "who is this", and the nine-row Work list reads as the
+          evidence for them rather than as a wall to get past first. */}
       <Experience />
       <Work />
-
-      <TechStack />
-      <div className="mx-4 mb-10 grid gap-10 md:mx-20 md:grid-cols-[3fr_1fr]">
-        <div className="flex gap-3 md:flex">
-          <div>
-            <Image
-              src={museum}
-              alt="Museum"
-              className="h-full grayscale filter transition-all duration-500 hover:filter-none"
-            />
-          </div>
-          <div className="grid gap-3">
-            <Image
-              className="h-auto grayscale filter transition-all duration-500 hover:filter-none"
-              src={me}
-              alt="Omar Sadek"
-            />
-            <Image
-              className="h-auto grayscale filter transition-all duration-500 hover:filter-none"
-              src={sushi}
-              alt="Sushi"
-            />
-          </div>
-          <div>
-            <Image
-              src={skatePark}
-              alt="Skate Park"
-              className="h-full grayscale filter transition-all duration-500 hover:filter-none"
-            />
-          </div>
-        </div>
-        <div>
-          <h2 className="mb-4 text-3xl font-bold underline-offset-4">About</h2>
-          <p className="mb-4 max-w-[600px] font-medium leading-6 tracking-[-0.02em]">
-            When I’m not working, I’m at the gym 💪, trying out new coffeeshops ☕, or playing the
-            violin 🎻.
-          </p>
-          <Link
-            href={"/about"}
-            className="flex h-10 w-fit items-center gap-2 rounded-3xl bg-gray-200 px-4 font-semibold"
-          >
-            See About
-            <ArrowRight height={15} width={15} />
-          </Link>
-        </div>
-      </div>
-    </>
-  );
-}
-function Experience() {
-  return (
-    <>
-      <h2 className="mx-4 mb-4 text-3xl font-bold underline-offset-4 md:mx-20">Experience</h2>
-      <div className="mb-14 flex flex-col items-center justify-center bg-[#F2F2F2] py-16">
-        <div className="mx-4 grid gap-2">
-          <a
-            href="https://instatus.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-10 rounded-3xl border border-gray-300 bg-white px-10 py-5 shadow-[81px_49px_38px_rgba(0,0,0,0.01),_46px_28px_32px_rgba(0,0,0,0.02),_20px_12px_24px_rgba(0,0,0,0.04),_5px_3px_13px_rgba(0,0,0,0.04)] transition-transform duration-300 hover:scale-[0.98] hover:border-gray-500"
-          >
-            <Image src={instatusIcon} alt="Instatus Icon" />
-            <div className="grid gap-2">
-              <h3 className="font-bold">Instatus</h3>
-              <div>
-                <div className="font-medium">Full-Stack Software Engineer</div>
-                <div className="font-medium">Dec 2024 - Present</div>
-              </div>
-            </div>
-          </a>
-          <a
-            href="https://dell.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-10 rounded-3xl border border-gray-300 bg-white px-10 py-5 shadow-[81px_49px_38px_rgba(0,0,0,0.01),_46px_28px_32px_rgba(0,0,0,0.02),_20px_12px_24px_rgba(0,0,0,0.04),_5px_3px_13px_rgba(0,0,0,0.04)] transition-transform duration-300 hover:scale-[0.98] hover:border-gray-500"
-          >
-            <Image src={dellIcon} alt="Dell Icon" />
-            <div className="grid gap-2">
-              <h3 className="font-bold">Dell Technologies</h3>
-              <div>
-                <div className="font-medium">SA Internship</div>
-                <div className="font-medium">Aug 2022 - Sep 2022</div>
-              </div>
-            </div>
-          </a>
-        </div>
-      </div>
-    </>
+      <Code />
+      {/* Stack sits after the evidence, not before it. It's the one section
+          written for scanning rather than reading, and putting a table of
+          tool names above the work would answer "what has he used" before
+          "what has he built", which is the wrong order for everyone except
+          a keyword filter. Low on the page it's still trivially findable by
+          the people who came looking for exactly that. */}
+      <Section title="Stack">
+        <Stack />
+      </Section>
+      <Elsewhere />
+    </main>
   );
 }
 
-function TechStack() {
+/* The graph goes after Experience: it's evidence for the two sections above
+   it, not a headline of its own. The promise is deliberately not awaited
+   here. Passing it down and resolving it inside the client component keeps
+   the rest of the index out of the fetch's way. */
+function Code() {
+  const contributions = getContributions(GITHUB_USERNAME);
+
   return (
-    <>
-      <h2 className="mx-4 mb-4 text-3xl font-bold underline-offset-4 md:mx-20">Tech Stack</h2>
-      <div className="mb-10 bg-[#F2F2F2] py-14">
-        <div className="mx-4 grid max-w-[416px] grid-cols-2 gap-2 sm:mx-auto">
-          <a
-            href="https://www.python.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="col-span-2 flex h-[68px] items-center justify-between gap-10 rounded-[16px] bg-white p-4 font-semibold shadow-[113px_72px_53px_rgba(97,97,97,0.01),_63px_40px_45px_rgba(97,97,97,0.04),_28px_18px_33px_rgba(97,97,97,0.06),_7px_4px_18px_rgba(97,97,97,0.07)] transition-all duration-300 hover:border-2 hover:border-solid hover:border-gray-300"
-          >
-            Python
-            <ExternalLink height={15} width={15} />
-          </a>
-          <a
-            href="https://www.w3schools.com/sql/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex h-[68px] items-center justify-between gap-10 rounded-[16px] bg-white p-4 font-semibold shadow-[113px_72px_53px_rgba(97,97,97,0.01),_63px_40px_45px_rgba(97,97,97,0.04),_28px_18px_33px_rgba(97,97,97,0.06),_7px_4px_18px_rgba(97,97,97,0.07)] transition-all duration-300 hover:border-2 hover:border-solid hover:border-gray-300"
-          >
-            SQL
-            <ExternalLink height={15} width={15} />
-          </a>
-          <a
-            href="https://flask.palletsprojects.com/en/2.2.x/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex h-[68px] items-center justify-between gap-10 rounded-[16px] bg-white p-4 font-semibold shadow-[113px_72px_53px_rgba(97,97,97,0.01),_63px_40px_45px_rgba(97,97,97,0.04),_28px_18px_33px_rgba(97,97,97,0.06),_7px_4px_18px_rgba(97,97,97,0.07)] transition-all duration-300 hover:border-2 hover:border-solid hover:border-gray-300"
-          >
-            Flask
-            <ExternalLink height={15} width={15} />
-          </a>
-          <a
-            href="https://www.figma.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex h-[68px] items-center justify-between gap-10 rounded-[16px] bg-white p-4 font-semibold shadow-[113px_72px_53px_rgba(97,97,97,0.01),_63px_40px_45px_rgba(97,97,97,0.04),_28px_18px_33px_rgba(97,97,97,0.06),_7px_4px_18px_rgba(97,97,97,0.07)] transition-all duration-300 hover:border-2 hover:border-solid hover:border-gray-300"
-          >
-            Figma
-            <ExternalLink height={15} width={15} />
-          </a>
-          <a
-            href="https://nextjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex h-[68px] items-center justify-between gap-10 rounded-[16px] bg-white p-4 font-semibold shadow-[113px_72px_53px_rgba(97,97,97,0.01),_63px_40px_45px_rgba(97,97,97,0.04),_28px_18px_33px_rgba(97,97,97,0.06),_7px_4px_18px_rgba(97,97,97,0.07)] transition-all duration-300 hover:border-2 hover:border-solid hover:border-gray-300"
-          >
-            Next.js
-            <ExternalLink height={15} width={15} />
-          </a>
-          <a
-            href="https://www.typescriptlang.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex h-[68px] items-center justify-between gap-10 rounded-[16px] bg-white p-4 font-semibold shadow-[113px_72px_53px_rgba(97,97,97,0.01),_63px_40px_45px_rgba(97,97,97,0.04),_28px_18px_33px_rgba(97,97,97,0.06),_7px_4px_18px_rgba(97,97,97,0.07)] transition-all duration-300 hover:border-2 hover:border-solid hover:border-gray-300"
-          >
-            TypeScript
-            <ExternalLink height={15} width={15} />
-          </a>
-          <a
-            href="https://tailwindcss.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex h-[68px] items-center justify-between gap-10 rounded-[16px] bg-white p-4 font-semibold shadow-[113px_72px_53px_rgba(97,97,97,0.01),_63px_40px_45px_rgba(97,97,97,0.04),_28px_18px_33px_rgba(97,97,97,0.06),_7px_4px_18px_rgba(97,97,97,0.07)] transition-all duration-300 hover:border-2 hover:border-solid hover:border-gray-300"
-          >
-            TailwindCSS
-            <ExternalLink height={15} width={15} />
-          </a>
-          <a
-            href="https://ui.shadcn.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="col-span-2 flex h-[68px] items-center justify-between gap-10 rounded-[16px] bg-white p-4 font-semibold shadow-[113px_72px_53px_rgba(97,97,97,0.01),_63px_40px_45px_rgba(97,97,97,0.04),_28px_18px_33px_rgba(97,97,97,0.06),_7px_4px_18px_rgba(97,97,97,0.07)] transition-all duration-300 hover:border-2 hover:border-solid hover:border-gray-300"
-          >
-            Shadcn UI
-            <ExternalLink height={15} width={15} />
-          </a>
-        </div>
+    <Section title="Code">
+      <Suspense fallback={<GitHubContributionsFallback />}>
+        <GitHubContributions
+          contributions={contributions}
+          githubProfileUrl={`https://github.com/${GITHUB_USERNAME}`}
+        />
+      </Suspense>
+      {/* The same promise, a second consumer, no second request. The graph
+          says how much of the year had activity in it, this says whether one
+          of those days was today. Together they are a year and a heartbeat;
+          the graph alone is a year, and a year read at a glance is history.
+
+          Its own boundary rather than sharing the graph's: two suspending
+          reads of one promise under one boundary would hold the whole
+          section back on the slower of them, and this one has no work to do
+          beyond the fetch. The fallback is an empty 20px line, exactly the
+          height this renders at, so nothing moves when it lands, and nothing
+          in it says "wait". A spinner would be claiming the reader should
+          care about a sentence they haven't been shown yet. */}
+      <div className="mt-2">
+        <Suspense fallback={<div className="h-[20px]" />}>
+          <LastShipped contributions={contributions} />
+        </Suspense>
       </div>
-    </>
+    </Section>
   );
 }
+
+function Intro() {
+  return (
+    <section className="mb-16">
+      {/* 500, not 600: at 24px Inter's semibold reads as a shout. Weight
+          compensates for size: the larger the type, the less of it is
+          needed to establish hierarchy. */}
+      <h1 className="text-headline text-foreground mb-6 font-medium">Hey, I’m Omar.</h1>
+      {/* The thesis first, the employer second. This ran the other way round
+          for a long time and the order was the whole problem: the opening
+          line was "full-stack engineer at Instatus", which is a résumé
+          header: true, forgettable, and near-identical to a few hundred
+          thousand other people's. The sentence about design and engineering
+          not being separate jobs is the one line here that only I would
+          write, and it was sitting in paragraph two.
+
+          Glenn opens with "Caw!" and the principle is the same, without
+          needing the volume: whatever establishes the person goes before
+          whatever establishes the credential, because the credential is the
+          part the reader can already infer from the rest of the page.
+
+          Three short paragraphs rather than two long ones. The last is one
+          line on its own, which is what makes it read as an aside instead of
+          as more argument. */}
+      <div className="text-body text-foreground-muted space-y-4">
+        <p>
+          I like the part of software where design and engineering stop being separate jobs: the
+          interface, the data model underneath it, and the distance between the two.
+        </p>
+        <p>
+          Right now that’s <Prose href="https://instatus.com">Instatus</Prose>, where I work across
+          the product and own the chat integrations. Before it, Loom Cairo, a search engine
+          covering 300+ Egyptian fashion brands. At night, TikTok News Network, a satirical
+          broadcast about the Egyptian internet that I founded, host, and built the site for.
+        </p>
+        <p>Away from the screen: the gym, a rotating list of coffeeshops, and the violin.</p>
+      </div>
+      {/* Left-aligned to the text column rather than centred or floated:
+          they're the next thing after the last paragraph, so they sit where
+          the next paragraph would.
+
+          The two controls on the index, and the only elements above the fold
+          that aren't links in a list. That's the argument for both of them:
+          everything else here is somewhere to go, and these are the two
+          things a visitor might want to *take away*. A text link in the
+          Elsewhere list gives either one the same weight as a Twitter handle.
+
+          `flex-wrap` and not a grid: at 320px the pair breaks to two rows and
+          each keeps its own intrinsic width, which is what lets both labels
+          morph without the other one moving. */}
+      <div className="mt-6 flex flex-wrap items-center gap-2">
+        <DownloadResume />
+        <CopyEmail />
+      </div>
+      <Now />
+    </section>
+  );
+}
+
+/* The freshest thing on the page, and one sentence of it.
+
+   It closes the intro rather than joining it. Sitting above the résumé
+   button it would have become a fourth paragraph (same size, same colour,
+   same colon-list shape as "Away from the screen:") and read as more bio.
+   Below the button, a step smaller and a step greyer, it reads as what it
+   is: a status line under a block that is otherwise permanent. The bio is
+   true for years; this is true for weeks, and the type says so.
+
+   No relative time and no `<time>`: the sentence never states its own age,
+   so there is nothing here for a clock to make wrong and nothing to
+   reconcile after hydration. It is either current enough to render or it is
+   not, and that is decided on the server. */
+function Now() {
+  if (differenceInCalendarDays(new Date(), parseISO(now.updated)) > NOW_MAX_AGE_DAYS) {
+    return null;
+  }
+
+  return <p className="text-body-sm text-foreground-subtle mt-8">{now.text}</p>;
+}
+
+/* The list is data rather than JSX children because the hover preview needs
+   each row as a value it can hold and anchor a panel to, not as an element
+   already committed to the tree. `preview` and `role` are read off the case
+   study itself (see below) so the index can't drift from the page it points
+   at.
+
+   ── Why it is grouped ────────────────────────────────────────────────────
+   These nine ran as one flat column until now, in exactly this order, and
+   the order was doing all of the work: a reader was expected to infer from
+   position alone that Instatus is a job, that Wholana is mine, and that
+   Little Lads was a client who paid an invoice. Nobody infers that. What a
+   flat list of nine actually reads as is nine interchangeable things, three
+   of which say "Argonaut" and therefore look like padding rather than like
+   one deep client relationship.
+
+   The grouping is by *kind of relationship*, which is the axis a reader is
+   already sorting on and the only one that changes how a row should be
+   weighed. Not by technology (a stack is a lookup, and the Stack section
+   below is where lookups go), not by year (the dates are already on the
+   rows), and not by discipline (every one of these was both design and
+   engineering, which is the point of the intro).
+
+   Order is unchanged from the flat version (Product, then Founded, then
+   Client work) so `projectOrder` still describes the same sequence and the
+   prev/next pager on the case studies is unaffected.
+
+   Product has one row in it. That is not a group waiting to be filled out;
+   it is the honest shape of the thing, and a category of one placed first
+   says "this is the current job and it is its own category" more clearly
+   than folding Instatus in with the founded work would. */
+/* `logo` is omitted alongside the rest of the derived fields: the mark is
+   recorded once on the case study itself, and a row restating it here could
+   only ever be a second copy to keep in sync. Title and description stay
+   local. They are the index's own editorial line about the project, written
+   shorter and for scanning, not the case study's. */
+type WorkRow = Omit<WorkItem, "href" | "preview" | "role" | "logo"> & { slug: ProjectKeys };
+
+const workGroups: { title: string; items: WorkRow[] }[] = [
+  {
+    title: "Product",
+    items: [
+      {
+        slug: "instatus",
+        title: "Instatus",
+        description:
+          "Status pages serving 10M+ visits a month for Sketch, Harvard, Siemens, and Yum! Brands. Full stack, plus the Slack and Teams integrations.",
+      },
+    ],
+  },
+  {
+    title: "Founded",
+    items: [
+      {
+        slug: "wholana",
+        title: "Wholana",
+        description:
+          "Research and ideation for short-form creators. The Decoder ingests TikToks, decodes their structure, and turns real data into ideas. Solo build, six releases in two months.",
+      },
+      {
+        slug: "tiktok-news-network",
+        title: "TikTok News Network",
+        description:
+          "A nightly satirical broadcast about the Egyptian internet. Founded it, host it, built the site it runs on. 12M+ views, 52K+ followers, 260 stories.",
+      },
+      {
+        slug: "loom-cairo",
+        title: "Loom Cairo",
+        description:
+          "A search engine for local fashion aggregating 300+ Egyptian brand sites. 40,000+ users, 70+ brand partnerships, AUC Venture Lab.",
+      },
+    ],
+  },
+  {
+    title: "Client work",
+    items: [
+      {
+        slug: "argonaut",
+        title: "Argonaut",
+        description:
+          "Site and custom CMS for an EPC contractor, with the information architecture built around how procurement buyers actually search.",
+      },
+      {
+        slug: "argonaut-crm",
+        title: "Argonaut CRM",
+        description:
+          "The internal quote and RFQ workflows behind multi-million-dollar pipelines: registrations, supplier tracking, and won/lost/pending dashboards.",
+      },
+      {
+        slug: "argotemp",
+        title: "Argotemp",
+        description:
+          "Rental and maintenance operations modelled as reconciled state machines, with monthly invoicing and job extensions as first-class events.",
+      },
+      {
+        slug: "activity-management-platform",
+        title: "UN Activity Management Platform",
+        description: "Coordination for a UN agency across regions, scales, and stakeholders.",
+      },
+      {
+        slug: "little-lads",
+        title: "Little Lads",
+        description:
+          "A rebuild of a boys’ apparel brand’s storefront, aimed at brand equity, engagement, and conversion.",
+      },
+    ],
+  },
+];
 
 function Work() {
+  /* Resolved on the server: `hero` holds StaticImageData, so the blur
+     placeholder and the dimensions are known at build time and the panel
+     paints without a layout shift on first hover. */
+  const groups = workGroups.map((group) => ({
+    title: group.title,
+    items: group.items.map(({ slug, ...row }): WorkItem => ({
+      ...row,
+      href: `/work/${slug}`,
+      logo: allProjects[slug].mark,
+      preview: allProjects[slug].hero?.images[0]?.src,
+      role: allProjects[slug].role,
+      /* Year ranges rather than the month precision Experience carries: a
+         job has a start date, a project has a span. Absent where the case
+         study has no period yet, so the column is ragged rather than
+         invented. */
+      meta: allProjects[slug].period,
+    })),
+  }));
+
   return (
-    <>
-      <h2 className="mx-4 mb-4 text-3xl font-bold underline-offset-4 md:mx-20">Work</h2>
-      <div className="mx-4 mb-10 grid gap-4 md:mx-20">
-        <WorkProject
-          href="/work/loom-cairo"
-          imgSrc={loomThumbnail}
-          imgAlt="Loom Cairo Preview"
-          title="Loom Cairo"
-          description="Loom is a search engine for local fashion. It collects data from over 300 websites and aggregates them all into a single platform for ease of use. It makes local brands much more accessible for users."
-          priority={true}
-        />
-        <WorkProject
-          href="/work/activity-management-platform"
-          imgSrc={unThumbnail}
-          imgAlt="UN Activity Management Platform"
-          title="UN Activity Management Platform"
-          description="A platform created to help a UN Agency manage and coordinate activities across different regions, varying scales, and various stakeholders."
-        />
-        <WorkProject
-          href="/work/little-lads"
-          imgSrc={ladsThumbnail}
-          imgAlt="Little Lads Preview"
-          title="Little Lads"
-          description="Little Lads is a growing fashion brand focused on boys’ apparel. I was tasked with revitalizing their website to improve brand equity, increase engagement and boost conversions."
-        />
-      </div>
-    </>
+    <Section title="Work" id="work">
+      <WorkRows groups={groups} />
+    </Section>
   );
 }
 
-function WorkProject({
-  href,
-  imgSrc,
-  imgAlt,
+function Experience() {
+  return (
+    <Section title="Experience">
+      <Row
+        href="https://instatus.com"
+        external
+        title="Instatus"
+        logo="instatus"
+        meta="Dec 2024 – Present"
+        description="Full-stack software engineer."
+      />
+      <Row
+        href="https://dell.com"
+        external
+        title="Dell Technologies"
+        logo="dell"
+        meta="Aug 2022 – Sep 2022"
+        description="Solutions architecture internship."
+      />
+    </Section>
+  );
+}
+
+function Elsewhere() {
+  return (
+    <Section title="Elsewhere">
+      <p className="text-body-sm text-foreground-muted px-3 pb-3">
+        More <Prose href="/about">about me</Prose>, some <Prose href="/blog">writing</Prose>, or the{" "}
+        <Prose href="/resume.pdf" download="resume-omar-sadek.pdf">
+          résumé
+        </Prose>
+        . The quickest way to reach me is <Prose href="mailto:sadekm.omar@gmail.com">email</Prose>.
+      </p>
+      <ul className="text-body-sm flex flex-wrap gap-x-5 gap-y-2 px-3">
+        {contacts.map((contact) => (
+          <li key={contact.url}>
+            <a
+              href={contact.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-foreground-subtle decoration-foreground-ghost hover:text-foreground hover:decoration-foreground-subtle focus-visible:ring-ring/20 rounded-sm underline underline-offset-4 transition-colors duration-150 focus-visible:ring-2 focus-visible:outline-none"
+            >
+              {contact.name}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </Section>
+  );
+}
+
+function Section({
   title,
-  description,
-  priority = false,
+  children,
+  id,
 }: {
-  href: string;
-  imgSrc: StaticImageData;
-  imgAlt: string;
   title: string;
-  description: string;
-  priority?: boolean;
+  children: React.ReactNode;
+  id?: string;
 }) {
   return (
-    <div className="mb-10 grid items-center gap-2 md:grid-cols-2 md:gap-10">
-      <Image src={imgSrc} alt={imgAlt} priority={priority} />
-      <div className="mx-auto max-w-sm">
-        <h3 className="mb-2 text-xl font-bold underline-offset-4">{title}</h3>
-        <p className="mb-6 font-medium leading-6 tracking-[-0.02em]">{description}</p>
-        <Link
-          href={href}
-          className="flex h-10 w-fit items-center justify-center gap-2 rounded-3xl bg-gray-200 px-4 text-base font-semibold text-black transition-all duration-300 hover:border-2 hover:border-solid hover:border-gray-300 hover:bg-gray-300"
-        >
-          <ArrowRight height={15} width={15} />
-          View Case Study
-        </Link>
-      </div>
-    </div>
+    <section id={id} className="mb-14 scroll-mt-24">
+      {/* Inverse of the h1: 13px needs 500 to hold its own against the
+          body copy beneath it, where 24px did not. */}
+      <h2 className="text-meta text-foreground-faint mb-2 px-3 font-medium">{title}</h2>
+      <div className="-mx-3">{children}</div>
+    </section>
+  );
+}
+
+function Prose({
+  href,
+  children,
+  download,
+}: {
+  href: string;
+  children: React.ReactNode;
+  download?: string;
+}) {
+  const className =
+    "rounded-sm text-foreground underline decoration-foreground-ghost underline-offset-[3px] transition-colors duration-150 hover:decoration-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20";
+
+  if (href.startsWith("/") && !download) {
+    return (
+      <Link href={href} className={className}>
+        {children}
+      </Link>
+    );
+  }
+
+  return (
+    <a
+      href={href}
+      download={download}
+      target={href.startsWith("http") ? "_blank" : undefined}
+      rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
+      className={className}
+    >
+      {children}
+    </a>
   );
 }
