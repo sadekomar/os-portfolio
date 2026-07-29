@@ -1,8 +1,11 @@
 /* Source of truth for /talks. The page and the sitemap both read it, so a
    talk can't be added to one and forgotten in the other.
 
-   Newest first. That's the only ordering rule: a speaking list is read as
-   "what has he been doing lately", not as a chronology to follow forwards.
+   Ordered by hand, strongest first, and not by date. A speaking list is
+   read top-down and abandoned partway, so the entry with the best recording
+   and the most to say goes first regardless of when it happened. The array
+   order *is* the page order; there is no sort anywhere downstream, so
+   moving an entry here is the whole edit.
 
    ── Filling in `video` ───────────────────────────────────────────────────
    `youtubeId` is the 11-character id in the watch URL, and nothing else:
@@ -91,42 +94,6 @@ export type Talk = {
 
 export const talks: Talk[] = [
   {
-    slug: "creative-industry-summit",
-    /* Title taken off the stage backdrop in the clip rather than off the
-       upload, which is called "Building In The Data Desert". That's the cut
-       of it, not the name of the session. */
-    title: "The MENA Data Desert",
-    event: "Creative Industry Summit",
-    role: "Moderator",
-    date: "8 June 2026",
-    location: "Cairo, Egypt",
-    video: { youtubeId: "uAv6y67whGs", width: 576, height: 1024, poster: "maxresdefault" },
-    description: [
-      "A panel on building brands in a region that doesn’t hand you the numbers: no reliable market data, no benchmarks worth trusting, and decisions that have to get made anyway. I moderated.",
-      /* TODO: replace this line with the actual through-line. The 31-second
-         clip is an outdoor stage and a handful of panellists, and it establishes
-         that the session happened and what it was called, not what was
-         argued in it. Who was on it, and what you were steering them
-         towards, is the part only you have. */
-      "TODO: who was on the panel, and where you were steering it.",
-    ],
-    link: { label: "Creative Industry Summit", href: "https://creativeindmena.com" },
-  },
-  {
-    slug: "tnn-live-e7kky",
-    title: "TNN Live",
-    event: "E7kky",
-    role: "Host",
-    date: "1 May 2026",
-    location: "Cairo, Egypt",
-    video: { youtubeId: "tZ6m2oIo8po", width: 1080, height: 1920, poster: "maxresdefault" },
-    description: [
-      "TNN’s first live event, hosted by E7kky: an outdoor stage, an audience, and the creators people scroll past on their For You page standing in front of them. I hosted it.",
-      "The recording is TNN’s own coverage of the night, cut in the show’s nightly format (correspondent lower-thirds, headline slugs, the ticker) so it doubles as a demonstration of the thing the event was celebrating. Segments run through Amina Ayoub on founder honesty, Aseel Bahjat’s 981K-view normal day, and Mazoonit, a game built to push women’s participation in investing to 50%.",
-    ],
-    link: { label: "TikTok News Network", href: "https://tiktoknewsnetwork.com" },
-  },
-  {
     slug: "loom-cairo-auc-venture-lab",
     title: "Loom Cairo investor pitch",
     event: "AUC Venture Lab",
@@ -166,5 +133,41 @@ export const talks: Talk[] = [
       "The closing presentation of Dell’s Summer Academy, for a team project called Gnosis, after the Greek for knowledge through observation. The pitch starts from Ebbinghaus: high-school students forget something like 95% of what they were taught, so the resources spent teaching them are mostly spent twice. In Egypt that sits on top of a second split, where the education that works is priced out of reach and the education people can afford doesn’t.",
       "The part worth keeping is that the team ran design thinking at it and landed somewhere other than where they started. The obvious culprits (disengaged students, disengaged teachers, underfunding) didn’t survive contact with the research. What was left was pedagogy: the discipline of how information is conveyed, which most teachers are never taught and many can’t name. Gnosis was the response, built around a lecture engine that walks an educator through designing a lecture against pedagogical principles rather than leaving them to reinvent it.",
     ],
+  },
+  {
+    slug: "creative-industry-summit",
+    /* Title taken off the stage backdrop in the clip rather than off the
+       upload, which is called "Building In The Data Desert". That's the cut
+       of it, not the name of the session. */
+    title: "The MENA Data Desert",
+    event: "Creative Industry Summit",
+    role: "Moderator",
+    date: "8 June 2026",
+    location: "Cairo, Egypt",
+    video: { youtubeId: "uAv6y67whGs", width: 576, height: 1024, poster: "maxresdefault" },
+    description: [
+      "A panel on building brands in a region that doesn’t hand you the numbers: no reliable market data, no benchmarks worth trusting, and decisions that have to get made anyway. I moderated.",
+      /* TODO: replace this line with the actual through-line. The 31-second
+         clip is an outdoor stage and a handful of panellists, and it establishes
+         that the session happened and what it was called, not what was
+         argued in it. Who was on it, and what you were steering them
+         towards, is the part only you have. */
+      "TODO: who was on the panel, and where you were steering it.",
+    ],
+    link: { label: "Creative Industry Summit", href: "https://creativeindmena.com" },
+  },
+  {
+    slug: "tnn-live-e7kky",
+    title: "TNN Live",
+    event: "E7kky",
+    role: "Host",
+    date: "1 May 2026",
+    location: "Cairo, Egypt",
+    video: { youtubeId: "tZ6m2oIo8po", width: 1080, height: 1920, poster: "maxresdefault" },
+    description: [
+      "TNN’s first live event, hosted by E7kky: an outdoor stage, an audience, and the creators people scroll past on their For You page standing in front of them. I hosted it.",
+      "The recording is TNN’s own coverage of the night, cut in the show’s nightly format (correspondent lower-thirds, headline slugs, the ticker) so it doubles as a demonstration of the thing the event was celebrating. Segments run through Amina Ayoub on founder honesty, Aseel Bahjat’s 981K-view normal day, and Mazoonit, a game built to push women’s participation in investing to 50%.",
+    ],
+    link: { label: "TikTok News Network", href: "https://tiktoknewsnetwork.com" },
   },
 ];
