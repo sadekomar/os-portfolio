@@ -86,6 +86,9 @@ const artifacts: Record<Artifact, React.ComponentType> = {
   "wholana-decoder": dynamic(() =>
     import("@/components/case-study/WholanaDecoder").then((m) => m.WholanaDecoder),
   ),
+  "storefront-carousel": dynamic(() =>
+    import("@/components/case-study/StorefrontCarousel").then((m) => m.StorefrontCarousel),
+  ),
 };
 
 

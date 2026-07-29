@@ -91,8 +91,8 @@ export type Project = {
   }[];
 };
 
-/** The interactive blocks a case study can embed. One so far. */
-export type Artifact = "wholana-decoder";
+/** The interactive blocks a case study can embed. */
+export type Artifact = "wholana-decoder" | "storefront-carousel";
 
 export const allProjects: Record<ProjectKeys, Project> = {
   instatus: {
@@ -488,7 +488,9 @@ export const allProjects: Record<ProjectKeys, Project> = {
         content: [
           "As scale grew, the early SQLite and Flask stack was rebuilt on Postgres with Prisma and Redis caching. The Python scrapers were restructured around SOLID principles, with custom context managers handling DB locks, exception handling, and logging. Search moved to vector embeddings to handle the heterogeneity of Egyptian brand catalogs. TensorFlow drove ML data labeling and image classification to enrich the product catalog.",
           "Auth moved to a session-based model. The product was rebranded as Univyr and the surface was redesigned end to end in Figma.",
+          "The storefront was rebuilt in Next.js. The block below is its product gallery, running here as it shipped.",
         ],
+        artifact: "storefront-carousel",
       },
       {
         title: "Outcome",

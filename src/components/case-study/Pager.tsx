@@ -54,9 +54,14 @@ export function CaseStudyPager({ previous, next }: { previous?: Sibling; next?: 
          press still resolves, but it means matching both cases. */
       const key = event.key.toLowerCase();
 
-      /* ← / → alongside J/K. The horizontal pair is free (nothing on this
-         page scrolls sideways, so unlike ↑/↓ they aren't taken) and they're
-         the keys most people reach for first. */
+      /* ← / → alongside J/K. The horizontal pair is nearly free (unlike ↑/↓,
+         almost nothing on a case study scrolls sideways) and they're the keys
+         most people reach for first.
+
+         Nearly, not entirely: the Loom Cairo gallery is a slider and takes
+         both arrows while it has focus. It stops the event at itself rather
+         than being exempted here, on the same rule as the inputs above, so
+         this listener never sees those presses. See StorefrontCarousel. */
       if ((key === "j" || event.key === "ArrowRight") && next) {
         event.preventDefault();
         router.push(`/work/${next.slug}`);
