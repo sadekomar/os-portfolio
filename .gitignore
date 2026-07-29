@@ -38,3 +38,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# throwaway interpreter for scripts/build-brand-marks.py
+.venv
+
+# browser verification scratch: console logs, page snapshots, screenshots
+.playwright-cli/
+
+# vendored copies of installed agent skills; skills-lock.json is the record
+.claude/skills/
+.agents/skills/
