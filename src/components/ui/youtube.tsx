@@ -167,6 +167,15 @@ export function YouTube({
      is the floor (every video has one) which is why there's no third state
      to fall through to. */
   const [poster, setPoster] = useState(initialPoster);
+
+  /* Whether the player's document has finished loading, which is a different
+     question from whether we mounted it. Between the two there is a second or
+     so of an iframe that exists and paints nothing, and an empty iframe paints
+     black. Keyed to the frame's own `load` and not to the click, because the
+     click knows only that we asked; only `load` knows the player has something
+     to show. Fading on a timer instead would be guessing, and guessing short
+     on a slow connection puts the black frame back. */
+  const [loaded, setLoaded] = useState(false);
   const warmed = useRef(false);
 
   /* Below the state rather than beside `frame`, because it reads the current
@@ -216,72 +225,118 @@ export function YouTube({
          frame. The crop always removes the padding YouTube added, because
          the padding is the only thing outside the source's own ratio. */
       style={{ maxWidth: frame, aspectRatio: `${width} / ${height}` }}
-      className={cn("relative mx-auto w-full overflow-hidden rounded-lg bg-wash", className)}
+      className={cn("bg-wash relative mx-auto w-full overflow-hidden rounded-lg", className)}
     >
-      {playing ? (
-        <iframe
-          src={src}
-          title={title}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowFullScreen
-          className="absolute inset-0 h-full w-full"
-        />
-      ) : (
-        <button
-          type="button"
-          onClick={() => setPlaying(true)}
-          onPointerEnter={warm}
-          onFocus={warm}
-          aria-label={`Play video: ${title}`}
-          className="group absolute inset-0 h-full w-full cursor-pointer focus-visible:ring-2 focus-visible:ring-ring/20 focus-visible:outline-none"
-        >
-          <Image
-            src={`https://i.ytimg.com/vi/${id}/${poster}.jpg`}
-            alt=""
-            fill
-            /* The poster is decoration behind a labelled button. The button
+      {/* The poster layer is never torn down, it is covered. Replacing it with
+          the iframe was the obvious shape and the wrong one: the frame we swap
+          in has nothing in it for the first second, so the visitor's reward for
+          pressing play was the picture they were looking at turning black. Left
+          mounted, it is the thing under the fade, so the still frame holds
+          until the moving one is ready to take over. It costs nothing to keep:
+          the image is already decoded, and once the player is up it is behind
+          an opaque element at the same size and no longer paints. Disabled
+          rather than unmounted so the same DOM node survives (a remount would
+          re-decode and reintroduce the flash we are removing) and so it drops
+          out of the tab order the moment it stops being a control. */}
+      <button
+        type="button"
+        disabled={playing}
+        onClick={() => setPlaying(true)}
+        onPointerEnter={warm}
+        onFocus={warm}
+        aria-label={`Play video: ${title}`}
+        className="group focus-visible:ring-ring/20 absolute inset-0 h-full w-full cursor-pointer focus-visible:ring-2 focus-visible:outline-none disabled:cursor-default"
+      >
+        <Image
+          src={`https://i.ytimg.com/vi/${id}/${poster}.jpg`}
+          alt=""
+          fill
+          /* The poster is decoration behind a labelled button. The button
                already carries the accessible name, so an alt here would read
                the title out twice. */
-            /* Both clauses carry the cover ratio, not just the fixed one:
+          /* Both clauses carry the cover ratio, not just the fixed one:
                below the cap the frame is the viewport, so the file still has
                to be that same multiple of it, hence a vw figure that is
                allowed to exceed 100. (It is legal, and it is the only way to
                say "wider than the box it sits in" in a sizes attribute.)
                Above the cap the frame is fixed and so is the answer. */
-            sizes={`(max-width: ${frame}px) ${Math.round((posterWidth / frame) * 100)}vw, ${posterWidth}px`}
-            priority={priority}
-            /* Cover, not contain, and it earns its keep in three different
+          sizes={`(max-width: ${frame}px) ${Math.round((posterWidth / frame) * 100)}vw, ${posterWidth}px`}
+          priority={priority}
+          /* Cover, not contain, and it earns its keep in three different
                ways: it crops sddefault's 4:3 letterbox back to 16:9, it
                crops maxresdefault's pillarbox back to 9:16 for a vertical
                video, and it is a no-op for a landscape video that got its
                maxres. One rule, three cases, no branching. */
-            className="object-cover"
-            onError={() => setPoster("sddefault")}
-          />
+          className="object-cover"
+          onError={() => setPoster("sddefault")}
+        />
 
-          {/* Sits over the poster, and only on hover: a scrim that's always
-              on would flatten every thumbnail on the page into the same grey.
-              At rest the poster is itself; on hover it steps back so the
-              control reads as the thing you're about to press. */}
-          <span
-            aria-hidden
-            className="absolute inset-0 bg-black/0 transition-colors duration-200 ease-out group-hover:bg-black/10"
-          />
+        {/* Chrome, not content: the scrim and the chip go once the press has
+            landed, so what stays under the player is the bare still frame and
+            not a control offering to start something already started. */}
+        {!playing && (
+          <>
+            {/* Sits over the poster, and only on hover: a scrim that's always
+                on would flatten every thumbnail on the page into the same grey.
+                At rest the poster is itself; on hover it steps back so the
+                control reads as the thing you're about to press. */}
+            <span
+              aria-hidden
+              className="ease-out-quint absolute inset-0 bg-black/0 transition-colors duration-200 group-hover:bg-black/10"
+            />
 
-          <span
-            aria-hidden
-            /* Same chip as the scroller arrows, one size up because this one
-               is the point of the element rather than an affordance at its
-               edge. The triangle is nudged 1px right of centre: an
-               equilateral optical centre sits left of its bounding box, and
-               without the nudge it reads as off-centre inside the circle. */
-            className="absolute top-1/2 left-1/2 flex size-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-foreground/85 text-background transition-transform duration-200 ease-out group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-          >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" className="ml-px">
-              <path d="M6.5 4.2a.8.8 0 0 1 1.22-.68l8.1 5.1a.8.8 0 0 1 0 1.36l-8.1 5.1A.8.8 0 0 1 6.5 14.4V4.2Z" />
-            </svg>
-          </span>
-        </button>
+            <span
+              aria-hidden
+              /* Same chip as the scroller arrows, one size up because this one
+                 is the point of the element rather than an affordance at its
+                 edge. The triangle is nudged 1px right of centre: an
+                 equilateral optical centre sits left of its bounding box, and
+                 without the nudge it reads as off-centre inside the circle.
+
+                 Grows on hover, dips on press. The dip is the half of it that
+                 matters: this control mounts a third-party player, so there is
+                 a beat between the press and anything visibly happening, and
+                 without a press state the first thing the click does is
+                 nothing. 95% for 150ms, faster on the way down than the 200ms
+                 it takes to grow, because a press should feel like it was
+                 already registered and a hover should feel like it is being
+                 considered.
+
+                 Under reduced motion the hover growth is off (unbidden
+                 movement, exactly what the setting asks us to stop) but the
+                 press dip stays: it is not ambient motion, it is the receipt
+                 for something the visitor just did, and it only exists while
+                 their finger is down. That is why there is no
+                 `motion-reduce:transition-none` here any more, it would have
+                 left the dip snapping between two states instead. */
+              className="bg-foreground/85 text-background ease-out-quint absolute top-1/2 left-1/2 flex size-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full transition-transform duration-200 group-hover:scale-105 group-active:scale-95 group-active:duration-150 motion-reduce:group-hover:scale-100"
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" className="ml-px">
+                <path d="M6.5 4.2a.8.8 0 0 1 1.22-.68l8.1 5.1a.8.8 0 0 1 0 1.36l-8.1 5.1A.8.8 0 0 1 6.5 14.4V4.2Z" />
+              </svg>
+            </span>
+          </>
+        )}
+      </button>
+
+      {/* Mounted only by the click, which is the whole point of the facade, and
+          revealed only once it has loaded. Starting at zero and crossing to one
+          over 200ms means the poster is what you see for the dead second, and
+          the cut to video happens when there is video to cut to. It sits above
+          the poster in source order, so once it is opaque it covers it
+          completely and the still frame beneath stops being visible at all. */}
+      {playing && (
+        <iframe
+          src={src}
+          title={title}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+          onLoad={() => setLoaded(true)}
+          className={cn(
+            "ease-out-quint absolute inset-0 h-full w-full transition-opacity duration-200",
+            loaded ? "opacity-100" : "opacity-0",
+          )}
+        />
       )}
     </div>
   );
