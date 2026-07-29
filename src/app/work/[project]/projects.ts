@@ -167,65 +167,164 @@ export const allProjects: Record<ProjectKeys, Project> = {
     mark: "wholana",
     link: "wholana.com",
     intro:
-      "Wholana is a research and ideation platform for short-form video creators. It surfaces high-performing TikToks, decodes their structure, and helps creators generate new ideas grounded in real data. Solo build, pre-launch, with six substantive releases in the first two months.",
+      "Wholana is an AI research workspace for TikTok, built for Egyptian and MENA creators. It ingests the region's creators every night, decodes every high performer into a shared craft vocabulary, and turns that research into scripts. I designed and built all of it solo: the product, the pipeline, the infrastructure it runs on, and the brand.",
     role: "Solo: design and engineering",
     period: "2026 – Present",
     stats: [
-      { value: "2,000", label: "Creators tracked" },
-      { value: "6", label: "Releases in two months" },
+      { value: "28K+", label: "Videos in the corpus" },
+      { value: "900+", label: "Creators swept nightly" },
+      { value: "14", label: "Public releases since March" },
     ],
     technologies: {
       backend: [
         "Node.js",
+        "Express",
         "Postgres",
-        "Supabase",
+        "pgvector",
         "Prisma",
+        "Temporal",
+        "Rocicorp Zero",
+        "Yjs",
+        "Hocuspocus",
         "Better Auth",
-        "Apify",
-        "Gemini",
-        "Cloudflare R2",
         "Polar",
+        "MCP",
+        "Vercel AI SDK",
+        "OpenRouter",
+        "Apify",
+        "Cloudflare R2",
+        "Docker",
+        "Dokploy",
+        "Hetzner",
         "Sentry",
+        "PostHog",
       ],
-      frontend: ["TypeScript", "Next.js", "React", "Figma"],
+      frontend: [
+        "TypeScript",
+        "Next.js",
+        "React",
+        "Tailwind",
+        "Radix UI",
+        "shadcn/ui",
+        "Motion",
+        "TanStack Query",
+        "Tiptap",
+        "Figma",
+      ],
     },
     sections: [
       {
         title: "Context",
         content: [
-          "Wholana helps short-form video creators study what is working on TikTok and ideate from real data instead of vibes. The product surfaces high-performing videos, decodes their structure (hook, beat sheet, logline, stop-scroll, stakes-value), and turns that into research and ideation tools. I designed and built the entire product solo.",
+          "Wholana helps Egyptian and MENA creators study what is working on TikTok and make their own version of it. Every video is read through three axes: Craft (how the video works), Subject (what it is about), and Creator equity (who is behind it). The point is legibility rather than data volume, so the user closes a video page able to say exactly why it hit.",
+          "The corpus is Arabic-first, in Egyptian dialect, which is most of the reason the tooling had to be built rather than bought. I designed and built the whole thing solo: a monorepo of six deployed services around one Postgres, plus the marketing site and the brand.",
         ],
       },
       {
-        title: "The Wholana Decoder",
+        title: "Decoding a video",
         content: [
-          "The Decoder is the technical heart of the product. The pipeline ingests TikTok videos through Apify scrapers, downloads and parses subtitles, runs Gemini-powered AI summarization, and outputs structured artifacts: beat sheets, a category taxonomy, and an outlier score that flags videos overperforming for their context.",
-          "Getting structured output reliably out of an LLM over messy real-world inputs is the hard part. The pipeline is designed so that scraping, parsing, summarization, and scoring fail independently and can be retried in isolation.",
+          "The craft pass is the technical heart of the product. Ingest ends when a video's subtitles are downloaded and stored; everything after that is enrichment. The pass reads the transcript, plus the video's own outlier comments as audience ground truth, and returns a structured decomposition across five axes: hook archetype, narrative structure, stake type, shareability driver, and format. Those five are a closed vocabulary, which is what makes two videos comparable instead of separately described.",
+          "Getting structured output reliably out of a model, over messy real-world Arabic speech, is the hard part. The prompt is primed with the creator's own knowledge subgraph so it knows who the recurring characters are, the pass runs success-only so we are not paying to analyse videos nobody watched, and the whole chain is composed once in a single file because the stage order is load-bearing and I did not want it re-implemented per caller.",
+          "The ranking signal sits underneath all of it: a video's outlier score is its views over its own creator's median, so a large account posting normally never reads as a breakout, and a small account with a real hit does.",
         ],
         artifact: "wholana-decoder",
       },
       {
-        title: "Product surface",
+        title: "The product surface",
         content: [
-          "Designed and shipped the full surface solo: Explore with analytics and server-side filtering, video detail, Lists, a Creators directory with per-creator analytics, Ideas Studio, Settings, Billing, plus an admin Control Room and Newsroom. The API surface was migrated to REST for faster data access where it mattered.",
+          "Explore is the home surface: natural-language search over the corpus, a filter builder across subject, craft, creator and video metrics, sorting by outlier score, and saved filter sets called lenses. Around it sit the swipe file (collections of saved videos with notes), Scripts, creator profiles with a craft signature, the five craft vocabularies as browsable libraries, a personal dashboard that benchmarks the user's own account against their niche, and Your Videos, which grades their posted work and hands them back into research.",
+          "Ask Wholana is the conversational layer over all of it: an in-app agent that searches videos, pulls a video's craft analysis, and can drive the Explore filters on the user's behalf. Behind the product there is an admin Control Room and a Newsroom, both internal.",
         ],
       },
       {
-        title: "Infrastructure and operations",
+        title: "Ingestion as durable workflows",
         content: [
-          "Cloudflare R2 for media behind a dedicated CDN, native TikTok embed playback, Sentry for observability, scheduled pg_dump backups, and cron-staleness alerting. Auth runs on Better Auth with Google OAuth and One-Tap. Subscriptions run on Polar.",
+          "The nightly sweep is a fan-out then fan-in pipeline: scrape and ingest each record in one transaction, fan out per video for comments, subtitles and the enrichment chain, then fan in across the whole corpus for entity resolution, rollups, a freshness watermark, and notifications. The invariant is that a video row visible to a reader already has its images mirrored to R2, so no surface ever needs an is-ready flag.",
+          "All of it runs on Temporal. Workflow code is deterministic and every piece of I/O is an activity, which buys two things that mattered more than they sound: a deploy in the middle of a sweep resumes rather than losing the night, and exactly-one-sweep-at-a-time is enforced by the workflow engine instead of a global boolean that only holds within one process.",
+          "The same machinery runs the paths a user waits on. Onboarding and shared links are multiplexed by batcher workflows that hold a short window so near-simultaneous requests become one scrape run, then process the bundle newest-first, so a new user gets a tailored reveal in minutes while the rest of their backlog fills in behind it.",
+        ],
+      },
+      {
+        title: "Writing our own scraper",
+        content: [
+          "The pipeline started on a paid third-party actor. It now runs mostly on a scraper I wrote, deployed as its own service that knows nothing about Wholana: usernames in over HTTP, generic posts and authors out, no database and no domain types. Comments are the one path still on the paid provider, which the design accounts for rather than hides.",
+          "Both live behind one seam. A Scraper knows how to start a run and how to fetch the binaries it produced, and no module, route or type is allowed to bake a vendor's name into its identifiers, so swapping providers touches the adapter and nothing downstream. Requests go out through a residential proxy, and a canary endpoint watches for the day the upstream's bot cohort changes underneath us.",
+        ],
+      },
+      {
+        title: "Local-first reads",
+        content: [
+          "Explore reads and writes through Rocicorp Zero. The browser holds a replicated subset of the database, queries stay live rather than being re-fetched, and writes apply optimistically on the client before landing authoritatively in a Postgres transaction. Read permissions are resolved in exactly one place, server-side, so a client cannot ask for rows it should not see by rewriting a query.",
+          "The cost is real and worth stating: a schema change becomes a four-step lockstep of migration, replication publication, replica resync and client deploy. I paid for that with a written runbook and a check in the build that fails when the publication drifts from the schema, because the failure mode is a table that silently stops syncing rather than an error anybody sees.",
+        ],
+      },
+      {
+        title: "Real-time collaboration",
+        content: [
+          "Scripts are collaborative: two people in the same draft, with live cursors. That runs on a small standalone Hocuspocus server, Yjs documents over WebSockets, deployed on its own so the collaboration path does not carry the weight of the ingestion backend.",
+          "The constraint I set was that presence must never touch Postgres. Cursors and the workspace facepile ride the Yjs awareness protocol and live only in memory; the only database writes are debounced document snapshots, which is strictly less load than the autosave it replaced. A script's body is deliberately stored twice: the Yjs binary as the rich source of truth, and a flattened text projection that lists, search, the MCP tools and the WhatsApp bot all keep reading unchanged. None of them had to learn what a CRDT is.",
+        ],
+      },
+      {
+        title: "Search over Arabic speech",
+        content: [
+          "Search is hybrid: vector similarity over transcript embeddings combined with full-text search, so a query in plain Egyptian Arabic finds the video even when it shares no keyword with the caption. The embeddings live in Postgres with pgvector, stored as half-precision vectors behind an HNSW index.",
+          "They are also what forced the database move. A gigabyte of embeddings did not fit the managed free tier's storage cap and the index could not be built there at all, so the system of record moved to Postgres I run. Rebuilding that index in a container taught me more about shared memory limits than I wanted to know.",
+        ],
+      },
+      {
+        title: "A knowledge graph per creator",
+        content: [
+          "Alongside the craft pass, a second pass builds a knowledge graph per creator: nodes for the people, places, organisations and moments a creator keeps returning to, and edges that carry the facts connecting them. Facts live on edges, never on nodes, so a claim always has both of its ends.",
+          "It has four verbs and they are the vocabulary the code uses. Match resolves a surface form to an existing node. Mint creates a new one. Dream settles the parked pile of unresolved nodes on its own schedule. Prime feeds a creator's subgraph back in as grounding, which is what makes the craft pass read a video the way someone who watches that creator would.",
+        ],
+      },
+      {
+        title: "Shipping an MCP server",
+        content: [
+          "Wholana exposes its corpus to ChatGPT, Claude and other MCP clients as read tools plus one mutation, over two transports: stdio locally, and streamable HTTP with a bearer token remotely. The user asks a question in their own assistant and it searches the corpus, reads back why a video worked, and saves results into their swipe file.",
+          "It is gated to the paid tiers, and the gate is enforced at both ends: the app mints the token, the backend validates it, and both read the same entitlement predicate from a shared package rather than each keeping a copy. That is written up as an architecture decision record, because two copies of a billing rule is exactly how a customer ends up with access they did not pay for.",
+        ],
+      },
+      {
+        title: "Owning the infrastructure",
+        content: [
+          "The stack started on managed platforms and outgrew them. I moved production onto two Hetzner boxes: Postgres with pgvector, PgBouncer, the sync engine, the ingestion API, the MCP server, Temporal and the app itself, all Docker Swarm services managed through Dokploy, behind a single Traefik ingress with Cloudflare in front. Images are built in CI and pushed to a private registry on the box rather than built on it.",
+          "The cutover happened in one night: a final dump restored, the replica re-replicated, and a scripted DNS flip. The rollback path was written down before the flip rather than improvised after it, which is the only reason a one-person migration of a live system is a reasonable thing to attempt.",
+          "What runs on top of it is the unglamorous half: nightly database backups to R2, a watchdog cron that alerts by email and to Sentry if a night's ingestion never happened, per-pull-request preview environments on their own subdomains, and a habit of diffing stored configuration against what the running services actually have, which is a lesson a six-hour outage taught me rather than a practice I arrived with.",
+        ],
+      },
+      {
+        title: "Workspaces, auth and billing",
+        content: [
+          "Wholana is properly multi-tenant: a personal workspace per user, a switcher, invitations, and seat-based team billing through Polar with three live plans. Collections, lenses and scripts belong to the workspace rather than to a person, so research done by one member compounds for everyone else instead of being trapped in their account.",
+          "Auth runs on Better Auth with Google OAuth and One Tap. The session cookie is scoped across subdomains on purpose: it is what lets the app's session authorise the sync engine on a different host, which is the sort of detail that is invisible when it works and a login loop when it does not.",
+        ],
+      },
+      {
+        title: "The product in WhatsApp",
+        content: [
+          "Users live in WhatsApp, so part of the product does too. Send the bot a TikTok link and it is ingested, decoded, and filed into an inbox collection for triage later. Send a typed idea or a voice note, in Arabic or English, and it comes back as a draft script.",
+          "Notifications ride the same producers as the in-app ones and are dispatched best-effort, so a WhatsApp failure can never take down the pipeline that generated the notification.",
+        ],
+      },
+      {
+        title: "Keeping a solo codebase honest",
+        content: [
+          "Nobody reviews my pull requests, so the review has to be mechanical. The monorepo is split into bounded contexts, each with its own context document and decision records, and a written glossary that code, file names and discussion are all held to. Decisions two contexts share are recorded once at the root instead of twice.",
+          "The rest is gates: dead-code detection, dependency version drift, an enforced module layering, and type coverage held above 98.9% in the app and 99.9% in the backend. New package versions have to age for a week before an install will take them, so a compromised release has time to be caught before it reaches my machine. None of this is impressive on its own. Together it is what lets one person keep moving fast on a system this size without breaking it quietly.",
         ],
       },
       {
         title: "Brand and editorial direction",
         content: [
-          "Designed the marketing site and in-app brand in an editorial, serif-led style. The product is for people who care about craft in writing and pacing, and the surface signals that.",
+          "I designed the marketing site and the in-app brand: confident typography, tabular numbers, calm density, one accent colour doing real work rather than decorating everything. It should read as built in Cairo rather than translated in from San Francisco, and that shows up in the copy and the defaults instead of in tokenistic flags.",
         ],
       },
       {
         title: "Shipping in public",
         content: [
-          "Wholana ships in public. Six substantive releases in the first two months are documented on the public changelog at wholana.com/changelog, which is the single best place to see the work moving.",
+          "Wholana ships in public. Fourteen releases since March 2026 are written up on the changelog at wholana.com/changelog, which is the single best place to watch the work move.",
         ],
       },
     ],

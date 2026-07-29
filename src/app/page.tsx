@@ -244,7 +244,7 @@ const workGroups: { title: string; items: WorkRow[] }[] = [
         slug: "wholana",
         title: "Wholana",
         description:
-          "Research and ideation for short-form creators. The Decoder ingests TikToks, decodes their structure, and turns real data into ideas. Solo build, six releases in two months.",
+          "An AI research workspace for TikTok, built for Egyptian creators. Sweeps 900+ creators nightly and decodes what works into a shared craft vocabulary. Solo build, 14 releases since March.",
       },
       {
         slug: "tiktok-news-network",
