@@ -55,7 +55,30 @@ export type ScrollerImage = { src: StaticImageData; alt?: string };
 
 const GAP = 12;
 
-export function CaseStudyScroller({ images }: { images: ScrollerImage[] }) {
+export function CaseStudyScroller({
+  images,
+  maxTileHeight,
+}: {
+  images: ScrollerImage[];
+  /* A ceiling on the tile height, in px. Omitted everywhere in the case
+     studies, which is the point: their images are landscape screenshots, so
+     `tile width / widest ratio` already lands near 380 and a cap would never
+     bite.
+
+     It exists for /about, whose photos are portrait. Uncapped, the height
+     rule reads the widest member of the set, and a set whose widest member
+     is barely wider than it is tall (1296x1280, ratio 1.01) solves to a
+     1023px tile: one photo filling the viewport, which is a slideshow, not a
+     strip. What a set of photographs wants is the opposite reading, several
+     frames across the page at once with the rest running off the edge.
+
+     Capping the height rather than the width is what gets there without
+     touching anything else the track does. Tiles stay equal in height, each
+     keeps its own proportions, nothing is cropped, and the narrower tiles
+     that fall out of it are exactly the point: more of the collage is on
+     screen, and there is more of it left over. */
+  maxTileHeight?: number;
+}) {
   const trackRef = useRef<HTMLUListElement>(null);
   const [atStart, setAtStart] = useState(true);
   const [atEnd, setAtEnd] = useState(true);
@@ -143,7 +166,13 @@ export function CaseStudyScroller({ images }: { images: ScrollerImage[] }) {
     <div data-case-bleed className="@container relative w-full">
       <ul
         ref={trackRef}
-        style={{ "--tile-h": `calc(min(1036px, 100cqw - 24px) / ${widest})` } as CSSProperties}
+        style={
+          {
+            "--tile-h": maxTileHeight
+              ? `min(calc(min(1036px, 100cqw - 24px) / ${widest}), ${maxTileHeight}px)`
+              : `calc(min(1036px, 100cqw - 24px) / ${widest})`,
+          } as CSSProperties
+        }
         className="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain p-3"
       >
         {images.map((image, i) => (
