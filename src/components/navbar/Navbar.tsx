@@ -1,87 +1,103 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { useEffect, useState } from "react";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Separator } from "@/components/ui/separator";
-import { Menu, X } from "lucide-react";
-
+import { BrandAssetsMenu } from "@/components/brand/BrandAssetsMenu";
+import { CommandHint } from "@/components/command/CommandHint";
 import { menuPages } from "@/data/menuPages";
 
+/* The bar is invisible until you scroll. At the top of the page it's just
+   the wordmark and the links sitting in the same 640px column as the content.
+   Chrome (hairline + blurred backdrop) only arrives once something has
+   scrolled underneath it and the separation is actually needed.
+
+   Two destinations don't earn a hamburger, so the same row serves every
+   breakpoint. See docs/north-stars.md.
+
+   The hover pill is fully round, so it needs more horizontal padding than a
+   rounded rect to look evenly weighted. That padding comes out of the nav's
+   own gutter (10 + 14 = 24px) so the wordmark still sits on the same left
+   edge as the body text below it. */
+
+const linkClass =
+  "rounded-full px-3.5 py-1.5 text-body-sm transition-colors duration-150 ease-out hover:bg-wash focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20";
+
 export function NavBar() {
+  const pathname = usePathname();
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const isHome = pathname === "/";
+
   return (
-    <div className="fixed inset-x-0 top-0 z-10 flex h-16 items-center justify-between border-b-[1px] border-solid border-gray-200 bg-gray-50/90 px-4 py-2 font-medium text-gray-600 backdrop-blur-sm md:px-20">
-      <Link
-        href={"/"}
-        className="rounded-xl px-4 py-2 text-lg font-semibold transition-colors hover:bg-gray-100"
+    <header
+      /* The scrolled state used to add a hairline under the bar. Quiet
+         tonal has no lines, so the separation is carried by the tinted,
+         blurred fill alone: the bar becomes a surface sitting over the
+         content rather than a strip ruled off from it. */
+      className={`sticky top-0 z-50 transition-colors duration-200 ease-out ${
+        scrolled ? "bg-surface/75 backdrop-blur-md" : "bg-transparent"
+      }`}
+    >
+      <nav
+        aria-label="Main"
+        /* text-body here is not for the links (they set their own size);
+           it makes `measure` resolve at the same 17px as the content
+           column, so the wordmark stays aligned with the body text. */
+        className="mx-auto flex h-14 w-full max-w-measure-gutter items-center justify-between px-2.5 text-body md:h-16"
       >
-        Omar Sadek
-      </Link>
-      <DesktopNav />
-      <MobileNav />
-    </div>
-  );
+        {/* The wordmark is also the brand-assets trigger: right-click it and
+            the two marks are there to copy. Wrapping rather than replacing,
+            the link is still a link, and the menu is the only thing the
+            wrapper adds. See brand/BrandAssetsMenu.tsx. */}
+        <BrandAssetsMenu>
+          <Link
+            href="/"
+            aria-current={isHome ? "page" : undefined}
+            className={`${linkClass} font-medium text-foreground`}
+          >
+            Omar Sadek
+          </Link>
+        </BrandAssetsMenu>
 
-  function MobileNav() {
-    const [isOpen, setIsOpen] = useState(false);
+        <ul className="flex items-center gap-0.5">
+          {menuPages
+            .filter((page) => page.slug !== "/")
+            .map((page) => {
+              const active = pathname === page.slug || pathname.startsWith(`${page.slug}/`);
 
-    return (
-      <div className="md:hidden">
-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" className="h-10 w-10 p-0">
-              <Menu className="h-6 w-6" />
-              <span className="sr-only">Toggle menu</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="right" className="w-[240px] sm:w-[300px]">
-            <SheetTitle className="sr-only">Hamburger Menu</SheetTitle>
-            <SheetClose asChild>
-              <Button variant="ghost" className="absolute right-0 top-0 mx-4 my-2 h-10 w-10 p-0">
-                <X className="h-6 w-6" />
-                <span className="sr-only">Close menu</span>
-              </Button>
-            </SheetClose>
-            <nav className="mt-8 flex flex-col">
-              {menuPages.map((page, index) => (
-                <Fragment key={index}>
+              return (
+                <li key={page.slug}>
                   <Link
-                    key={index}
                     href={page.slug}
-                    className="block px-2 py-4 text-lg font-medium text-foreground hover:bg-accent hover:text-accent-foreground"
-                    onClick={() => setIsOpen(false)}
+                    aria-current={active ? "page" : undefined}
+                    className={`${linkClass} ${
+                      active ? "text-foreground" : "text-foreground-subtle hover:text-foreground"
+                    }`}
                   >
                     {page.name}
                   </Link>
-                  <Separator />
-                </Fragment>
-              ))}
-            </nav>
-          </SheetContent>
-        </Sheet>
-      </div>
-    );
-  }
+                </li>
+              );
+            })}
 
-  function DesktopNav() {
-    const pathname = usePathname();
-
-    return (
-      <div className="hidden md:flex">
-        {menuPages.map((page) => (
-          <Link
-            key={page.slug}
-            href={page.slug}
-            className={`rounded-xl px-4 py-2 transition-colors ${pathname === page.slug ? "bg-gray-300" : "hover:bg-gray-100"}`}
-          >
-            {page.name}
-          </Link>
-        ))}
-      </div>
-    );
-  }
+          {/* Last in the row, and the only thing in it that isn't a
+              destination. See command/CommandHint.tsx for why it's a chord
+              rather than a word, and why it steps aside on touch. */}
+          <li>
+            <CommandHint />
+          </li>
+        </ul>
+      </nav>
+    </header>
+  );
 }
