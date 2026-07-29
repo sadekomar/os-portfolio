@@ -92,11 +92,15 @@ import { PRODUCT, type StorefrontImage } from "@/components/case-study/storefron
                               they can't reach is a control they can't judge.
                               The strip takes a mouse drag identically, so
                               it's shown at every width.
-     framed, not full-bleed   Shipped, the gallery was the full width of a
-                              phone. Here it sits in a 340px column on the
-                              site's own tonal surfaces, because a 4:5
-                              photograph at this page's 1036px figure width
-                              would be 1295px tall.
+     a 340px column           Shipped, the gallery was the full width of a
+                              phone. It still runs at roughly phone width
+                              here, centred and with nothing drawn around it,
+                              because a 4:5 photograph at this page's 1036px
+                              figure width would be 1295px tall.
+     the pointer maths        Rewritten against the dots' own centres rather
+                              than the padded strip, which is what makes a
+                              press on the first or last dot select it. See
+                              `indexFromPointer`.
      static imports           `StaticImageData` rather than `string`, which
                               buys the blur placeholder and the intrinsic
                               size. The shipped version read URLs off an API. */
@@ -152,7 +156,14 @@ export function StorefrontCarousel() {
   });
 
   const [selectedIndex, setSelectedIndex] = useState(0);
+  /* The same fact twice, on purpose, because it's read on two different
+     clocks. The ref is for logic: Embla's `select` handler reads it to tell
+     its own news apart from ours, and as state that handler would have to
+     re-subscribe on every press. The state is only for the press styling,
+     which changes exactly twice per gesture, so it costs two renders and
+     keeps the pressed chip out of imperative `setAttribute` calls. */
   const isScrubbingRef = useRef(false);
+  const [scrubbing, setScrubbing] = useState(false);
   const dotsRef = useRef<HTMLDivElement>(null);
 
   const { trigger } = useWebHaptics();
@@ -199,14 +210,41 @@ export function StorefrontCarousel() {
     };
   }, [emblaApi, tick]);
 
-  /* Pointer x → snap index, as a proportion of the strip. Rounded, not
-     floored, so each dot owns the span centred on itself and the two ends
-     are reachable by overshooting past them, which is what a fast drag does. */
+  /* Pointer x → snap index, measured across the dots' own centres.
+     Rounded, not floored, so each dot owns the span centred on itself and
+     the halfway point between two is where the scrub flips.
+
+     Measuring the *row of dots* rather than the pressable strip around it is
+     the whole correctness argument, and getting it wrong is subtle enough to
+     survive a casual test. The strip carries 12px of padding on each side,
+     which exists so a fingertip landing slightly off the row still counts.
+     Take the proportion across that padded 70px box and the dot centres,
+     which live at 15.5, 28.5, 41.5 and 54.5, land at 0.66, 1.22, 1.78 and
+     2.34 of the way through a 0-3 index. Rounded: 1, 1, 2, 2. Pressing the
+     first dot selected the second, pressing the last selected the third, and
+     neither end of the gallery could be reached by pressing the dot that
+     stands for it. Only the middle two were ever right, which is exactly the
+     shape of bug that reads as "sometimes it works".
+
+     Against the inner row the arithmetic is exact instead of nearly right:
+     the span runs centre-to-centre, so dot i sits at precisely i/(n-1), and
+     each dot owns the 13px centred on itself. Pressing the padding clamps to
+     whichever end it's nearer, which is also what a drag that overshoots the
+     row wants. */
   const indexFromPointer = useCallback((clientX: number) => {
-    const strip = dotsRef.current;
-    if (!strip) return 0;
-    const { left, width } = strip.getBoundingClientRect();
-    const progress = Math.max(0, Math.min(1, (clientX - left) / width));
+    const row = dotsRef.current;
+    if (!row) return 0;
+
+    const { left, width } = row.getBoundingClientRect();
+    /* The row is n dots and n-1 gaps, so trimming one dot's width leaves
+       exactly the centre-to-centre span, and the offset to the first centre
+       is half a dot. Read off the rendered node rather than the 7px constant
+       so the two can't drift apart. */
+    const dot = row.firstElementChild?.getBoundingClientRect().width ?? 0;
+    const span = width - dot;
+    if (span <= 0) return 0;
+
+    const progress = Math.max(0, Math.min(1, (clientX - left - dot / 2) / span));
     return Math.round(progress * (IMAGES.length - 1));
   }, []);
 
@@ -225,9 +263,14 @@ export function StorefrontCarousel() {
   const onPointerDown = useCallback(
     (event: React.PointerEvent) => {
       event.preventDefault();
-      (event.target as HTMLElement).setPointerCapture(event.pointerId);
+      /* `currentTarget`, not `target`. The strip's children are the dots, so
+         a press that lands on one captures to a 7px span rather than to the
+         control, and the drag that follows is reported against whichever dot
+         happened to be under the finger at the start. Capturing on the strip
+         keeps every subsequent move in one coordinate space. */
+      event.currentTarget.setPointerCapture(event.pointerId);
       isScrubbingRef.current = true;
-      dotsRef.current?.setAttribute("data-scrubbing", "");
+      setScrubbing(true);
       scrubTo(indexFromPointer(event.clientX));
     },
     [indexFromPointer, scrubTo],
@@ -243,7 +286,7 @@ export function StorefrontCarousel() {
 
   const onPointerUp = useCallback(() => {
     isScrubbingRef.current = false;
-    dotsRef.current?.removeAttribute("data-scrubbing");
+    setScrubbing(false);
   }, []);
 
   /* Arrow keys drive the same strip, because a scrubber is a slider and a
@@ -281,82 +324,85 @@ export function StorefrontCarousel() {
   );
 
   return (
-    /* The site's three tonal levels, one step each and nothing drawn: sunken
-       container, raised panel, and the photograph itself as the third. See
-       the quiet tonal block in globals.css. */
-    <div className="surface surface-stack">
-      <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 px-4 pb-1 pt-3">
-        {/* Imperative, and it's the instruction as well as the title: the
-            strip below is 7px dots, which is legible as a position readout
-            long before it's legible as something to grab. */}
-        <h3 className="font-serif text-case-heading italic text-foreground">Scrub the gallery</h3>
-        <p className="text-case-caption text-foreground-faint">
-          The shipped component. On a phone, every dot you cross is a tap.
-        </p>
-      </div>
+    /* No container, and that is the considered version rather than the
+       stripped-back one. The tonal box this used to sit in was drawing a
+       frame around a thing that already has one: a product photograph on a
+       plain backdrop is the most self-contained object on the page, and
+       putting a gray card behind it said "component demo" where the point is
+       that it's the product. The case study's own prose introduces it a line
+       above, so the heading the card carried was a second title for something
+       already named.
 
-      <div className="surface-inset flex flex-col items-center p-4 sm:p-5">
-        <div className="flex w-full max-w-[340px] flex-col gap-3">
-          {/* `overflow-hidden` is Embla's viewport, and the radius rides on
-              it so the photograph's corners are the panel's corners one level
-              in, rather than a square picture inside a rounded box.
+       What's left is the storefront's own arrangement, which is the argument
+       the block is making: photograph, scrubber, item. */
+    <div className="flex justify-center">
+      <div className="flex w-full max-w-[340px] flex-col gap-3">
+        {/* `overflow-hidden` is Embla's viewport, and the radius rides on it
+            so the photograph's corners are the block's corners rather than a
+            square picture inside a rounded box.
 
-              `relative` is the load-bearing one, and it draws nothing. Embla
-              measures with `offsetLeft`, not `getBoundingClientRect`, so every
-              number it derives is relative to whatever each node's
-              `offsetParent` happens to be. The track below is transformed,
-              which makes *it* the slides' offsetParent, so they measure 0,
-              340, 680, 1020. Left static, the track itself then measures
-              against the nearest positioned ancestor instead, which on this
-              page is the `relative z-10` wrapper the case study puts around
-              every artifact: 550px away, at this column's left edge.
+            `relative` is the load-bearing one, and it draws nothing. Embla
+            measures with `offsetLeft`, not `getBoundingClientRect`, so every
+            number it derives is relative to whatever each node's
+            `offsetParent` happens to be. The track below is transformed,
+            which makes *it* the slides' offsetParent, so they measure 0, 340,
+            680, 1020. Left static, the track itself then measures against the
+            nearest positioned ancestor instead, which on this page is the
+            `relative z-10` wrapper the case study puts around every artifact:
+            550px away, at this column's left edge.
 
-              Embla subtracts one from the other, so the snap list came out
-              [550, 210, -130, -470] instead of [0, -340, -680, -1020], and
-              the last dot landed the track two thirds of the way through the
-              second photograph. Positioning the viewport puts both
-              measurements in the same coordinate space and the offset falls
-              out to zero.
+            Embla subtracts one from the other, so the snap list came out
+            [550, 210, -130, -470] instead of [0, -340, -680, -1020], and the
+            last dot landed the track two thirds of the way through the second
+            photograph. Positioning the viewport puts both measurements in the
+            same coordinate space and the offset falls out to zero.
 
-              This never bit the shipped version, and not because it was
-              written more carefully. There the gallery was full-bleed on a
-              phone with nothing positioned above it, so the track's
-              offsetLeft was 0 and the bug cancelled itself. It's the same
-              trap Scroller.tsx documents at its `case-tile`, from the other
-              direction. */}
-          <div ref={emblaRef} className="relative overflow-hidden rounded-[var(--radius-inner)]">
-            <div className="flex will-change-transform">
-              {IMAGES.map((image, i) => (
-                <Slide key={i} image={image} />
-              ))}
-            </div>
+            This never bit the shipped version, and not because it was written
+            more carefully. There the gallery was full-bleed on a phone with
+            nothing positioned above it, so the track's offsetLeft was 0 and
+            the bug cancelled itself. It's the same trap Scroller.tsx
+            documents at its `case-tile`, from the other direction. */}
+        <div ref={emblaRef} className="relative overflow-hidden rounded-[var(--radius-inner)]">
+          <div className="flex will-change-transform">
+            {IMAGES.map((image, i) => (
+              <Slide key={i} image={image} />
+            ))}
           </div>
+        </div>
 
-          {/* The scrubber. `touch-none` is load-bearing: without it the
-              browser claims a horizontal drag on the strip for page panning
-              and the scrub never gets a second pointermove. */}
-          <div className="flex justify-center">
-            <div
-              ref={dotsRef}
-              role="slider"
-              tabIndex={0}
-              aria-label="Product image"
-              aria-valuemin={1}
-              aria-valuemax={IMAGES.length}
-              aria-valuenow={selectedIndex + 1}
-              aria-valuetext={IMAGES[selectedIndex].alt}
-              onPointerDown={onPointerDown}
-              onPointerMove={onPointerMove}
-              onPointerUp={onPointerUp}
-              onPointerCancel={onPointerUp}
-              onKeyDown={onKeyDown}
-              /* The pressed state is a tonal chip appearing under the dots,
-                 the same move the rest of the site makes for a hover surface.
-                 It exists because the finger is on top of the strip: the one
-                 pixel of it still visible is the edge, so the feedback has to
-                 be the area around the dots rather than the dots themselves. */
-              className="flex cursor-pointer touch-none select-none items-center gap-1.5 rounded-full px-3 py-2 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20 data-[scrubbing]:bg-foreground/10"
-            >
+        <div className="flex justify-center">
+          {/* Two boxes, and the split is what makes a press land where it
+              looks like it landed. This outer one is the target: it carries
+              the padding, the press state and every handler, so a fingertip
+              that misses the row by a few pixels still counts as a press on
+              the row. The inner one is the ruler, and it is exactly as wide
+              as the dots, which is what `indexFromPointer` measures against.
+
+              `touch-none` is load-bearing: without it the browser claims a
+              horizontal drag here for page panning, and the scrub never gets
+              a second pointermove. */}
+          <div
+            role="slider"
+            tabIndex={0}
+            aria-label="Product image"
+            aria-valuemin={1}
+            aria-valuemax={IMAGES.length}
+            aria-valuenow={selectedIndex + 1}
+            aria-valuetext={IMAGES[selectedIndex].alt}
+            data-scrubbing={scrubbing || undefined}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerCancel={onPointerUp}
+            onKeyDown={onKeyDown}
+            /* The pressed state is a tonal chip appearing under the dots, the
+               same move the rest of the site makes for a hover surface. It
+               exists because the finger is on top of the strip: the one pixel
+               of it still visible is the edge, so the feedback has to be the
+               area around the dots rather than the dots themselves. */
+            className="cursor-pointer touch-none select-none rounded-full px-3 py-2 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20 data-[scrubbing]:bg-foreground/10"
+          >
+            <div ref={dotsRef} className="flex items-center gap-1.5">
               {IMAGES.map((_, i) => (
                 <span
                   key={i}
@@ -368,14 +414,14 @@ export function StorefrontCarousel() {
               ))}
             </div>
           </div>
+        </div>
 
-          {/* The item, in the storefront's own words. Without it the block is
-              four photographs of a belt; with it, it's the product page the
-              gallery was built for, which is the claim being demonstrated. */}
-          <div className="flex items-baseline justify-between gap-4 px-1 pb-1">
-            <p className="text-case-caption text-foreground">{PRODUCT.name}</p>
-            <p className="text-case-caption tabular-nums text-foreground-faint">{PRODUCT.price}</p>
-          </div>
+        {/* The item, in the storefront's own words. Without it the block is
+            four photographs of a belt; with it, it's the product page the
+            gallery was built for, which is the claim being demonstrated. */}
+        <div className="flex items-baseline justify-between gap-4">
+          <p className="text-case-caption text-foreground">{PRODUCT.name}</p>
+          <p className="text-case-caption tabular-nums text-foreground-faint">{PRODUCT.price}</p>
         </div>
       </div>
     </div>
