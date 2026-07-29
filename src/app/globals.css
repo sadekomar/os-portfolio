@@ -1131,6 +1131,45 @@
   }
 }
 
+/* ══ Guided tour ══════════════════════════════════════════════════════════
+   Two rules, and they exist for one reason: a synthetic pointer moves no
+   real cursor, so `:hover` never matches for anything the tour is pointing
+   at. Every other effect the tour produces is the site's own code running
+   (see components/tour/driver.ts on why it drives real events rather than
+   component state); hover is the one thing the browser will not simulate.
+
+   So the tour mirrors it onto an attribute and these restate, exactly, what
+   the `hover:` and `active:` utilities on Row and the Resources disclosure
+   already do. They are duplicated values, which is a cost worth naming: if
+   the row's hover wash ever changes, this changes with it. The alternative
+   was a `data-[tour-hover]:bg-wash` variant at every call site, which is the
+   same duplication spread across more files and easier to forget.
+
+   Unlayered, on purpose, and for the same reason the print block below is:
+   these have to win against the layered utility that sets the resting
+   background, and neither should need `!important` to do it. */
+[data-tour-hover] {
+  background-color: hsl(var(--wash));
+}
+
+/* The press dip, matching Row.tsx's `active:scale-[0.99]`. One percent, not
+   three, because a full-measure row scaling by more reads as the page
+   flinching rather than as a control answering. */
+[data-tour-press] {
+  scale: 0.99;
+}
+
+/* Under reduced motion the tour still shows what it is pointing at, it just
+   stops the 150ms fade in and out of every row it passes. The states appear
+   and disappear rather than easing, which is the same reading of the
+   preference the preview panel takes in WorkPreview.tsx. */
+@media (prefers-reduced-motion: reduce) {
+  [data-tour-hover],
+  [data-tour-press] {
+    transition: none;
+  }
+}
+
 /* ══ Print ════════════════════════════════════════════════════════════════
    ⌘P on the index gives you a résumé, not a screenshot of a website.
 

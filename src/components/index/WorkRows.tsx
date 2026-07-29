@@ -372,6 +372,7 @@ export function WorkRows({ groups }: { groups: WorkGroup[] }) {
                     meta={item.meta}
                     index={index}
                     tabIndex={index === tabStop ? 0 : -1}
+                    tourId={`row:${item.href}`}
                   />
                 </li>
               );

@@ -5,6 +5,7 @@ import { CommandPaletteProvider } from "@/components/command/CommandPaletteProvi
 import { NavBar } from "@/components/navbar/Navbar";
 import { PrintIdentity } from "@/components/print/PrintIdentity";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
+import { TourProvider } from "@/components/tour/TourProvider";
 import { MAILTO } from "@/data/contact";
 import { THEME_COLOR, THEME_SCRIPT } from "@/lib/theme";
 import { Footer } from "../components/footer/Footer";
@@ -244,18 +245,28 @@ export default function RootLayout({
               Mounted once, here, and nowhere else: a palette is a property
               of the document, not of a page, so a per-route mount would
               mean the chord going dead for a frame on every navigation. */}
-          <CommandPaletteProvider>
-            <NavBar />
-            <div className="flex min-h-[calc(100lvh-3.5rem)] flex-col justify-between md:min-h-[calc(100lvh-4rem)]">
-              {/* `display: none` on screen, so it costs the layout above
-                  nothing and never reaches the accessibility tree. See
-                  components/print/PrintIdentity.tsx and the print layer at
-                  the foot of globals.css. */}
-              <PrintIdentity />
-              {children}
-              <Footer />
-            </div>
-          </CommandPaletteProvider>
+          {/* Outside the palette, and mounted once here for the same reason
+              the palette is: the tour crosses from the index into a case
+              study and back, so the video, the clock and the cue cursor have
+              to outlive the route. A per-page mount would restart the
+              recording mid-sentence on the one navigation the tour makes
+              itself. Outside rather than inside so a palette row can reach
+              `useTour` and offer the tour as a plainly labelled command,
+              which is the accessible counterpart to the O in the heading. */}
+          <TourProvider>
+            <CommandPaletteProvider>
+              <NavBar />
+              <div className="flex min-h-[calc(100lvh-3.5rem)] flex-col justify-between md:min-h-[calc(100lvh-4rem)]">
+                {/* `display: none` on screen, so it costs the layout above
+                    nothing and never reaches the accessibility tree. See
+                    components/print/PrintIdentity.tsx and the print layer at
+                    the foot of globals.css. */}
+                <PrintIdentity />
+                {children}
+                <Footer />
+              </div>
+            </CommandPaletteProvider>
+          </TourProvider>
         </ThemeProvider>
       </body>
     </html>

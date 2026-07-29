@@ -62,6 +62,13 @@ export type ActionContext = {
   theme: Theme;
   resolved: "light" | "dark";
   setTheme: (theme: Theme) => void;
+  /* Plays the guided tour, returning to the index first if the palette was
+     opened somewhere else. This row is the tour's accessible entry point:
+     the O in the index heading is the delightful one, but its accessible
+     name is the letter (see components/tour/TourO.tsx for why), so a reader
+     who never sees a first-visit animation needs somewhere the thing is
+     simply called what it is. */
+  startTour: () => void;
 };
 
 const RESUME = "/resume.pdf";
@@ -195,6 +202,13 @@ export function projectKey(pathname: string): ProjectKeys | undefined {
 
 function pageActions(context: ActionContext): Action[] {
   return [
+    {
+      id: "page-tour",
+      label: "Play the guided tour",
+      meta: "30 seconds",
+      keywords: ["video", "walkthrough", "intro", "onboarding", "show me around", "help"],
+      run: () => context.startTour(),
+    },
     /* Work has no route of its own; the index's `#work` section is the
        list. Named here so "work" as a query lands on something. */
     {

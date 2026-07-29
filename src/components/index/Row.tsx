@@ -20,6 +20,7 @@ export function Row({
   external = false,
   index,
   tabIndex,
+  tourId,
 }: {
   href: string;
   title: string;
@@ -35,6 +36,13 @@ export function Row({
      Absent on rows that belong to no navigable list, which is how a keydown
      handler knows those rows aren't its business. */
   index?: number;
+  /* A stable name for this row, published as `data-tour`, so the guided tour
+     can aim at "the Wholana row" rather than at a position in a list. It is
+     the href because the href is the one thing about a row that is already
+     unique and already can't drift: a slug repeated here would be a second
+     copy to keep in sync, and an index would silently point at a different
+     project the day the list is reordered. See components/tour/script.ts. */
+  tourId?: string;
   /* Roving tabindex. The owning list keeps exactly one row at 0 and the rest
      at -1, so Tab enters and leaves the list in one press and the arrows do
      the moving inside it. Undefined leaves the link in the natural tab order,
@@ -95,6 +103,7 @@ export function Row({
         rel="noopener noreferrer"
         className={className}
         data-row-index={index}
+        data-tour={tourId}
         tabIndex={tabIndex}
       >
         {content}
@@ -103,7 +112,13 @@ export function Row({
   }
 
   return (
-    <Link href={href} className={className} data-row-index={index} tabIndex={tabIndex}>
+    <Link
+      href={href}
+      className={className}
+      data-row-index={index}
+      data-tour={tourId}
+      tabIndex={tabIndex}
+    >
       {content}
     </Link>
   );

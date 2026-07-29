@@ -7,6 +7,7 @@ import { Command, useCommandState } from "cmdk";
 import { usePathname, useRouter } from "next/navigation";
 
 import { useTheme } from "@/components/theme/ThemeProvider";
+import { useTour } from "@/components/tour/TourProvider";
 import { SuccessMark } from "@/components/ui/success-mark";
 import { buildGroups, type Action, type ActionContext, type Confirm } from "./actions";
 
@@ -55,6 +56,7 @@ export default function CommandPalette({
   const pathname = usePathname();
   const router = useRouter();
   const { theme, resolved, setTheme } = useTheme();
+  const { start: startTour } = useTour();
 
   const [query, setQuery] = useState("");
   const [confirm, setConfirm] = useState<(Confirm & { id: string }) | undefined>();
@@ -102,8 +104,9 @@ export default function CommandPalette({
       theme,
       resolved,
       setTheme,
+      startTour,
     }),
-    [pathname, router, jumpTo, theme, resolved, setTheme],
+    [pathname, router, jumpTo, theme, resolved, setTheme, startTour],
   );
 
   const groups = useMemo(() => buildGroups(context), [context]);

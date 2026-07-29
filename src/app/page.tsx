@@ -15,6 +15,7 @@ import { WorkRows, type WorkItem } from "@/components/index/WorkRows";
 import { allProjects, type ProjectKeys } from "@/app/work/[project]/projects";
 import { DownloadResume } from "@/components/resume/DownloadResume";
 import { Stack } from "@/components/stack/Stack";
+import { TourO } from "@/components/tour/TourO";
 import { contacts } from "@/data/contact";
 
 /* The canonical lives here rather than in the root layout, and that is the
@@ -85,7 +86,12 @@ function Code() {
   const contributions = getContributions(GITHUB_USERNAME);
 
   return (
-    <Section title="Code">
+    /* The ids on this and the other sections are scroll targets, and they
+       predate nothing: they exist so the guided tour can say "#code" instead
+       of counting sections, and so a link to one part of this page is
+       possible at all. `scroll-mt-24` on Section already accounts for the
+       fixed nav, so an id arrived at from either lands in the same place. */
+    <Section title="Code" id="code">
       <Suspense fallback={<GitHubContributionsFallback />}>
         <GitHubContributions
           contributions={contributions}
@@ -119,7 +125,15 @@ function Intro() {
       {/* 500, not 600: at 24px Inter's semibold reads as a shout. Weight
           compensates for size: the larger the type, the less of it is
           needed to establish hierarchy. */}
-      <h1 className="text-headline text-foreground mb-6 font-medium">Hey, I’m Omar.</h1>
+      {/* The O is a button. It is the only control on this page that is also
+          part of a sentence, and the tour blooms out of it and returns into
+          it: see components/tour/TourO.tsx for why the invitation is one
+          breath on a first visit and never again, and why the button's
+          accessible name is the letter rather than a description. */}
+      <h1 className="text-headline text-foreground mb-6 font-medium">
+        Hey, I’m <TourO />
+        mar.
+      </h1>
       {/* One sentence. This carried three paragraphs of employer, side
           project and hobbies, and every one of them is answered better
           further down: Experience names the job, Work lists what I founded,
@@ -302,10 +316,11 @@ function Work() {
 
 function Experience() {
   return (
-    <Section title="Experience">
+    <Section title="Experience" id="experience">
       <Row
         href="https://instatus.com"
         external
+        tourId="row:https://instatus.com"
         title="Instatus"
         logo="instatus"
         meta="Dec 2024 – Present"
@@ -325,7 +340,7 @@ function Experience() {
 
 function Elsewhere() {
   return (
-    <Section title="Elsewhere">
+    <Section title="Elsewhere" id="elsewhere">
       <p className="text-body-sm text-foreground-muted px-3 pb-3">
         More <Prose href="/about">about me</Prose>, some <Prose href="/blog">writing</Prose>, or the{" "}
         <Prose href="/resume.pdf" download="resume-omar-sadek.pdf">
