@@ -9,12 +9,24 @@ function TooltipProvider({
   // The 80ms open delay is the tooltip's motion contract: it belongs to
   // appearing only, so leaving the trigger dismisses without any wait.
   delayDuration = 80,
+  // Off by default. Hoverable content is for tooltips you might want to
+  // reach into, and none here hold anything reachable: they are a line of
+  // text with no link and no selection to make. Leaving it on is not free.
+  // Radix keeps it by tracking pointermove on the document and testing the
+  // cursor against a convex hull built from the trigger and content rects
+  // (getHull / isPointInPolygon in the primitive), and it will not close the
+  // tooltip while the cursor is inside that grace region. On a grid where
+  // the next trigger is two pixels away, the cursor is *always* inside the
+  // previous tooltip's grace region, so every move pays polygon math and
+  // then declines to dismiss. That is the sticky, one-behind feel.
+  disableHoverableContent = true,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Provider>) {
   return (
     <TooltipPrimitive.Provider
       data-slot="tooltip-provider"
       delayDuration={delayDuration}
+      disableHoverableContent={disableHoverableContent}
       {...props}
     />
   );
@@ -70,7 +82,16 @@ function TooltipContent({
           // Appears in 150ms from a 0.98 scale; leaves in 50ms so dismissing
           // never lags behind the cursor.
           "duration-150 ease-out data-[state=delayed-open]:animate-in data-[state=delayed-open]:fade-in-0 data-[state=delayed-open]:zoom-in-[0.98]",
-          "data-[state=instant-open]:animate-in data-[state=instant-open]:fade-in-0 data-[state=instant-open]:zoom-in-[0.98]",
+          // `instant-open` is Radix's word for "the reader is already reading
+          // tooltips", which it knows because one closed moments ago. The
+          // 150ms fade is an introduction, and there is nothing left to
+          // introduce: the second tooltip is the same object with new text.
+          // Animating it again reads as a flicker on the way to the answer,
+          // and on a 365-cell grid the reader crosses it constantly. So the
+          // transition is skipped and the tooltip simply is where the cursor
+          // is, which is what makes a dense grid feel like scrubbing one
+          // label rather than opening hundreds.
+          "data-[state=instant-open]:animate-none",
           "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-[0.98] data-[state=closed]:duration-50",
           "motion-reduce:animate-none",
           className,

@@ -1,11 +1,13 @@
 "use client";
 
 import { use } from "react";
-import { format } from "date-fns";
 
 import { cn } from "@/lib/utils";
 import { Spinner } from "@/components/ui/spinner";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  ContributionTooltip,
+  useContributionTooltip,
+} from "@/components/contributions/ContributionTooltip";
 import type { Activity } from "@/components/contributions/ContributionGraph";
 import {
   ContributionGraph,
@@ -51,41 +53,58 @@ export function GitHubContributions({
   className?: string;
 }) {
   const data = use(contributions);
+  const { anchor, trackProps } = useContributionTooltip();
 
   if (data.length === 0) {
     return null;
   }
 
   return (
-    <TooltipProvider>
+    <>
       <ContributionGraph
-        className={cn("text-meta text-foreground-faint", className)}
+        /* The fade is the whole transition: the fallback above reserves this
+           element's exact height, so there is no gap to close and nothing to
+           travel into. Adding a few pixels of rise would be inventing a
+           movement the layout went to some trouble to avoid, and on a grid of
+           365 squares it reads as the graph settling rather than arriving.
+
+           200ms because the reader has been looking at a spinner: long enough
+           that the swap isn't a cut, short enough that it doesn't feel like a
+           second wait tacked onto the first.
+
+           `fade-in-on-mount` is the `@starting-style` half; see globals.css.
+           It belongs there rather than in a mount effect because this
+           component already suspends, and the frame we want to start from is
+           the frame React inserts it on. A `useState` flag flipped in an
+           effect would render invisible, commit, and only then start, which
+           is a render's worth of delay to express something the style engine
+           already knows. */
+        className={cn(
+          "text-meta text-foreground-faint fade-in-on-mount ease-out-quint opacity-100 transition-opacity duration-200",
+          className,
+        )}
         data={data}
         trackWidth={MEASURE}
         blockMargin={2}
         blockRadius={2}
         fontSize={13}
       >
-        <ContributionGraphCalendar className="px-3" title="GitHub contributions">
+        {/* One listener on the track, not one component per cell. The blocks
+            render as bare rects again; the label that reads them lives
+            outside the graph and follows the pointer. See ContributionTooltip
+            for why the per-cell version could not be made to stop flickering
+            no matter which animations were removed. */}
+        <ContributionGraphCalendar
+          className="px-3"
+          title="GitHub contributions"
+          {...trackProps}
+        >
           {({ activity, dayIndex, weekIndex }) => (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <g>
-                  <ContributionGraphBlock
-                    activity={activity}
-                    dayIndex={dayIndex}
-                    weekIndex={weekIndex}
-                  />
-                </g>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>
-                  {activity.count === 0 ? "No" : activity.count} contribution
-                  {activity.count === 1 ? "" : "s"} on{" "}
-                  {format(new Date(activity.date), "d MMM yyyy")}
-                </p>
-              </TooltipContent>
-            </Tooltip>
+            <ContributionGraphBlock
+              activity={activity}
+              dayIndex={dayIndex}
+              weekIndex={weekIndex}
+            />
           )}
         </ContributionGraphCalendar>
 
@@ -110,7 +129,9 @@ export function GitHubContributions({
           <ContributionGraphLegend />
         </ContributionGraphFooter>
       </ContributionGraph>
-    </TooltipProvider>
+
+      <ContributionTooltip anchor={anchor} />
+    </>
   );
 }
 
