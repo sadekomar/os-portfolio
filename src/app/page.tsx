@@ -9,6 +9,7 @@ import {
 } from "@/components/contributions/GitHubContributions";
 import { LastShipped } from "@/components/contributions/LastShipped";
 import { getContributions } from "@/lib/contributions";
+import { Resources } from "@/components/index/Resources";
 import { Row } from "@/components/index/Row";
 import { WorkRows, type WorkItem } from "@/components/index/WorkRows";
 import { allProjects, type ProjectKeys } from "@/app/work/[project]/projects";
@@ -65,6 +66,12 @@ export default function Home() {
       <Section title="Stack">
         <Stack />
       </Section>
+      {/* After Stack, and folded. Both for the same reason: it is the other
+          section here written for lookup rather than reading, and it is the
+          only one whose contents are somebody else's work. A reader who
+          wants to know what shaped the pages above will open it; everyone
+          else gets one line and carries on to the way to reach me. */}
+      <Resources />
       <Elsewhere />
     </main>
   );

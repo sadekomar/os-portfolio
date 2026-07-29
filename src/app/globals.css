@@ -707,6 +707,91 @@
   transform-origin: center;
   transition: transform 250ms cubic-bezier(0.22, 1, 0.36, 1);
 }
+
+/* ── Partial reveal ───────────────────────────────────────────────────────
+   A list that shows its first few rows and feathers out into a "Show more",
+   rather than hiding behind a closed disclosure. The difference is what the
+   collapsed state says: a fold says "there is a section here", a feathered
+   edge says "this continues", and only the second one is an invitation.
+
+   The fade is `mask-image`, not a gradient overlay in the page colour. An
+   overlay has to know what is behind it, which means hardcoding the surface
+   and getting it wrong in the other theme the moment either changes. A mask
+   fades the content itself to transparent and lets whatever is actually
+   behind it show through, so it is correct in light, in dark, and over any
+   surface it is ever moved onto.
+
+   `max-height` rather than the accordion's grid-template-rows trick: this
+   collapses to a *sliver* rather than to nothing, and 0fr ↔ 1fr cannot
+   express "show 40px of it". The fixed 75rem open value is the well-known
+   cost of animating max-height, and it is bounded here: the list is a
+   handful of rows, so the cap is close enough to the real height that the
+   timing distortion is not perceptible. Where the browser supports
+   `interpolate-size`, the @supports block below replaces it with
+   `max-content` and the animation becomes exact. Scoped to this class
+   rather than declared on :root, because it is inherited and a site-wide
+   opt-in would quietly change how every other keyword-sized transition on
+   the page behaves. */
+/* The position of the mask's last fully-opaque stop, registered so it has a
+   type. An unregistered custom property is a string as far as the engine is
+   concerned, and strings do not interpolate: the mask would jump from
+   feathered to clear on the first frame while the list was still opening,
+   which is the one moment the reader is looking straight at it. Registering
+   it as a <percentage> makes the gradient animatable, and the feather melts
+   away over the same 250ms as the height instead of cutting.
+
+   Animating the *opaque* stop rather than the transparent one is what keeps
+   the open state honest: at 100% the solid run reaches the bottom edge and
+   the transparent stop has nowhere left to act, so the mask is fully clear
+   rather than merely nearly clear. Pushing the transparent stop off the
+   bottom instead (to 400%, say) leaves a few percent of fade permanently
+   sitting on the last row.
+
+   Where @property is unsupported this degrades to exactly the old
+   behaviour, an instant switch, which is what it was before and no worse. */
+@property --reveal-solid {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 20%;
+}
+
+.t-reveal {
+  max-height: 2.5rem;
+  overflow: hidden;
+  --reveal-solid: 20%;
+  mask-image: linear-gradient(to bottom, #000 0%, #000 var(--reveal-solid), transparent 100%);
+  transition:
+    max-height 250ms cubic-bezier(0.22, 1, 0.36, 1),
+    --reveal-solid 250ms cubic-bezier(0.22, 1, 0.36, 1);
+  /* The browser's scroll anchoring and this component's rAF loop both want
+     to be the thing correcting the scroll position while this collapses, and
+     two controllers on one value is a fight rather than a fallback.
+
+     In practice the browser has already conceded: MDN lists a height change
+     on the anchor node *or any ancestor* as a suppression trigger, and this
+     element animates max-height, so anchoring is off here whether or not it
+     is asked to be. Declaring it is worth the line anyway. It says the
+     opt-out is deliberate rather than accidental, and it keeps the behaviour
+     if this ever stops animating height (a future `interpolate-size` on a
+     plain `height`, say, or a fade instead of a fold), which is exactly the
+     change that would silently hand a second controller back to the
+     browser. */
+  overflow-anchor: none;
+}
+.t-reveal[data-open="true"] {
+  max-height: 75rem;
+  /* Solid all the way to the bottom edge: the feather retreats down the
+     list as it opens and is gone by the time the last row lands. */
+  --reveal-solid: 100%;
+}
+@supports (interpolate-size: allow-keywords) {
+  .t-reveal {
+    interpolate-size: allow-keywords;
+  }
+  .t-reveal[data-open="true"] {
+    max-height: max-content;
+  }
+}
 /* `vector-effect: non-scaling-stroke` used to live here. It has to go now
    that the icon system owns stroke weight: it reinterprets stroke-width as
    device pixels rather than grid units, which silently discards the
@@ -714,7 +799,19 @@
    1.95px instead of the 1.3px the size table asks for. The scaleY(-1) flip
    below has |determinant| = 1 and so does not alter stroke width anyway,
    which is what the rule was guarding against. */
-.t-acc[data-open="true"] .t-acc-chevron {
+.t-acc[data-open="true"] .t-acc-chevron,
+/* Keyed off the ARIA state as well as the accordion's data attribute, so a
+   disclosure that isn't an accordion still flips its chevron. The Resources
+   reveal on the index is one: it borrows this glyph and its transition
+   without borrowing ui/accordion.tsx, and under the old selector alone its
+   chevron sat at the identity matrix in both states, pointing down at a list
+   that was already open. A chevron is a state indicator, and one that never
+   changes is worse than none: it actively says "still closed".
+
+   `[aria-expanded]` is the right hook because it is the state, rather than a
+   second copy of it. Any button that correctly announces itself to a screen
+   reader gets the matching visual for free, and the two cannot drift. */
+[aria-expanded="true"] .t-acc-chevron {
   transform: scaleY(-1);
 }
 
@@ -785,6 +882,7 @@
   .t-acc-panel,
   .t-acc-panel-inner,
   .t-acc-chevron,
+  .t-reveal,
   .t-switch-pill,
   .t-switch-option {
     transition: none !important;
