@@ -104,6 +104,14 @@ const CATEGORIES: { title: string; items: Entry[] }[] = [
         note: "Deleted more of my code than any other library. Most global state was just server state waiting to be cached.",
       },
       {
+        name: "Rocicorp Zero",
+        note: "Queries that stay live and writes that land before the server answers. The first sync engine I've trusted with the read path.",
+      },
+      {
+        name: "Yjs",
+        note: "Two cursors in one document with no merge conflicts to resolve. CRDTs are the rare case where the hard theory buys you a simpler product.",
+      },
+      {
         name: "MUI",
         mark: "mui",
         note: "Fast to a working admin panel, slow to a specific one. Good for internal tools, fought me on everything else.",
@@ -129,6 +137,21 @@ const CATEGORIES: { title: string; items: Entry[] }[] = [
         note: "Great migrations and great types. I still drop to raw SQL the moment a query gets interesting.",
       },
       {
+        name: "Express",
+        mark: "express",
+        note: "Boring on purpose. When the interesting part is the pipeline behind the route, the router should have no opinions.",
+      },
+      {
+        name: "Temporal",
+        mark: "temporal",
+        note: "Durable execution, so a deploy mid-job resumes instead of losing the night. Retries and idempotency stop being my code.",
+      },
+      {
+        name: "pgvector",
+        mark: "postgresql",
+        note: "Semantic search without a second database to keep in sync. The index lives next to the rows it ranks.",
+      },
+      {
         name: "GraphQL",
         mark: "graphql",
         note: "Earns its complexity with many clients, and only then. For one frontend I'd rather ship endpoints.",
@@ -141,7 +164,7 @@ const CATEGORIES: { title: string; items: Entry[] }[] = [
       {
         name: "Supabase",
         mark: "supabase",
-        note: "Postgres with the boring parts done. The exit is a connection string, which is why I trust it.",
+        note: "Postgres with the boring parts done. The exit is a connection string, which I know because I've taken it.",
       },
       {
         name: "Payload CMS",
@@ -179,9 +202,54 @@ const CATEGORIES: { title: string; items: Entry[] }[] = [
         note: "DNS, edge caching and the odd Worker. The cheapest performance win is usually the request that never reaches my server.",
       },
       {
+        name: "Hetzner",
+        mark: "hetzner",
+        note: "A box I own, behind Cloudflare, for a tenth of the platform bill. Worth learning once, on something whose downtime is mine.",
+      },
+      {
         name: "Sentry",
         mark: "sentry",
         note: "So users stop being my error reporting. First thing I add, before analytics.",
+      },
+      {
+        name: "PostHog",
+        mark: "posthog",
+        note: "Session replay is the part that changes my mind. Watching one person miss a button beats a week of guessing at funnels.",
+      },
+    ],
+  },
+  {
+    title: "Tooling & quality",
+    items: [
+      {
+        name: "pnpm",
+        mark: "pnpm",
+        note: "Strict by default, so a package I never installed can't be imported. Workspaces are the reason the monorepo is pleasant.",
+      },
+      {
+        name: "Turborepo",
+        mark: "turborepo",
+        note: "The cache is the feature. Two apps and three packages, and CI still only builds what actually changed.",
+      },
+      {
+        name: "Biome",
+        mark: "biome",
+        note: "Lint and format in one tool, fast enough to run on save. Ended an argument I was having with my own config.",
+      },
+      {
+        name: "Vitest",
+        mark: "vitest",
+        note: "I test the parts where being wrong is silent: pipelines, money, permissions. Not the parts a screenshot would catch.",
+      },
+      {
+        name: "Playwright",
+        mark: "playwright",
+        note: "The last line of defence, kept small. A handful of flows that must never break, run against a real browser.",
+      },
+      {
+        name: "Zod",
+        mark: "zod",
+        note: "Parse at the boundary so the inside of the app can stop being defensive. Every scraper and model response comes through it.",
       },
     ],
   },
@@ -217,6 +285,15 @@ const CATEGORIES: { title: string; items: Entry[] }[] = [
         name: "Gemini",
         mark: "googlegemini",
         note: "The long-context one. Whole codebases and long documents in a single pass.",
+      },
+      {
+        name: "MCP",
+        mark: "modelcontextprotocol",
+        note: "I've shipped a server, not just consumed one. It turns a product's database into something a non-technical user can ask questions of.",
+      },
+      {
+        name: "AI SDK",
+        note: "Structured output over messy real-world text, with the provider behind a seam. Swapping models is a config change, not a rewrite.",
       },
     ],
   },
@@ -331,13 +408,13 @@ function PillBody({ name, mark, note, ...props }: Entry & React.ComponentProps<"
           <path d={TECH_MARKS[mark]} />
         </svg>
       ) : (
-        /* Nothing reaches this today, since every entry above has an authentic
-           mark. It stays because `mark` is optional on purpose: the next
-           tool added here may not have a logo anyone is allowed to ship,
-           and the honest answer then is a placeholder rather than a
-           near-enough glyph borrowed from something else. A dot holds the
-           same optical slot so one markless pill doesn't break the rhythm
-           of the row. */
+        /* Rocicorp Zero, Yjs and the AI SDK reach this: none of the three
+           ships a mark in Simple Icons, and the honest answer is a
+           placeholder rather than a near-enough glyph borrowed from
+           something else. Drawing one myself would be worse again, since a
+           logo I invented is a logo that is wrong. A dot holds the same
+           optical slot so a markless pill doesn't break the rhythm of the
+           row. */
         <span className="bg-foreground-ghost size-1.5 shrink-0 rounded-full" aria-hidden="true" />
       )}
       {name}
