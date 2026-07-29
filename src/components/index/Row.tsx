@@ -41,8 +41,17 @@ export function Row({
      which is right for a row standing on its own. */
   tabIndex?: number;
 }) {
+  /* The press dip is 1%, not the 3% a button gets: this row is the full
+     width of the column, and the same percentage across that much surface
+     reads as the page flinching rather than as a control responding. It is
+     enough to confirm the click landed, which is the only job.
+
+     `transition-[background-color,scale]` rather than `transition-colors`
+     plus a second utility, and never `all`: `all` would also animate the
+     focus ring, and a focus ring that fades in is a focus ring that is late
+     for the one reader who needs it. */
   const className =
-    "group block rounded-lg px-3 py-3 transition-colors duration-150 ease-out hover:bg-wash focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20";
+    "group block rounded-lg px-3 py-3 transition-[background-color,scale] duration-150 ease-out-quint hover:bg-wash active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20";
 
   const content = (
     /* The mark is a gutter beside the whole row, not a glyph inline with the
@@ -54,7 +63,7 @@ export function Row({
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline justify-between gap-4">
           <span
-            className={`flex items-center ${iconGap("inline")} text-body font-medium text-foreground`}
+            className={`flex items-center ${iconGap("inline")} text-body text-foreground font-medium`}
           >
             {title}
             {/* `inline` is the 17px-body size, and the gap comes with it,
@@ -63,15 +72,17 @@ export function Row({
             {external && (
               <Icon
                 name="external"
-                className="text-foreground-faint transition-transform duration-150 ease-out group-hover:translate-x-px group-hover:-translate-y-px"
+                className="text-foreground-faint ease-out-quint transition-transform duration-150 group-hover:translate-x-px group-hover:-translate-y-px"
               />
             )}
           </span>
           {/* Date ranges stack vertically down the Experience list, so the
               digits are a column and want equal advance widths. */}
-          {meta && <span className="text-meta shrink-0 text-foreground-faint tabular-nums">{meta}</span>}
+          {meta && (
+            <span className="text-meta text-foreground-faint shrink-0 tabular-nums">{meta}</span>
+          )}
         </div>
-        <p className="text-body-sm mt-1 text-foreground-subtle">{description}</p>
+        <p className="text-body-sm text-foreground-subtle mt-1">{description}</p>
       </div>
     </div>
   );

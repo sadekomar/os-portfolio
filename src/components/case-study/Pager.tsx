@@ -89,8 +89,19 @@ export function CaseStudyPager({ previous, next }: { previous?: Sibling; next?: 
   );
 }
 
+/* Shared by the link and by the spent arrow, so it holds only what both are:
+   the box, the shape, and the schedule the colours run on. The press dip
+   lives on the link alone, below. */
 const buttonClass =
-  "flex size-7 items-center justify-center rounded-md transition-colors duration-150 ease-out";
+  "flex size-7 items-center justify-center rounded-md transition-[color,background-color,scale] duration-150 ease-out-quint";
+
+/* 6%, against 3% on a normal button and 1% on a full-width row. The dip is
+   proportional to what it is dipping: this target is 28px square, and 1 to 3%
+   of that is a sub-pixel move, which is to say no move at all. At this size
+   the arrow has to visibly shrink under the finger or the press reads as
+   having missed, which matters more here than elsewhere because the pair sits
+   flush against the right edge with only 2px between them. */
+const pressClass = "active:scale-[0.94]";
 
 function PagerButton({
   sibling,
@@ -109,7 +120,12 @@ function PagerButton({
 
   /* The end of the sequence stays in place rather than collapsing: two
      arrows on every case study, one of them spent. A control that vanishes
-     on the first and last page makes the pair look like it moved. */
+     on the first and last page makes the pair look like it moved.
+
+     It gets no press state, deliberately. It is a ghosted glyph, not a
+     control: nothing happens when it is pressed, and a dip is a promise that
+     something did. Same reason it carries no hover and is hidden from the
+     accessibility tree. */
   if (!sibling) {
     return (
       <span className={`${buttonClass} text-foreground-ghost`} aria-hidden="true">
@@ -125,7 +141,7 @@ function PagerButton({
       href={`/work/${sibling.slug}`}
       aria-label={label}
       title={label}
-      className={`${buttonClass} text-foreground-faint hover:bg-wash hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20`}
+      className={`${buttonClass} ${pressClass} text-foreground-faint hover:bg-wash hover:text-foreground focus-visible:ring-ring/20 focus-visible:ring-2 focus-visible:outline-none`}
     >
       {glyph}
     </Link>

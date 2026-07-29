@@ -54,7 +54,22 @@ export function LastShippedLine({ date, initialLabel }: { date: string; initialL
   }
 
   return (
-    <p className="text-meta text-foreground-subtle px-3">
+    /* Fades rather than pops. The `null` above and the 20px fallback the
+       boundary renders mean this line's height is already held, so opacity is
+       the only thing that has any business changing: there is no space for it
+       to slide into and one line of text sliding under a graph that didn't
+       would read as two separate events.
+
+       150ms, faster than the graph above it. It is one sentence and it is the
+       second thing to land, so it should catch up rather than announce
+       itself.
+
+       `@starting-style` (see globals.css) instead of an effect, for a reason
+       specific to this file: the whole point of the `useSyncExternalStore`
+       above is to get the right string in the *first* render after hydration
+       rather than the second. Reaching for a mount effect to drive the fade
+       would put the extra render back in by the other door. */
+    <p className="text-meta text-foreground-subtle fade-in-on-mount ease-out-quint px-3 opacity-100 transition-opacity duration-150">
       Last shipped <time dateTime={date}>{label}</time>.
     </p>
   );

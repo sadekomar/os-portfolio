@@ -57,7 +57,7 @@ export default function Blog() {
   return (
     <main className="max-w-measure-gutter text-body mx-auto w-full px-6 pt-16 pb-24 md:pt-24">
       <div className="mb-12">
-        <h1 className="text-headline mb-4 font-medium text-foreground">Writing</h1>
+        <h1 className="text-headline text-foreground mb-4 font-medium">Writing</h1>
         <p className="max-w-measure text-body text-foreground-muted">
           Notes on the parts of the work that took a second attempt. Most of these started as a
           comment in a codebase, at the point where the decision was actually made.
@@ -65,24 +65,31 @@ export default function Blog() {
       </div>
 
       {/* -mx-3 so the hover fill on a row bleeds past the text column
-          without the text itself moving, the same trick the index uses. */}
-      <div className="-mx-3">
+          without the text itself moving, the same trick the index uses.
+
+          `reveal`: each post arrives with 8px of travel as it enters, on the
+          scroll timeline defined in globals.css. Posts already on screen at
+          load are past their range and simply render, so the top of the list
+          never animates at the reader. */}
+      <div className="reveal -mx-3">
         {posts.map((post) => (
           <Link
             key={post.slug}
             href={`/blog/${post.slug}`}
-            className="group block rounded-lg px-3 py-3 transition-colors duration-150 ease-out hover:bg-wash focus-visible:ring-2 focus-visible:ring-ring/20 focus-visible:outline-none"
+            /* Same press dip and same curve as components/index/Row: this
+               list is that list, minus the logo gutter. */
+            className="group ease-out-quint hover:bg-wash focus-visible:ring-ring/20 block rounded-lg px-3 py-3 transition-[background-color,scale] duration-150 focus-visible:ring-2 focus-visible:outline-none active:scale-[0.99]"
           >
             <div className="flex items-baseline justify-between gap-4">
-              <span className="text-body font-medium text-foreground">{post.title}</span>
+              <span className="text-body text-foreground font-medium">{post.title}</span>
               <time
                 dateTime={post.date}
-                className="text-meta shrink-0 text-foreground-faint tabular-nums"
+                className="text-meta text-foreground-faint shrink-0 tabular-nums"
               >
                 {formatDate(post.date)}
               </time>
             </div>
-            <p className="text-body-sm mt-1 text-foreground-subtle">{post.description}</p>
+            <p className="text-body-sm text-foreground-subtle mt-1">{post.description}</p>
           </Link>
         ))}
       </div>

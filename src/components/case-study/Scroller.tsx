@@ -249,7 +249,7 @@ function Arrow({
          in dark this is a near-white chip carrying a dark arrow, which is
          what keeps the control legible over a light screenshot *and* over
          the dark page it now bleeds onto at the ends of the track. */
-      className={`pointer-events-auto flex size-8 items-center justify-center rounded-full bg-foreground/85 text-background transition-opacity duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background/70 ${
+      className={`bg-foreground/85 text-background focus-visible:ring-background/70 pointer-events-auto flex size-8 items-center justify-center rounded-full transition-opacity duration-200 ease-out focus-visible:ring-2 focus-visible:outline-none ${
         hidden ? "opacity-0" : "opacity-100"
       }`}
     >

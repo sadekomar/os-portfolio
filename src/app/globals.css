@@ -350,6 +350,20 @@
   --radius-lg: var(--radius);
   --radius-md: var(--radius-inner);
   --radius-sm: calc(var(--radius-inner) - 4px);
+
+  /* ── Motion ─────────────────────────────────────────────────────────────
+     The site has exactly one curve, and this is it written down. The tabs,
+     the accordion, the theme switch and the command palette were all already
+     on cubic-bezier(0.22, 1, 0.36, 1) by hand; a token means the next thing
+     doesn't get Tailwind's `ease-out`, which is a much weaker curve and reads
+     as a different piece of software.
+
+     It's an ease-out, because nearly everything that moves here is entering
+     or responding to a press, and ease-out puts the movement in the first
+     frames, where the reader is looking. Ease-in on an interface element
+     spends its opening frames doing nothing, which is indistinguishable from
+     lag. */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* ── Quiet tonal: the surface classes ────────────────────────────────────
@@ -979,6 +993,141 @@
   }
   .cmd-panel[data-state="closed"] {
     animation-name: cmd-overlay-out;
+  }
+}
+
+/* ── Scroll reveal ────────────────────────────────────────────────────────
+   Cards and rows arrive as you reach them: 8px of travel and a fade, on the
+   site's one curve. 8px because the job is to say "this is new", not to make
+   the reader watch something fly; anything past ~12px starts reading as a
+   page that hasn't finished loading.
+
+   Driven by `animation-timeline: view()` rather than an IntersectionObserver,
+   which matters for three reasons. It runs off the main thread, so it stays
+   smooth while Next is hydrating the page around it. It needs no client
+   component, so the rows below stay server-rendered. And it degrades in the
+   only direction that's safe: a browser without scroll-driven animations
+   drops the `animation-timeline` line, the animation plays once on load
+   against the document timeline, and `both` leaves every element at its
+   final, visible frame. Nothing is ever stuck invisible waiting for a script.
+
+   The range ends while the element is still entering, so a card is fully
+   itself well before it reaches the middle of the screen. Reveals that
+   finish at `cover 50%` are the ones that feel like the page is fighting the
+   scroll wheel. */
+@keyframes reveal {
+  from {
+    opacity: 0;
+    translate: 0 8px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+.reveal > * {
+  animation: reveal 500ms var(--ease-out-quint) both;
+  animation-timeline: view();
+  animation-range: entry 10% entry 90%;
+}
+
+/* Same thing for a horizontal row, where every card crosses the viewport
+   edge at the same instant and would otherwise pop as one block.
+
+   The named timeline is not decoration. These rows scroll sideways, which
+   makes each one a scroll container, and `view()` resolves against the
+   *nearest* scrollport, not the viewport. So a card inside a row was
+   measuring its visibility within the row it fills completely, reading
+   100% at every scroll position, and the reveal never ran. Naming a view
+   timeline on the row itself moves the measurement up to the page, where it
+   was always meant to be, and every card in the row then shares one clock.
+
+   There is no `animation-delay` on a scroll timeline (delay is measured in
+   time, and a scroll timeline has none), so the stagger is a later *range*:
+   each card starts a little further into the row's entry. Scrolling fast
+   collapses the stagger back to nothing, which is the correct behaviour and
+   one an observer-and-setTimeout version has to be talked into. */
+.reveal-row {
+  view-timeline-name: --reveal-row;
+}
+.reveal-row > * {
+  animation-timeline: --reveal-row;
+}
+.reveal-row > *:nth-child(2) {
+  animation-range: entry 20% entry 100%;
+}
+.reveal-row > *:nth-child(3) {
+  animation-range: entry 30% entry 110%;
+}
+.reveal-row > *:nth-child(4) {
+  animation-range: entry 40% entry 120%;
+}
+
+/* The same reveal for anything containing a fixed-position child, which in
+   practice means anything with a lightbox in it.
+
+   `reveal` animates `translate`, and an element whose translate is anything
+   other than `none` becomes the containing block for its fixed descendants.
+   That is not a theoretical concern: it broke the case-study lightbox on
+   /about. react-medium-image-zoom measures the thumbnail, clones it into a
+   top-layer <dialog> and transforms the clone to the centre of the
+   *viewport*; with the strip's wrapper acting as the containing block, the
+   clone stayed at the thumbnail's own transform (`translate(0,0)
+   scale(0.638)`), so clicking a photo opened a full-screen overlay with the
+   photo the same size it already was. A fade has no such side effect: it
+   creates a stacking context and nothing more. The 8px of travel is the
+   cheapest part of the effect to give up. */
+@keyframes reveal-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.reveal-fade > * {
+  animation: reveal-fade 500ms var(--ease-out-quint) both;
+  animation-timeline: view();
+  animation-range: entry 10% entry 90%;
+}
+
+/* Motion is the whole effect here, so there is nothing to keep a gentler
+   version of: no animation at all leaves the content exactly where it was
+   going to end up. `reveal-fade` is deliberately absent: it only ever
+   changes opacity, which is the thing reduced motion is meant to keep. */
+@media (prefers-reduced-motion: reduce) {
+  .reveal > * {
+    animation: none;
+  }
+}
+
+/* ── Fade in on first paint ───────────────────────────────────────────────
+   For content that arrives after the shell: the streamed contributions graph
+   and the line under it. Both sit in boxes whose height is already reserved,
+   so the only thing wrong with the swap was that it was instant. This gives
+   the transition its first frame to move from.
+
+   The duration and the curve stay at the call site as ordinary utilities
+   (`transition-opacity duration-200 ease-out-quint`); the only thing that
+   has to live here is the starting frame, because `@starting-style` has no
+   Tailwind utility in this setup.
+
+   Why a starting style rather than a mount effect: an effect that flips a
+   state flag has to render once invisible, commit, then render again, and it
+   needs a client component and a `useState` to do it. This is the same
+   result declared in one rule, it runs off the style engine rather than off
+   React, and it costs the elements using it nothing at all: no hook, no
+   second render, no JavaScript on a page that might not have hydrated yet.
+
+   Unlayered, like the print block below, so it beats the `opacity-100`
+   utility inside `@layer utilities` when the browser computes the starting
+   frame. Layer it and the starting opacity silently resolves to 1 and
+   nothing fades. */
+.fade-in-on-mount {
+  @starting-style {
+    opacity: 0;
   }
 }
 

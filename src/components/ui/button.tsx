@@ -5,8 +5,22 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 
+/* The base carries the press dip so every variant answers a click the same
+   way: the fill is what differs between default, outline and ghost, not what
+   it feels like to push them. 3% is the button figure across the site, the
+   full-width rows take 1% instead because the same percentage over that much
+   surface reads as the page flinching (see index/Row.tsx).
+
+   `disabled:active:scale-100` because `disabled:pointer-events-none` only
+   stops the pointer: a disabled button reached by keyboard, or one inside a
+   wrapper that re-enables events to host a tooltip, would still dip under
+   Space and promise an action it will not run. The colour is already muted to
+   50%; the motion has to agree with it.
+
+   Properties named, never `all`: `all` would animate the focus ring in, and a
+   focus ring that arrives late is late for the only person using it. */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-[color,background-color,border-color,text-decoration-color,fill,stroke,scale] duration-150 ease-out-quint active:scale-[0.97] disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
