@@ -1034,13 +1034,11 @@
     display: none;
   }
 
-  /* The two controls in the intro, which are the ones that actually have to
-     go: a button offering to fetch the document you are holding is a joke
-     the paper can't get, and one offering to put an address on your
-     clipboard is worse, since the address is printed in the letterhead four
-     lines above it. Scoped to the intro block rather than found by class,
-     because the class lists are DownloadResume's and CopyEmail's business
-     and this needs to keep working when they change. */
+  /* The résumé download button, which is the one control that actually has
+     to go: a button offering to fetch the document you are holding is a
+     joke the paper can't get. Scoped to the intro block rather than found by
+     class, because the class list is DownloadResume's business and this
+     needs to keep working when it changes. */
   html:has(.print-identity[data-index]) main > section:first-of-type button {
     display: none;
   }

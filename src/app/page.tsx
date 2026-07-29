@@ -9,12 +9,9 @@ import {
 } from "@/components/contributions/GitHubContributions";
 import { LastShipped } from "@/components/contributions/LastShipped";
 import { getContributions } from "@/lib/contributions";
-import { differenceInCalendarDays, parseISO } from "date-fns";
-import { now, NOW_MAX_AGE_DAYS } from "@/data/now";
 import { Row } from "@/components/index/Row";
 import { WorkRows, type WorkItem } from "@/components/index/WorkRows";
 import { allProjects, type ProjectKeys } from "@/app/work/[project]/projects";
-import { CopyEmail } from "@/components/contact/CopyEmail";
 import { DownloadResume } from "@/components/resume/DownloadResume";
 import { Stack } from "@/components/stack/Stack";
 import { contacts } from "@/data/contact";
@@ -116,76 +113,49 @@ function Intro() {
           compensates for size: the larger the type, the less of it is
           needed to establish hierarchy. */}
       <h1 className="text-headline text-foreground mb-6 font-medium">Hey, I’m Omar.</h1>
-      {/* The thesis first, the employer second. This ran the other way round
-          for a long time and the order was the whole problem: the opening
-          line was "full-stack engineer at Instatus", which is a résumé
-          header: true, forgettable, and near-identical to a few hundred
-          thousand other people's. The sentence about design and engineering
-          not being separate jobs is the one line here that only I would
-          write, and it was sitting in paragraph two.
+      {/* One sentence. This carried three paragraphs of employer, side
+          project and hobbies, and every one of them is answered better
+          further down: Experience names the job, Work lists what I founded,
+          /about has the violin. Repeating them here cost the opening its
+          argument and told the reader nothing they weren't about to be told
+          anyway.
 
-          Glenn opens with "Caw!" and the principle is the same, without
-          needing the volume: whatever establishes the person goes before
-          whatever establishes the credential, because the credential is the
-          part the reader can already infer from the rest of the page.
+          The title first, flat and unadorned, then the claim. Two sentences
+          rather than one clause doing both jobs: "full-stack software
+          engineer" is the search term a recruiter arrives with and the fact
+          the reader needs before anything else here means much, and folding
+          it into the second sentence would bury it mid-line. Stated on its
+          own in four words it costs nothing and reads as a label rather than
+          a boast, which is exactly what a job title should be.
 
-          Three short paragraphs rather than two long ones. The last is one
-          line on its own, which is what makes it read as an aside instead of
-          as more argument. */}
-      <div className="text-body text-foreground-muted space-y-4">
+          Then the two halves that are actually mine, named separately on
+          purpose: the interface and the system under it are what the case
+          studies below are evidence for, in that order, and a reader who
+          takes only one sentence off this page should leave knowing I claim
+          both rather than the usual one.
+
+          "Delightful" is load-bearing and stays. The temptation is to trade
+          it for something that sounds more measured, but every neighbouring
+          word here is already sober, and a sentence with nothing warm in it
+          describes a competent engineer rather than this one. It is also the
+          half a hiring manager cannot verify from a repo, so it has to be
+          said out loud. Its counterweight is the second half: "hold up in
+          production" is checkable, and delight next to an unbacked claim is
+          just enthusiasm. */}
+      <div className="text-body text-foreground-muted">
         <p>
-          I like the part of software where design and engineering stop being separate jobs: the
-          interface, the data model underneath it, and the distance between the two.
+          I’m a full-stack software engineer. I build interfaces that are delightful to use, on
+          systems that hold up in production.
         </p>
-        <p>
-          Right now that’s <Prose href="https://instatus.com">Instatus</Prose>, where I work across
-          the product and own the chat integrations. Before it, Loom Cairo, a search engine
-          covering 300+ Egyptian fashion brands. At night, TikTok News Network, a satirical
-          broadcast about the Egyptian internet that I founded, host, and built the site for.
-        </p>
-        <p>Away from the screen: the gym, a rotating list of coffeeshops, and the violin.</p>
       </div>
       {/* Left-aligned to the text column rather than centred or floated:
-          they're the next thing after the last paragraph, so they sit where
-          the next paragraph would.
-
-          The two controls on the index, and the only elements above the fold
-          that aren't links in a list. That's the argument for both of them:
-          everything else here is somewhere to go, and these are the two
-          things a visitor might want to *take away*. A text link in the
-          Elsewhere list gives either one the same weight as a Twitter handle.
-
-          `flex-wrap` and not a grid: at 320px the pair breaks to two rows and
-          each keeps its own intrinsic width, which is what lets both labels
-          morph without the other one moving. */}
-      <div className="mt-6 flex flex-wrap items-center gap-2">
+          it's the next thing after the second paragraph, so it sits where
+          the next paragraph would. */}
+      <div className="mt-6">
         <DownloadResume />
-        <CopyEmail />
       </div>
-      <Now />
     </section>
   );
-}
-
-/* The freshest thing on the page, and one sentence of it.
-
-   It closes the intro rather than joining it. Sitting above the résumé
-   button it would have become a fourth paragraph (same size, same colour,
-   same colon-list shape as "Away from the screen:") and read as more bio.
-   Below the button, a step smaller and a step greyer, it reads as what it
-   is: a status line under a block that is otherwise permanent. The bio is
-   true for years; this is true for weeks, and the type says so.
-
-   No relative time and no `<time>`: the sentence never states its own age,
-   so there is nothing here for a clock to make wrong and nothing to
-   reconcile after hydration. It is either current enough to render or it is
-   not, and that is decided on the server. */
-function Now() {
-  if (differenceInCalendarDays(new Date(), parseISO(now.updated)) > NOW_MAX_AGE_DAYS) {
-    return null;
-  }
-
-  return <p className="text-body-sm text-foreground-subtle mt-8">{now.text}</p>;
 }
 
 /* The list is data rather than JSX children because the hover preview needs
@@ -387,7 +357,11 @@ function Section({
     <section id={id} className="mb-14 scroll-mt-24">
       {/* Inverse of the h1: 13px needs 500 to hold its own against the
           body copy beneath it, where 24px did not. */}
-      <h2 className="text-meta text-foreground-faint mb-2 px-3 font-medium">{title}</h2>
+      {/* No px-3. The rows below live in a -mx-3 wrapper that cancels their
+          own padding, so their marks sit on the column edge; padding here
+          would push the heading 12px inboard of the thing it labels, which
+          is the one alignment on the page a reader can see going wrong. */}
+      <h2 className="text-meta text-foreground-faint mb-2 font-medium">{title}</h2>
       <div className="-mx-3">{children}</div>
     </section>
   );

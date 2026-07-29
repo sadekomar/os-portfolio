@@ -44,10 +44,10 @@ const LABEL: Record<State, string> = {
 };
 
 /* ── Download résumé ──────────────────────────────────────────────────────
-   The first of the two buttons on the index, and the louder one: the résumé
-   is the thing a visitor is most likely to want to *take away* rather than
-   read. CopyEmail sits beside it and carries the other half of that; see the
-   note on the row in page.tsx.
+   The one button on the index, and the only element here that isn't a link
+   in a list. That is the argument for it: the résumé is the single thing a
+   visitor might want to *take away* rather than read, and a text link in
+   the Elsewhere list gives it the same weight as a Twitter handle.
 
    The pending state is real, not theatre. The PDF is fetched as a blob and
    the download is triggered from the result, so the spinner is bound to
