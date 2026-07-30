@@ -273,6 +273,12 @@ const workGroups: { title: string; items: WorkRow[] }[] = [
           "Equipment rental and maintenance operations, where a rental has no status column at all: it is an append-only chain of jobs, reconciled against unit state on every transition and again nightly.",
       },
       {
+        slug: "alunaut",
+        title: "Alunaut",
+        description:
+          "The daily site report for an aluminium and facade contractor, filed from a phone in Arabic, signed on the phone, and emailed to management as a PDF.",
+      },
+      {
         slug: "activity-management-platform",
         title: "UN Activity Management Platform",
         description: "Coordination for a UN agency across regions, scales, and stakeholders.",

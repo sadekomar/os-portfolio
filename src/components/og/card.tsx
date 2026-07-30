@@ -104,6 +104,8 @@ const MARK_FILES: Record<string, MarkFile> = {
   loom: { file: "loom.png" },
   argonaut: { file: "argonaut.svg" },
   argotemp: { file: "argotemp.png", field: true },
+  alunaut: { file: "alunaut.png", field: true },
+  "little-lads": { file: "little-lads.png", field: true },
   unitar: { file: "unitar.png" },
   dell: { file: "dell.svg" },
 };

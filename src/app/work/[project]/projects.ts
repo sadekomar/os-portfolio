@@ -9,6 +9,7 @@ export const projectOrder = [
   "argonaut",
   "argonaut-crm",
   "argotemp",
+  "alunaut",
   "activity-management-platform",
   "little-lads",
 ] as const;
@@ -90,12 +91,12 @@ export type Project = {
      case study" is a second place for it to go stale. The card would keep
      showing Argonaut's knot next to Argotemp's title long after anyone
      noticed. `import type` so this file takes the union without pulling the
-     eight image imports in behind it.
+     image imports in behind it.
 
-     Optional, because one case study has no mark: Little Lads was a client
-     with a wordmark and no symbol, and a logotype squeezed into the tile is
-     a worse copy of the title already sitting beside it. Those cards fall
-     back to the site's own monogram. */
+     Optional, and currently every case study sets one. It stays optional
+     because the mark has to be the organisation's, and a client who never
+     had a usable symbol is a real possibility rather than an oversight.
+     Those cards fall back to the site's own monogram. */
   mark?: MarkName;
   /* Outcome figures, pulled up out of the prose where they were buried.
      Optional and deliberately sparse: only projects with numbers that can
@@ -817,6 +818,7 @@ export const allProjects: Record<ProjectKeys, Project> = {
   },
   "little-lads": {
     title: "Little Lads",
+    mark: "little-lads",
     link: "littleladseg.com",
     intro:
       "Little Lads is a growing fashion brand focused on boys’ apparel. I rebuilt their Shopify storefront (navigation, landing page, and a set of custom Liquid components) to lift engagement and conversion.",
@@ -890,6 +892,113 @@ export const allProjects: Record<ProjectKeys, Project> = {
             },
           ],
         },
+      },
+    ],
+  },
+  alunaut: {
+    title: "Alunaut",
+    mark: "alunaut",
+    link: "alunaut.com.eg",
+    intro:
+      "Alunaut is an Egyptian aluminium and facade contractor. I designed and built the two internal apps their sites and their technical office run on: a daily site report filed from a phone in Arabic, signed on the phone by both the engineer and the manager, and a submittals and takeoff tracker for the drawings office behind it.",
+    role: "Design and engineering",
+    period: "2026",
+    stats: [
+      { value: "22", label: "Trade categories per report" },
+      { value: "124", label: "End-to-end tests, WebKit only" },
+    ],
+    technologies: {
+      backend: [
+        "Node.js",
+        "Postgres",
+        "Supabase",
+        "Prisma",
+        "Better Auth",
+        "AWS S3",
+        "Resend",
+        "Turborepo",
+        "Vercel",
+      ],
+      frontend: [
+        "TypeScript",
+        "Next.js",
+        "React",
+        "Tailwind",
+        "Radix UI",
+        "shadcn/ui",
+        "TanStack Query",
+        "TanStack Table",
+        "React Hook Form",
+        "Zod",
+        "React PDF",
+        "Playwright",
+        "Vitest",
+      ],
+    },
+    sections: [
+      {
+        title: "Context",
+        content: [
+          "Alunaut fabricate and install cladding, louvers, glass, sheet metal, marble and insulation. Two groups of people needed software and they needed different software. Site engineers file the day's record standing on a site, on a phone, in Arabic. The technical office tracks shop drawings out to the consultant and back, material takeoffs against the bill of quantities, and fabrication orders, at a desk, in English.",
+          "So it is two apps in one monorepo, sharing conventions and sharing nothing else. Separate databases, separate deployments, separate session cookies. The field app is the finished half and the one this case study is mostly about.",
+        ],
+      },
+      {
+        title: "Building for one phone, in one language, in one direction",
+        content: [
+          "The field app is Arabic, right to left, and mobile first, and none of those are a theme applied at the end. Arabic pluralisation is a grammar problem before it is a formatting one: one and two have their own words, three to ten take the plural, and eleven upward returns to the singular. Thirty-six lines handle it, because a list header reading “3 تقرير” is visibly broken to the site managers these screens are for.",
+          "Numerals inside that Arabic copy are Latin on purpose, because that is what site paperwork and the printed reports already use. Every date formatter is pinned to UTC, because a report's date is a calendar day stored at UTC midnight and a device-zone formatter renders the day before for anyone west of the line. The PDF gets a hyphenation callback that refuses to break words at all, because breaking an Arabic word mid-word destroys the letter joining and the output stops being readable.",
+        ],
+      },
+      {
+        title: "A report is a document, not a row",
+        content: [
+          "Every report gets a human serial, allocated once when it is created and never rewritten, so editing a draft's date does not renumber it. A correction gets a revision suffix rather than a new number: the base serial stays the handle for that day and the suffix says which take it is.",
+          "Submitting renders the Arabic A4 PDF, puts it in S3, and emails it to management with the bytes already in hand rather than reading them back out of the bucket. A failed email is not fatal and a failed PDF is. The send is idempotent against the PDF's version stamp, so a retried submit never double-sends but a genuinely new version always goes out. That stamp is written only when the upload succeeded, which makes “this report has a downloadable PDF” exactly one null check instead of a guess.",
+        ],
+      },
+      {
+        title: "One report per project per day, enforced in Postgres",
+        content: [
+          "The client checks for an existing report before letting an engineer start a new one, and routes them to it instead. That check is racy and cannot be anything else, so the constraint in the database is what actually holds the line and the duplicate-key error is mapped to a clean message rather than a stack trace.",
+          "The interesting part is the shape of it. The uniqueness covers project, date, and an archive sequence that is zero while a report is live and unique once it is archived, which frees the day for a corrected report while any number of archived ones coexist. Postgres could express that as a partial unique index instead, and it would be cleaner. It is a column because Prisma's schema language cannot describe a partial index, so the database would drift from the schema file on every migration, and a constraint the schema does not know about is a constraint that will eventually be dropped by accident.",
+        ],
+      },
+      {
+        title: "Archiving instead of deleting",
+        content: [
+          "Reports cascade from their author and their project, so deleting an engineer who has ever filed anything would take his entire report history, its PDFs and its site photos with it. The app refuses outright. People and projects are archived, and every read path adds the archived filter through one function per entity, so archiving stays invisible to queries written later by someone who has forgotten it exists.",
+          "There is one deliberate exception: audit lookups still resolve archived names, because a report names its author and an archived engineer's name has to keep rendering on the reports he filed. Archiving also has to stop the account signing in, which a filter cannot do, so it bans the account and drops its sessions in the same operation. The stamp recording who archived a record is a plain column rather than a foreign key, specifically so it survives that admin's own removal.",
+          "Project codes are retired on archive rather than released back into the pool. The code is the leading segment of every report serial that project ever produced, and those serials are printed on PDFs already sitting in management inboxes. Releasing the code would let a future project mint serials indistinguishable from them, permanently.",
+        ],
+      },
+      {
+        title: "The date is the server's to decide",
+        content: [
+          "A report's date is not a field the engineer fills in. It is the day the work happened, resolved server side in Cairo time, and whatever the client sent is discarded. Cairo is three hours ahead of UTC, so a UTC-derived date files every report written between midnight and three in the morning under the previous day, and a device clock is trivially wrong or wrong on purpose.",
+          "The one carve-out is a backdating permission, which exists so that the date is an editable input at all, for the single role trusted to correct the record after the fact. Work weeks start on Saturday, and are keyed in URLs by their start date rather than an ISO week number, which sidesteps the trap where the first days of January belong to the previous year's week fifty-three.",
+        ],
+      },
+      {
+        title: "Photos, downscaled on the phone",
+        content: [
+          "Downscaling is the feature, not an optimisation. A site phone hands you an eight to twelve megabyte photo and the engineer is on whatever cellular signal the site has. Resizing to 1600px on the long edge in the browser is more than the A4 PDF needs and lands around 300KB. Honouring the image's own orientation flag is load-bearing on iOS: without it every portrait site photo uploads on its side. Re-encoding also strips the EXIF block, GPS included.",
+          "Uploads go straight from the browser to S3 with a presigned URL, because the hosting platform caps server action bodies well below what a photo needs. A presigned PUT is a capability handed to a browser, so the server checks the object's real size and type afterwards before it writes any row, and only ever presigns the file extensions the app itself produces, which is what keeps report PDFs stored under the same prefix out of the photo paths. A report has no id until its first save, so uploads land in a drafts prefix and are re-homed server side once it does, which is what makes an expiry rule on that prefix a safe way to collect the abandoned ones.",
+        ],
+      },
+      {
+        title: "Roles as capabilities, not a switch statement",
+        content: [
+          "Three roles, thirteen permission statements. Deleting and archiving a report are separate capabilities because they do different things to the data: a draft really goes, a submitted report only hides. A site engineer may delete his own draft and may never archive a submitted report, because once submitted it has been emailed to management and stopped being his.",
+          "On projects the same split exists for a different reason. Deleting a project cascades to every report ever filed against it and is unrecoverable, so it stays with the admin. Archiving is reversible bookkeeping and the normal end of a project's life, so it also goes to the project manager, who created it and knows when it has finished. Row-level scoping lives in one function per entity so it cannot be sidestepped by guessing an id, and the project picker hiding unassigned projects is convenience: the server checks again.",
+        ],
+      },
+      {
+        title: "Testing on the browser the workers actually use",
+        content: [
+          "Every browser test runs WebKit on an iPhone profile, deliberately, because Chrome's rendering hides the bugs this app actually has: safe-area insets, native date and time controls, sticky elements over backdrop filters, and the difference between viewport height and dynamic viewport height. There are 124 of them across thirteen specs.",
+          "The suite builds and serves the app rather than running the dev server, which compiles routes on demand and took minutes to settle under parallel WebKit contexts. Specs are partitioned into readers and writers, with the writers quarantined to run after every reader finishes, because otherwise the aggregate counts read a report another spec is halfway through creating and the failure looks exactly like a scoping bug it is not. CI verifies that the migration history reproduces the schema file from an empty database, and deliberately leaves the mail and storage credentials unset so it cannot write to the real bucket, with the suite asserting the unconfigured behaviour rather than skipping past it.",
+        ],
       },
     ],
   },
