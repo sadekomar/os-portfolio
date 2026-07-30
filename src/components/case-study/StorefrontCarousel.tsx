@@ -295,17 +295,20 @@ export function StorefrontCarousel() {
 
      `stopPropagation` as well as `preventDefault`, and it is the important
      half. The case study binds ← and → on `window` to move between projects
-     (see Pager), on the reasoning that nothing on a case study scrolls
-     sideways so the horizontal pair is free. This block is the first thing
-     that does, and without the stop, pressing ← inside a focused gallery
-     scrubbed one image back *and* navigated to the previous case study.
-     `preventDefault` alone can't help: the Pager's listener is on `window`,
-     so the event still reaches it.
+     (see sequence/Pager), on the reasoning that nothing on a case study
+     scrolls sideways so the horizontal pair is free. This block is the first
+     thing that does, and without the stop, pressing ← inside a focused
+     gallery scrubbed one image back *and* navigated to the previous case
+     study. `preventDefault` alone can't help: the pager's listener is on
+     `window`, so the event still reaches it.
 
-     The rule that resolves it is the one the Pager already applies to inputs
+     The rule that resolves it is the one the pager already applies to inputs
      and textareas: a focused control owns the keys it uses, and the global
      shortcut gets what's left. This just asserts it from the control's end,
-     so the gallery doesn't need the Pager to know it exists. */
+     so the gallery doesn't need the pager to know it exists. The pager knows
+     anyway now, since this strip is a `role="slider"` and that is on its list
+     of things that own the arrows, but a control that defends its own keys
+     does not depend on being on anybody's list. */
   const onKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
       const step =

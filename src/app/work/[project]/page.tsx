@@ -10,9 +10,9 @@ import {
   type ProjectKeys,
 } from "@/app/work/[project]/projects";
 import { CaseStudyFigure } from "@/components/case-study/Figure";
-import { CaseStudyLineNav } from "@/components/case-study/LineNav";
-import { CaseStudyPager } from "@/components/case-study/Pager";
 import { CaseStudyStats } from "@/components/case-study/Stats";
+import { SequenceLineNav, SequenceRail } from "@/components/sequence/LineNav";
+import { SequencePager } from "@/components/sequence/Pager";
 import { slugify } from "@/lib/slug";
 
 export const dynamicParams = false;
@@ -212,23 +212,19 @@ export default async function Project({ params }: { params: Promise<{ project: s
 
       {/* Sticky rather than fixed so it belongs to the article's own
           coordinate space: it starts on the header's line and then holds
-          itself at eye height for the rest of the scroll. */}
-      {/* 1440 rather than a named breakpoint: the rail needs its widest title
-          plus a clear 48px of air before the 640px column starts, and that
-          arithmetic lands between xl and 2xl. Below it the rail would either
-          crowd the prose or have to truncate, and a contents page that hides
-          half its own titles isn't worth the margin. */}
-      <div className="absolute inset-y-0 left-0 hidden min-[1440px]:block">
-        <div className="sticky top-1/2 -translate-y-1/2 pl-8">
-          <CaseStudyLineNav
-            items={projectOrder.map((slug) => ({
-              title: allProjects[slug].title,
-              href: `/work/${slug}`,
-            }))}
-            activeHref={`/work/${key}`}
-          />
-        </div>
-      </div>
+          itself at eye height for the rest of the scroll. The breakpoint and
+          the positioning live in SequenceRail now, shared with the
+          components and the posts. */}
+      <SequenceRail>
+        <SequenceLineNav
+          label="Case studies"
+          items={projectOrder.map((slug) => ({
+            title: allProjects[slug].title,
+            href: `/work/${slug}`,
+          }))}
+          activeHref={`/work/${key}`}
+        />
+      </SequenceRail>
 
       <header className="mx-auto flex w-full max-w-measure-gutter px-6 flex-col gap-16">
         {/* Out of the sequence on the left, along it on the right. Both
@@ -243,9 +239,12 @@ export default async function Project({ params }: { params: Promise<{ project: s
             Work
           </Link>
 
-          <CaseStudyPager
+          <SequencePager
             previous={previous && { slug: previous, title: allProjects[previous].title }}
             next={next && { slug: next, title: allProjects[next].title }}
+            basePath="/work"
+            indexPath="/#work"
+            labels={{ previous: "Previous case study", next: "Next case study" }}
           />
         </div>
 

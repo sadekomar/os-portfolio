@@ -5,6 +5,8 @@ import { notFound } from "next/navigation";
 
 import { PostBody } from "@/components/blog/Prose";
 import { Icon } from "@/components/icon/Icon";
+import { SequenceLineNav, SequenceRail } from "@/components/sequence/LineNav";
+import { SequencePager } from "@/components/sequence/Pager";
 import { formatDate, getPost, posts } from "@/data/posts";
 
 export const dynamicParams = false;
@@ -75,9 +77,16 @@ export default async function Post({ params }: { params: Promise<{ slug: string 
 
   const index = posts.findIndex((entry) => entry.slug === slug);
   /* `posts` is newest first, so the *next* entry in the array is the older
-     post. Only one direction is offered, and it is backwards: at the end of
-     a post the useful move is further into the archive, not back toward
-     something the reader has already scrolled past on the index. */
+     post, and moving forward through the sequence means moving back through
+     time. That is the same direction J and → mean everywhere else here: down
+     the list, which is what the rail on the left is also drawing.
+
+     The footer link stays one-directional. In the header both arrows are
+     offered, because the pager is a control and a control that only works one
+     way has to explain itself; at the end of a post the useful move is
+     further into the archive, not back toward something the reader has
+     already scrolled past on the index. */
+  const newer = posts[index - 1];
   const older = posts[index + 1];
 
   const url = `${siteUrl}/blog/${post.slug}`;
@@ -130,20 +139,49 @@ export default async function Post({ params }: { params: Promise<{ slug: string 
   };
 
   return (
-    <article className="bg-surface-paper py-20 text-foreground">
+    <article className="bg-surface-paper relative py-20 text-foreground">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify([breadcrumbJsonLd, postJsonLd]) }}
       />
 
+      {/* The same rail the work and the components carry, for the same
+          reason: a post arrived at from search should be able to show what
+          else was written without sending the reader back to the index. A
+          post has no full-bleed imagery, so the rail never has to yield here,
+          and it never has to compete either. */}
+      <SequenceRail>
+        <SequenceLineNav
+          label="Writing"
+          items={posts.map((entry) => ({ title: entry.title, href: `/blog/${entry.slug}` }))}
+          activeHref={`/blog/${post.slug}`}
+        />
+      </SequenceRail>
+
       <div className="max-w-measure-gutter mx-auto flex w-full flex-col px-6">
-        <Link
-          href="/blog"
-          className="text-case-caption inline-flex w-fit items-center gap-1.5 rounded-sm text-foreground-faint transition-colors duration-150 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/20 focus-visible:outline-none"
-        >
-          <Icon name="back" size="micro" />
-          Writing
-        </Link>
+        {/* Out of the sequence on the left, along it on the right, both on
+            one line, the way a case study opens. */}
+        <div className="flex items-center justify-between">
+          <Link
+            href="/blog"
+            className="text-case-caption inline-flex w-fit items-center gap-1.5 rounded-sm text-foreground-faint transition-colors duration-150 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/20 focus-visible:outline-none"
+          >
+            <Icon name="back" size="micro" />
+            Writing
+          </Link>
+
+          {/* "Newer" and "Older" rather than "Previous" and "Next": the list
+              is dated and ordered by date, so time is the axis the reader is
+              actually moving along, and previous/next would leave them to
+              guess which way that runs. */}
+          <SequencePager
+            previous={newer && { slug: newer.slug, title: newer.title }}
+            next={older && { slug: older.slug, title: older.title }}
+            basePath="/blog"
+            indexPath="/blog"
+            labels={{ previous: "Newer post", next: "Older post" }}
+          />
+        </div>
 
         <header className="mt-16 flex flex-col gap-3">
           {/* The one place on a post the serif runs past 24px, the same
