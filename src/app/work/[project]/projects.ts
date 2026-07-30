@@ -28,6 +28,44 @@ import ladsPreview from "./(lads)/ll-preview.png";
 import ladsProblem from "./(lads)/ll-problem.png";
 import ladsTestimonials from "./(lads)/ll-testimonials.png";
 
+/* Captured off the live sites at 1440x900 and deviceScaleFactor 2, so a 2880px
+   master feeds the 1036px tile at 2x with room to spare. WebP rather than PNG
+   because these are photographs of real pages, not the flat Figma exports the
+   other case studies ship: the shots carrying photography are lossy, and the
+   three that are mostly type and rules are lossless, which for flat UI came
+   out both smaller than the PNG and pixel-exact. */
+import tnnPreview from "./(tnn)/tnn-preview.webp";
+import tnnBriefings from "./(tnn)/tnn-briefings.webp";
+import tnnBureaus from "./(tnn)/tnn-bureaus.webp";
+import tnnArchive from "./(tnn)/tnn-archive.webp";
+import tnnWholana from "./(tnn)/tnn-wholana.webp";
+
+/* Captured out of the running app at 1440x900 and deviceScaleFactor 2, same
+   spec as the TNN shots, on a seeded workspace rather than a mock: the
+   corpus, the counts and the Arabic captions are the real thing. The cursors
+   and name flags belonging to other members are live presence caught in
+   frame, not drawn on afterwards. Lossy WebP for the shots carrying video
+   thumbnails, which is nearly all of them; the collaborative script page is
+   flat type and came out smaller lossless. */
+import wholanaExplore from "./(wholana)/wholana-explore.webp";
+import wholanaCraft from "./(wholana)/wholana-craft.webp";
+import wholanaDashboard from "./(wholana)/wholana-dashboard.webp";
+import wholanaFilterBuilder from "./(wholana)/wholana-filter-builder.webp";
+import wholanaSwipeFile from "./(wholana)/wholana-swipe-file.webp";
+import wholanaCreator from "./(wholana)/wholana-creator.webp";
+import wholanaSubjects from "./(wholana)/wholana-subjects.webp";
+import wholanaYourVideos from "./(wholana)/wholana-your-videos.webp";
+import wholanaAsk from "./(wholana)/wholana-ask.webp";
+import wholanaScript from "./(wholana)/wholana-script.webp";
+import wholanaScriptsBoard from "./(wholana)/wholana-scripts-board.webp";
+import wholanaMembers from "./(wholana)/wholana-members.webp";
+import wholanaNotifications from "./(wholana)/wholana-notifications.webp";
+
+import argoPreview from "./(argonaut)/argo-preview.webp";
+import argoPartnerships from "./(argonaut)/argo-partnerships.webp";
+import argoExpertise from "./(argonaut)/argo-expertise.webp";
+import argoArms from "./(argonaut)/argo-arms.webp";
+
 import unPreview from "./(un)/un-preview.png";
 import unActions from "./(un)/un-actions.png";
 import unBooks from "./(un)/un-books.png";
@@ -212,12 +250,29 @@ export const allProjects: Record<ProjectKeys, Project> = {
         "Figma",
       ],
     },
+    hero: {
+      images: [
+        {
+          src: wholanaExplore,
+          alt: "The Wholana Explore feed: a row of saved lenses across the top, an active filter set reading hook archetype is any of “Relatable observation, Relatable s…”, shareability driver is any of “Humor tag friend, Relatable mirror”, views is over 100K and likes is over 1%, then 100 videos sorted by outlier score as a grid of Arabic TikTok thumbnails, each card carrying views, likes, comments, saves and its outlier multiple",
+        },
+        {
+          src: wholanaCraft,
+          alt: "A video page: the TikTok clip playing on the left, the creator's stats across the top (319.7K views, 18.7K likes, 21.3× outlier), and the Craft panel reading the video beat by beat, opening with the hook quoted in translation at 0:00 to 0:03, labelled a relatable observation with high specificity, and the video's own comments listed down the right",
+        },
+        {
+          src: wholanaDashboard,
+          alt: "The personal dashboard: a results row for hit rate, views earned, posts in the last 30 days and followers gained, then “Where your videos win and lose” scoring stop-scroll, retention, stakes and engagement with engagement flagged as a weak spot, a production pipeline count from swipe ideas to posted, and a follower growth chart since joining",
+        },
+      ],
+      caption: "The Explore feed, a decoded video, and the personal dashboard.",
+    },
     sections: [
       {
         title: "Context",
         content: [
           "Wholana helps Egyptian and MENA creators study what is working on TikTok and make their own version of it. Every video is read through three axes: Craft (how the video works), Subject (what it is about), and Creator equity (who is behind it). The point is legibility rather than data volume, so the user closes a video page able to say exactly why it hit.",
-          "The corpus is Arabic-first, in Egyptian dialect, which is most of the reason the tooling had to be built rather than bought. I designed and built the whole thing solo: a monorepo of six deployed services around one Postgres, plus the marketing site and the brand.",
+          "The corpus is Arabic-first, in Egyptian dialect, which is most of the reason the tooling had to be built rather than bought. I designed and built the whole thing solo: a monorepo of seven first-party deployables that run as eleven services in production around one Postgres, plus the marketing site and the brand.",
         ],
       },
       {
@@ -235,6 +290,36 @@ export const allProjects: Record<ProjectKeys, Project> = {
           "Explore is the home surface: natural-language search over the corpus, a filter builder across subject, craft, creator and video metrics, sorting by outlier score, and saved filter sets called lenses. Around it sit the swipe file (collections of saved videos with notes), Scripts, creator profiles with a craft signature, the five craft vocabularies as browsable libraries, a personal dashboard that benchmarks the user's own account against their niche, and Your Videos, which grades their posted work and hands them back into research.",
           "Ask Wholana is the conversational layer over all of it: an in-app agent that searches videos, pulls a video's craft analysis, and can drive the Explore filters on the user's behalf. Behind the product there is an admin Control Room and a Newsroom, both internal.",
         ],
+        figure: {
+          images: [
+            {
+              src: wholanaFilterBuilder,
+              alt: "The filter builder open over the Explore feed: a searchable menu grouped into Subject, Creator, Craft and Stats, with the five craft vocabularies listed as hook archetype, narrative structure, stake type, shareability driver and video format, and a count badge on each facet already filtered",
+            },
+            {
+              src: wholanaSwipeFile,
+              alt: "The swipe file: a column of collections down the left including Inbox, “winning hooks” and “Built to be shared” with counts, the 126 saved videos in the middle, and a saved video on the right showing its views, likes, comments and shares over a notes field and a “Turn into script” button",
+            },
+            {
+              src: wholanaCreator,
+              alt: "A creator profile for Shimaa Sharaf: 1.5M followers up 36.4%, 46M likes, 44K median views described as 0.6× the reader's own baseline, 197 tracked videos, then a Hits row of her best performing videos with outlier multiples from 36.2× down to 16.2×",
+            },
+            {
+              src: wholanaSubjects,
+              alt: "The Subjects index: 77 reviewed topics grouped into cards for Home & Lifestyle, Food & Drink, Beauty & Grooming, Comedy & Skits and Relationships & Family, each row carrying a trend multiple, a heat count and a video count",
+            },
+            {
+              src: wholanaYourVideos,
+              alt: "The Your Videos page: a 26% hit rate against a 77.2K baseline, a posting cadence heatmap marking each day a hit, a watch or a miss, and a “Your craft” panel reading the user's own pattern back as a sentence, with hook archetypes ranked by hit rate underneath",
+            },
+            {
+              src: wholanaAsk,
+              alt: "The Ask Wholana panel open beside the feed, offering starting searches such as “Beauty videos with personal-identity stakes”, “Comment-bait sorted by engagement” and “Lifestyle videos punching above their size”",
+            },
+          ],
+          caption:
+            "The filter builder, the swipe file, a creator profile, the subject index, Your Videos, and Ask Wholana.",
+        },
       },
       {
         title: "Ingestion as durable workflows",
@@ -243,12 +328,22 @@ export const allProjects: Record<ProjectKeys, Project> = {
           "All of it runs on Temporal. Workflow code is deterministic and every piece of I/O is an activity, which buys two things that mattered more than they sound: a deploy in the middle of a sweep resumes rather than losing the night, and exactly-one-sweep-at-a-time is enforced by the workflow engine instead of a global boolean that only holds within one process.",
           "The same machinery runs the paths a user waits on. Onboarding and shared links are multiplexed by batcher workflows that hold a short window so near-simultaneous requests become one scrape run, then process the bundle newest-first, so a new user gets a tailored reveal in minutes while the rest of their backlog fills in behind it.",
         ],
+        figure: {
+          images: [
+            {
+              src: wholanaNotifications,
+              alt: "The notifications panel open over the feed, listing workspace invitations alongside “41 new videos in your niches”, broken down as Storytelling 14, Creator & Internet Culture 10, Fitness & Health 8 and 3 more",
+            },
+          ],
+          caption: "What a finished sweep looks like from the reader's side.",
+        },
       },
       {
         title: "Writing our own scraper",
         content: [
           "The pipeline started on a paid third-party actor. It now runs mostly on a scraper I wrote, deployed as its own service that knows nothing about Wholana: usernames in over HTTP, generic posts and authors out, no database and no domain types. Comments are the one path still on the paid provider, which the design accounts for rather than hides.",
-          "Both live behind one seam. A Scraper knows how to start a run and how to fetch the binaries it produced, and no module, route or type is allowed to bake a vendor's name into its identifiers, so swapping providers touches the adapter and nothing downstream. Requests go out through a residential proxy, and a canary endpoint watches for the day the upstream's bot cohort changes underneath us.",
+          "Both live behind one seam. A Scraper knows how to start a run and how to fetch the binaries it produced, and no module, route or type is allowed to bake a vendor's name into its identifiers, so swapping providers touches the adapter and nothing downstream.",
+          "My own scraper goes out on stock HTTP: no proxy, no browser, no challenge solver, and zod as its only runtime dependency. The last full sweep measured 860 clean responses out of 860 handles. A canary endpoint watches for the day the upstream's bot cohort changes underneath us, and the answer if it ever does is to move egress rather than to start bolting on a solver.",
         ],
       },
       {
@@ -264,6 +359,20 @@ export const allProjects: Record<ProjectKeys, Project> = {
           "Scripts are collaborative: two people in the same draft, with live cursors. That runs on a small standalone Hocuspocus server, Yjs documents over WebSockets, deployed on its own so the collaboration path does not carry the weight of the ingestion backend.",
           "The constraint I set was that presence must never touch Postgres. Cursors and the workspace facepile ride the Yjs awareness protocol and live only in memory; the only database writes are debounced document snapshots, which is strictly less load than the autosave it replaced. A script's body is deliberately stored twice: the Yjs binary as the rich source of truth, and a flattened text projection that lists, search, the MCP tools and the WhatsApp bot all keep reading unchanged. None of them had to learn what a CRDT is.",
         ],
+        figure: {
+          images: [
+            {
+              src: wholanaScript,
+              alt: "A script open in the editor with two other members' cursors and name flags sitting live in the text, the draft reading “How I grew my account from 2,000 followers to 65,000 followers”, a word count and spoken runtime under it, and a Script check panel on the right grading the draft's subject, structure and stakes",
+            },
+            {
+              src: wholanaScriptsBoard,
+              alt: "The Scripts board: counts for drafts, ready to shoot, posted and average references per script, then a grid of draft cards each showing its opening hook, its status, its reference count and when it was last touched",
+            },
+          ],
+          caption:
+            "A shared draft with two other members' cursors in it, and the Scripts board.",
+        },
       },
       {
         title: "Search over Arabic speech",
@@ -300,6 +409,16 @@ export const allProjects: Record<ProjectKeys, Project> = {
           "Wholana is properly multi-tenant: a personal workspace per user, a switcher, invitations, and seat-based team billing through Polar with three live plans. Collections, lenses and scripts belong to the workspace rather than to a person, so research done by one member compounds for everyone else instead of being trapped in their account.",
           "Auth runs on Better Auth with Google OAuth and One Tap. The session cookie is scoped across subdomains on purpose: it is what lets the app's session authorise the sync engine on a different host, which is the sort of detail that is invisible when it works and a login loop when it does not.",
         ],
+        figure: {
+          images: [
+            {
+              src: wholanaMembers,
+              alt: "The workspace members screen: a header reading “6 members · $120/mo”, an invite field with a role selector, and the member list with one owner and five members, under a line explaining that each invite adds $20 a month prorated from the day they accept",
+            },
+          ],
+          caption:
+            "Seats are the billing unit, so the invite screen quotes the bill.",
+        },
       },
       {
         title: "The product in WhatsApp",
@@ -346,6 +465,23 @@ export const allProjects: Record<ProjectKeys, Project> = {
       backend: ["Node.js", "Payload CMS", "Postgres", "Wholana API"],
       frontend: ["TypeScript", "Next.js", "React", "Tailwind", "Figma"],
     },
+    hero: {
+      images: [
+        {
+          src: tnnPreview,
+          alt: "The TNN home page: a red breaking-news bar reading “TNN is live on TikTok, new episode every night”, the headline “The Cure for Brain Rot” with “Brain Rot” struck through in yellow highlighter, and a row of stats for on-air date, stories covered, and straight faces broken",
+        },
+        {
+          src: tnnBriefings,
+          alt: "The “This week's briefings” row on the TNN home page: six episode cards numbered EP. 061 down to EP. 055, each with a dated header, a black-and-white still from the broadcast carrying a lower-third caption, and an episode title such as “TNN61: The Match In China”",
+        },
+        {
+          src: tnnBureaus,
+          alt: "The Bureaus section, “Five desks. One network.”: a flagship panel for The Nightly showing cadence, beat and an ON AIR status, above a four-column row for The Debates, Field Reports, TNN Stocks and On the Record, each with its own status chip",
+        },
+      ],
+      caption: "The front page, the week's briefings, and the five nightly desks.",
+    },
     sections: [
       {
         title: "Context",
@@ -360,6 +496,16 @@ export const allProjects: Record<ProjectKeys, Project> = {
           "A nightly show is a nightly deadline. The hard constraint is not production, it is knowing what actually happened on the Egyptian internet that day before the rest of the internet does, every single day, without spending the whole day scrolling.",
           "TNN runs on Wholana, the research platform I built. It aggregates posts from Egypt's 2,000 most popular TikTok creators and lets me filter by engagement and date window, so the show's rundown is a query rather than a scroll. Curation becomes a data problem with a repeatable answer, which is the only reason a nightly cadence is sustainable solo.",
         ],
+        figure: {
+          images: [
+            {
+              src: tnnWholana,
+              alt: "The “Engineering behind TNN: Wholana” section, pairing a research, signals and output summary with a screenshot of the Wholana explore feed: a sidebar of research and creator tools beside a grid of TikTok posts, each showing views, likes, comments, shares and an outlier multiplier",
+            },
+          ],
+          caption:
+            "The site says the quiet part out loud: the show's rundown is a filtered feed, not a scroll.",
+        },
       },
       {
         title: "The website",
@@ -367,6 +513,15 @@ export const allProjects: Record<ProjectKeys, Project> = {
           "The site is the show's archive and its front door: every episode gets a written briefing, so the coverage is searchable and linkable long after the video scrolls past. It is built on Next.js with Payload as the CMS, which matters because the editorial workflow has to be fast enough to publish a recap right after air without a deploy.",
           "The design carries the same joke as the show. Broadcast typography, a rigid grid, stat lines and desk names presented straight. The visual seriousness is what makes the subject matter funny, so the design had to commit fully rather than wink.",
         ],
+        figure: {
+          images: [
+            {
+              src: tnnArchive,
+              alt: "The TNN articles index: an ARCHIVE bar reading “full text articles for shipped broadcasts”, the heading “Article briefings”, and an archive-file panel headed “Every published briefing, latest first” with a count of 54 briefings on file",
+            },
+          ],
+          caption: "Every episode gets a written briefing, so the coverage stays searchable.",
+        },
       },
       {
         title: "Why it matters as engineering work",
@@ -390,8 +545,8 @@ export const allProjects: Record<ProjectKeys, Project> = {
       { value: "70+", label: "Brand partnerships" },
     ],
     technologies: {
-      backend: ["Python", "Postgres", "Prisma", "Redis", "TensorFlow"],
-      frontend: ["TypeScript", "Next.js", "React", "Figma"],
+      backend: ["Python", "Scrapy", "Postgres", "Prisma", "ZenStack", "Redis", "Better Auth", "AWS S3"],
+      frontend: ["TypeScript", "Next.js", "React", "Tailwind", "Radix UI", "Motion", "TanStack Query", "Figma"],
     },
     hero: {
       images: [
@@ -437,7 +592,7 @@ export const allProjects: Record<ProjectKeys, Project> = {
       {
         title: "Labelling Algorithm & Data Analysis",
         content: [
-          "To enable the filters and improved search, I created an algorithm that labels the items. The loom database is quite large with about 17,000 items and 65,000 unique colors/sizes. I started out with cleaning and preprocessing the data such as fixing spelling inconsistencies, such as blue and bluee.  Then, I did data normalization by grouping together synonyms of colors such sky and blue into a single parent color.",
+          "To enable the filters and improved search, I created an algorithm that labels the items. The loom database is quite large: 20,000 items, 92,000 images, and 8,059 distinct raw size strings, because every brand writes its sizes its own way. I started out with cleaning and preprocessing the data such as fixing spelling inconsistencies, such as blue and bluee. Then, I did data normalization by grouping together synonyms of colors such sky and blue into a single parent color. All of it collapses down to 19 canonical colours, 19 materials and 48 categories, which is what makes a filter panel possible at all.",
           "Based on the uncovered synonyms, inconsistencies, and data gathered from the original websites, I created a labeler that works really well on new items from new brands. It enables very rich filters and search all automatically.",
           "Try to go on other platforms and search for White Shirt and see which one has the most relevant results!!",
         ],
@@ -486,8 +641,11 @@ export const allProjects: Record<ProjectKeys, Project> = {
       {
         title: "Migration to Univyr",
         content: [
-          "As scale grew, the early SQLite and Flask stack was rebuilt on Postgres with Prisma and Redis caching. The Python scrapers were restructured around SOLID principles, with custom context managers handling DB locks, exception handling, and logging. Search moved to vector embeddings to handle the heterogeneity of Egyptian brand catalogs. TensorFlow drove ML data labeling and image classification to enrich the product catalog.",
-          "Auth moved to a session-based model. The product was rebranded as Univyr and the surface was redesigned end to end in Figma.",
+          "As scale grew, the early SQLite and Flask stack was rebuilt on Postgres with Prisma, ZenStack and Redis caching. ZenStack owns the schema language, which means row-level access policies are declared next to the models and enforced by one enhanced client rather than re-checked in every handler.",
+          "Search was rebuilt rather than replaced. A weighted tsvector ranks the item name above its URL slug above its description, behind a GIN index, with two custom Postgres functions doing the unglamorous work: one masks the tokens the English stemmer would mangle, so tee and polos and half the brand names survive, and one mines the last path segment out of the product URL. In front of that sits an n-gram parser that slides 4-grams down to 1-grams across the query and matches each against five hand-built synonym dictionaries, largest first so the long matches win. It strips what it matched out of the query and only full-text-searches the leftovers, so “blue linen shirt from antikka” arrives at the database as four structured facets and an empty text search.",
+          "The scraper was rewritten from BeautifulSoup and Selenium onto Scrapy, and stopped parsing HTML at all: most Egyptian brands run Shopify, so it reads the products JSON endpoint directly and validates every response against a Pydantic model, which turns a brand silently changing its catalog shape into a logged error attributed to that brand. Writes go in as bulk upserts through a four-stage dependency order inside one transaction per brand. Fifty requests run in parallel across brands but only one at a time per domain. The best run did 371,000 items in sixteen minutes.",
+          "Labelling stayed deterministic. The synonym dictionaries do the work, and the vision classifier that would replace them is still a prototype rather than a shipped system.",
+          "Auth moved from a signed session cookie to Better Auth, with organisations for multi-tenancy, two-factor, Google One Tap, and Apple, Google and TikTok sign-in. The product was rebranded as Univyr and the surface was redesigned end to end in Figma.",
           "The storefront was rebuilt in Next.js. The block below is its product gallery, running here as it shipped.",
         ],
         artifact: "storefront-carousel",
@@ -524,14 +682,31 @@ export const allProjects: Record<ProjectKeys, Project> = {
     role: "Design and engineering",
     period: "2025 – 2026",
     technologies: {
-      backend: ["Node.js", "Postgres", "Prisma"],
-      frontend: ["TypeScript", "Next.js", "React", "Tailwind", "Figma"],
+      backend: ["Node.js", "Postgres", "Prisma", "Better Auth", "AWS S3", "Resend", "Turborepo", "Vercel"],
+      frontend: ["TypeScript", "Next.js", "React", "Tailwind", "Radix UI", "Motion", "Tiptap", "TanStack Query", "Figma"],
+    },
+    hero: {
+      images: [
+        {
+          src: argoPreview,
+          alt: "The Argonaut home page: a pill-shaped navigation bar over an aerial photograph of a tanker moored alongside a jetty, with the headline “HVAC, MEP & Fire Safety Specialists in Egypt” and a “Discover our services” button",
+        },
+        {
+          src: argoArms,
+          alt: "The “Business arms” section in two columns: Supply network under a TRADING label and Project delivery under a SERVICES label, each with a photograph and a scope strip, listing equipment supply, supplier coordination and commissioning on one side, and engineering, procurement and construction, and maintenance on the other",
+        },
+        {
+          src: argoPartnerships,
+          alt: "The strategic partnerships section, “Trading partners with industry leaders”: a row of manufacturer wordmarks including Halton, Gonair, Aironn, Trane, Red Shield, Volute, Gerpaas and Enposs, above a numbered capabilities list for energy optimization, cost savings and sustainability, and a featured-partner panel",
+        },
+      ],
+      caption: "The home page, the two business arms, and the manufacturer partnerships.",
     },
     sections: [
       {
         title: "Context",
         content: [
-          "Argonaut runs two integrated arms: trading, which supplies equipment and handles supplier coordination and commissioning, and services, which covers engineering, procurement, construction, and maintenance. They work across oil and gas, defense, healthcare, marine, and infrastructure, and partner with manufacturers including Halton, Trane, Aironn, and Gonair.",
+          "Argonaut supplies equipment and delivers the engineering around it, across oil and gas, defense, healthcare, marine, and infrastructure, partnering with manufacturers including Halton, Trane, Aironn, and Gonair.",
           "The site had to do a specific job: convince a procurement engineer or consultant that this firm can be trusted with a large scope of work, then get them to a quote request quickly.",
         ],
       },
@@ -541,6 +716,16 @@ export const allProjects: Record<ProjectKeys, Project> = {
           "I led SEO strategy and information architecture for the site. The structure is built around how procurement buyers actually search, which is rarely by company name. They search by capability, by sector, and by manufacturer.",
           "So the IA is cut along those axes: expertise domains (electrical, fire safety, HVAC, mechanical, plumbing), capabilities (engineering and design, procurement, installation, maintenance, trading), and sectors served. That gives real content depth on the terms that matter while keeping every page a short path to a quote request.",
         ],
+        figure: {
+          images: [
+            {
+              src: argoExpertise,
+              alt: "The Argonaut expertise page: a dark header reading “What we engineer” with a “Domains · 05” marker, above cards for Electrical, Fire Safety, HVAC, Mechanical and Plumbing, each carrying a one-line technical scope",
+            },
+          ],
+          caption:
+            "One axis of the IA as its own page: the five expertise domains, each addressable.",
+        },
       },
       {
         title: "The CMS",
@@ -572,7 +757,7 @@ export const allProjects: Record<ProjectKeys, Project> = {
       {
         title: "Context",
         content: [
-          "Argonaut's commercial process runs on quotes. An RFQ comes in, equipment gets specced, suppliers get approached, a consultant signs off, and a number goes out that may be worth millions. Before the CRM, that lifecycle lived across spreadsheets and inboxes, which is workable right up until someone needs to answer a question about a quote nobody remembers.",
+          "Argonaut's commercial process runs on quotes. An RFQ goes out to suppliers, equipment gets specced, a price comes back, and a number goes out to the client with consultants and contractors tracked as counterparties alongside it. Before the CRM, that lifecycle lived across spreadsheets and inboxes, which is workable right up until someone needs to answer a question about a quote nobody remembers.",
           "I designed and built the system the team now uses every day to run that pipeline.",
         ],
       },
@@ -605,8 +790,8 @@ export const allProjects: Record<ProjectKeys, Project> = {
     role: "Design and engineering",
     period: "2025",
     technologies: {
-      backend: ["Node.js", "Postgres", "Prisma"],
-      frontend: ["TypeScript", "Next.js", "React", "Tailwind"],
+      backend: ["Node.js", "Neon Postgres", "Prisma", "Server Actions", "Vercel Cron", "JWT", "bcrypt"],
+      frontend: ["TypeScript", "Next.js", "React", "Tailwind", "Radix UI", "TanStack Query", "Recharts"],
     },
     sections: [
       {
@@ -624,7 +809,7 @@ export const allProjects: Record<ProjectKeys, Project> = {
       {
         title: "Billing lifecycle",
         content: [
-          "Monthly invoicing, job extensions, and renewals are modeled as first-class events on the rental, so the billing view is a projection of the lifecycle rather than a parallel spreadsheet the operators have to keep in sync.",
+          "Invoices hang off the rental as first-class records rather than a parallel spreadsheet, each carrying its expected collection date beside its actual one, so how late the money arrives is a query rather than a memory. Rental duration is derived from the job's own dates instead of being stored, which means an extension or a renewal cannot leave a stale number behind it.",
         ],
       },
     ],
