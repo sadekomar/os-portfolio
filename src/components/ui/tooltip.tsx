@@ -20,6 +20,15 @@ function TooltipProvider({
   // previous tooltip's grace region, so every move pays polygon math and
   // then declines to dismiss. That is the sticky, one-behind feel.
   disableHoverableContent = true,
+  // How long after one tooltip closes the next still counts as part of the
+  // same gesture. Radix ships 300ms, which is shorter than a deliberate
+  // sweep across a row of chips: past that window each trigger pays the
+  // 80ms delay and opens from scale again, so dragging along the stack
+  // alternates between two different motions depending on how fast the hand
+  // happened to be moving. 600ms is long enough that a sweep stays one
+  // gesture from end to end, and short enough that coming back to the row a
+  // beat later still reads as a new question and re-pays the delay.
+  skipDelayDuration = 600,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Provider>) {
   return (
@@ -27,6 +36,7 @@ function TooltipProvider({
       data-slot="tooltip-provider"
       delayDuration={delayDuration}
       disableHoverableContent={disableHoverableContent}
+      skipDelayDuration={skipDelayDuration}
       {...props}
     />
   );
@@ -77,22 +87,42 @@ function TooltipContent({
           // Radius is `--radius-inner`, the control rung, because a tooltip is
           // smaller than any card that would hold one.
           "z-50 inline-flex w-fit max-w-xs origin-(--radix-tooltip-content-transform-origin)",
-          "items-center gap-1.5 rounded-md bg-surface-raised px-3 py-2 text-meta text-foreground",
+          // 13.3px: the tooltip's own rung, sized in globals.css, where this
+          // was reading at the body's 16 by accident. A tooltip is an aside
+          // about the control the cursor is already on, so it should read as
+          // a label rather than as a line of page copy that happens to
+          // float. The vertical padding comes down with it, since 8px around
+          // a single short line was the box having air rather than shape.
+          "bg-surface-raised text-tooltip text-foreground items-center gap-1.5 rounded-md px-3 py-1.5",
           "border border-black/8 dark:border-white/10",
-          // Appears in 150ms from a 0.98 scale; leaves in 50ms so dismissing
-          // never lags behind the cursor.
-          "duration-150 ease-out data-[state=delayed-open]:animate-in data-[state=delayed-open]:fade-in-0 data-[state=delayed-open]:zoom-in-[0.98]",
+          // The first one is an arrival: 150ms from a 0.98 scale, on the
+          // site's curve rather than Tailwind's weaker `ease-out`.
+          "data-[state=delayed-open]:animate-in data-[state=delayed-open]:fade-in-0 data-[state=delayed-open]:zoom-in-[0.98] ease-out-quint duration-150",
           // `instant-open` is Radix's word for "the reader is already reading
-          // tooltips", which it knows because one closed moments ago. The
-          // 150ms fade is an introduction, and there is nothing left to
-          // introduce: the second tooltip is the same object with new text.
-          // Animating it again reads as a flicker on the way to the answer,
-          // and on a 365-cell grid the reader crosses it constantly. So the
-          // transition is skipped and the tooltip simply is where the cursor
-          // is, which is what makes a dense grid feel like scrubbing one
-          // label rather than opening hundreds.
-          "data-[state=instant-open]:animate-none",
-          "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-[0.98] data-[state=closed]:duration-50",
+          // tooltips", which it knows because one closed moments ago. This
+          // used to be `animate-none`, on the reasoning that the second
+          // tooltip is the same object with new text and re-introducing it
+          // reads as a flicker.
+          //
+          // Watching a sweep across the stack says otherwise. The label does
+          // not move between chips, because Radix mounts a new element per
+          // trigger: the old box vanishes and a new one appears somewhere
+          // else at a different size. With no transition at all that is a
+          // cut, and a cut every 200ms along a row is the jarring part.
+          //
+          // So: an 80ms fade, and only a fade. It is short enough to still
+          // read as one label keeping up with the cursor rather than a
+          // second tooltip being opened, and the scale is dropped because a
+          // box zooming up at a new position while another is still fading
+          // out at the old one is two objects, which is exactly the thing
+          // that shouldn't be happening.
+          "data-[state=instant-open]:animate-in data-[state=instant-open]:fade-in-0 data-[state=instant-open]:duration-80",
+          // Out in 50ms so dismissal never lags the cursor, and without the
+          // scale: an exit carries less than an entrance, and during a sweep
+          // this fade overlaps the next tooltip's. Two boxes cross-fading in
+          // two different places is a double image; two boxes cross-fading
+          // with only opacity is one label moving.
+          "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:duration-50",
           "motion-reduce:animate-none",
           className,
         )}

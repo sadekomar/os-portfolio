@@ -260,6 +260,26 @@
   --text-micro--line-height: 1.45;
   --text-micro--letter-spacing: 0.004em;
 
+  /* Tooltips, and only tooltips. A floating label is read once, quickly, at
+     whatever size the page happens to be underneath it, which is the one
+     place the ladder above has nothing quite right for: `body-sm` reads as a
+     line of the page that came loose, and `micro` reads as fine print for
+     something the reader deliberately went and hovered.
+
+     Leading is the label rung's 1.45 rather than `meta`'s 1.5, because the
+     long ones (the stack chips) wrap to two lines inside a box 320px wide
+     and want to read as one object. Tracking is `meta`'s, which is where the
+     curve is at this size.
+
+     It sits a third of a pixel off `--text-meta`, which is close enough that
+     the two are indistinguishable side by side. It is named rather than
+     written twice because the tooltip exists in two implementations (the
+     Radix one and the hand-rolled one on the contribution grid) that have to
+     stay the same size, and a name is what keeps them in step. */
+  --text-tooltip: 0.83125rem; /* 13.3px */
+  --text-tooltip--line-height: 1.45;
+  --text-tooltip--letter-spacing: -0.002em;
+
   /* ── Case-study scale ───────────────────────────────────────────────────
      A separate, deliberately looser scale for the work pages. Three sizes
      and nothing else: 16 for prose, 13 for the caption under a scroller, 24

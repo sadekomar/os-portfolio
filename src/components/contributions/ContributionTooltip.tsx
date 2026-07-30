@@ -133,7 +133,12 @@ export function ContributionTooltip({ anchor }: { anchor: Anchor | null }) {
            A fade on arrival is an introduction; a fade between cells was the
            same object apologising for having new text. */
         "fade-in-on-mount ease-out-quint opacity-100 transition-opacity duration-150",
-        "rounded-md bg-surface-raised px-3 py-2 text-meta text-foreground",
+        /* The tooltip rung and the tighter box, matching ui/tooltip. This one
+           is drawn by hand rather than through the primitive, so the two have
+           to be kept in step deliberately: they are the same object as far as
+           a reader is concerned, and a hand-rolled one a size off would read
+           as a different kind of label. */
+        "bg-surface-raised text-tooltip text-foreground rounded-md px-3 py-1.5",
         "border border-black/8 dark:border-white/10",
       ].join(" ")}
     >

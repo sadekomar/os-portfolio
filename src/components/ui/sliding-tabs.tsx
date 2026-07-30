@@ -83,7 +83,13 @@ const SlidingTabs = React.forwardRef<HTMLDivElement, SlidingTabsProps>(
               tabRefs.current[i] = el;
             }}
             type="button"
-            className="t-tab text-sm font-medium"
+            /* `text-meta`, not `text-sm`: 14px is not a rung on this site's
+               scale (it runs 13 → 15) and Tailwind's own sizes carry no
+               tracking, so a tab row set in it was the one control on the
+               page whose type was neither sized nor tracked by the system.
+               13px is what every other control label here is set in: the
+               back link, the file names, the footer. */
+            className="t-tab text-meta font-medium"
             role="tab"
             aria-selected={i === active}
             onClick={() => {
