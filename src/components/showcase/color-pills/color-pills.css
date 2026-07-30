@@ -1,0 +1,76 @@
+/* Lifted from the Univyr marketplace. In the source these rules lived in a
+   styled-jsx block inside the component; they are a plain colocated
+   stylesheet here so the component does not depend on styled-jsx, and every
+   selector is prefixed so nothing leaks into the host page.
+
+   Colour note: the source read `--clr-gray-background`, `--clr-loom-lilac`,
+   `--clr-neutral-900`, `--clr-neutral-100` and `--fw-regular` from the app's
+   globals.css. The portfolio does not define those tokens, so the values are
+   carried literally here and scoped to the component. */
+
+.color-pills-wrapper {
+  display: flex;
+  gap: 0.5rem;
+  margin-block: 1rem;
+
+  /* A facet row is always wider than its container, so it scrolls rather than
+     wrapping: wrapping would push the grid below it down by a whole row the
+     moment one more colour came back from the API. */
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  /* Snapping keeps a pill from coming to rest half cut off at the edge. */
+  scroll-snap-type: x proximity;
+
+  /* The source computed this from the page grid so the row bled to the
+     viewport edge while its first pill still lined up with the content
+     column. The showcase copy has no page grid, so it is a flat gutter. */
+  padding-inline: 1rem;
+}
+
+.color-pills-wrapper::-webkit-scrollbar {
+  display: none;
+}
+
+.color-pills-pill {
+  height: 40px;
+  padding-inline: 1rem;
+  padding-block: 0.5rem;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  text-transform: capitalize;
+  background-color: #e4e4e4;
+  color: rgb(0 0 0);
+  font-weight: 500;
+  font-size: inherit;
+  line-height: 1.5;
+  font-family: inherit;
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+  user-select: none;
+
+  /* Only the colours move. Transitioning `all` here would also animate the
+     scroll-snap reflow, which reads as lag on the tap. */
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.color-pills-pill-selected {
+  background-color: #a6a2de;
+  color: rgb(255 255 255);
+}
+
+.color-pills-count {
+  /* The count is a secondary read: it qualifies the label rather than
+     competing with it, so it steps back in weight on both pill states. */
+  font-weight: 400;
+  opacity: 0.7;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .color-pills-pill {
+    transition: none;
+  }
+}

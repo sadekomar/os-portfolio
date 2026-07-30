@@ -1,0 +1,310 @@
+/* Lifted from the Univyr marketplace home page.
+
+   Every selector is scoped under `.isometric-brands` so the very generic lane
+   names (`.first-logo`, `.second-logo`) cannot leak into, or be overridden by,
+   the host page. In the source app these lived in a global stylesheet.
+
+   Colour note: the source read `--clr-yellow` from the app's globals.css. The
+   portfolio does not define that token, so the value is carried literally here
+   and scoped to the component. */
+
+.isometric-brands {
+  position: relative;
+  overflow: hidden;
+  background-color: #f7f1d2;
+
+  /* In the source the field got its height from a sibling column in a 2-up
+     grid, so the wrapper only ever needed a floor. This showcase copy renders
+     on its own, so the floor has to be tall enough to actually show the lanes,
+     whose tops span roughly -420px to 796px. */
+  min-height: 32rem;
+}
+
+/* ── The custom property ladder ──────────────────────────────────────────
+   This is the whole trick, and it is why there is no JS here at all.
+
+   Each lane is one `@keyframes` rule that translates from `--logo-offset` to
+   `--logo-offset + 300px` along the isometric axis (x, x * 0.5897 ≈ a 30°
+   rise). Every logo in the lane runs that same 15s animation, on the same
+   clock, with no per-element delay.
+
+   What separates them is a second class, `.first-logo-N`, whose only job is
+   to declare a different `--logo-offset`: 0px, 60px, 120px and so on, a rung
+   every 60px. Because the keyframes are written in terms of the variable
+   rather than in terms of literal pixels, each element resolves the *same*
+   animation into a different 300px slice of the diagonal. Ten logos at 60px
+   apart cover 600px, and the 300px travel is exactly half of that, so by the
+   time one logo has walked into its neighbour's starting spot the loop
+   restarts and the row reads as continuous.
+
+   Changing the spacing is a one-line edit to the ladder. Nothing about the
+   animation itself has to know how many logos there are. */
+
+.isometric-brands .first-logo,
+.isometric-brands .third-logo,
+.isometric-brands .fifth-logo,
+.isometric-brands .seventh-logo {
+  animation-fill-mode: forwards;
+  position: absolute;
+  animation: isometric-brands-translate-down linear 15s infinite;
+  transform: translate(calc(var(--logo-offset)), calc(var(--logo-offset) * 0.5897435897));
+}
+
+.isometric-brands .first-logo {
+  top: 140px;
+  left: -444px;
+}
+
+.isometric-brands .third-logo {
+  top: -16rem;
+  left: -682px;
+}
+
+.isometric-brands .fifth-logo {
+  top: -420px;
+  left: -525px;
+}
+
+.isometric-brands .seventh-logo {
+  top: -323px;
+  left: 73px;
+}
+
+.isometric-brands .second-logo,
+.isometric-brands .fourth-logo,
+.isometric-brands .sixth-logo {
+  animation-fill-mode: forwards;
+  position: absolute;
+  animation: isometric-brands-translate-up linear 15s infinite;
+  transform: translate(calc(-1 * var(--logo-offset)), calc(-1 * var(--logo-offset) * 0.5897435897));
+}
+
+.isometric-brands .second-logo {
+  top: 796px;
+  left: 884px;
+}
+
+.isometric-brands .fourth-logo {
+  top: 640px;
+  left: 1056px;
+}
+
+.isometric-brands .sixth-logo {
+  top: 390px;
+  left: 1066px;
+}
+
+.isometric-brands .first-logo-1,
+.isometric-brands .second-logo-1,
+.isometric-brands .third-logo-1,
+.isometric-brands .fourth-logo-1,
+.isometric-brands .fifth-logo-1,
+.isometric-brands .sixth-logo-1,
+.isometric-brands .seventh-logo-1 {
+  --logo-offset: 0px;
+}
+.isometric-brands .first-logo-2,
+.isometric-brands .second-logo-2,
+.isometric-brands .third-logo-2,
+.isometric-brands .fourth-logo-2,
+.isometric-brands .fifth-logo-2,
+.isometric-brands .sixth-logo-2,
+.isometric-brands .seventh-logo-2 {
+  --logo-offset: 60px;
+}
+.isometric-brands .first-logo-3,
+.isometric-brands .second-logo-3,
+.isometric-brands .third-logo-3,
+.isometric-brands .fourth-logo-3,
+.isometric-brands .fifth-logo-3,
+.isometric-brands .sixth-logo-3,
+.isometric-brands .seventh-logo-3 {
+  --logo-offset: 120px;
+}
+.isometric-brands .first-logo-4,
+.isometric-brands .second-logo-4,
+.isometric-brands .third-logo-4,
+.isometric-brands .fourth-logo-4,
+.isometric-brands .fifth-logo-4,
+.isometric-brands .sixth-logo-4,
+.isometric-brands .seventh-logo-4 {
+  --logo-offset: 180px;
+}
+.isometric-brands .first-logo-5,
+.isometric-brands .second-logo-5,
+.isometric-brands .third-logo-5,
+.isometric-brands .fourth-logo-5,
+.isometric-brands .fifth-logo-5,
+.isometric-brands .sixth-logo-5,
+.isometric-brands .seventh-logo-5 {
+  --logo-offset: 240px;
+}
+.isometric-brands .first-logo-6,
+.isometric-brands .second-logo-6,
+.isometric-brands .third-logo-6,
+.isometric-brands .fourth-logo-6,
+.isometric-brands .fifth-logo-6,
+.isometric-brands .sixth-logo-6,
+.isometric-brands .seventh-logo-6 {
+  --logo-offset: 300px;
+}
+.isometric-brands .first-logo-7,
+.isometric-brands .second-logo-7,
+.isometric-brands .third-logo-7,
+.isometric-brands .fourth-logo-7,
+.isometric-brands .fifth-logo-7,
+.isometric-brands .sixth-logo-7,
+.isometric-brands .seventh-logo-7 {
+  --logo-offset: 360px;
+}
+.isometric-brands .first-logo-8,
+.isometric-brands .second-logo-8,
+.isometric-brands .third-logo-8,
+.isometric-brands .fourth-logo-8,
+.isometric-brands .fifth-logo-8,
+.isometric-brands .sixth-logo-8,
+.isometric-brands .seventh-logo-8 {
+  --logo-offset: 420px;
+}
+.isometric-brands .first-logo-9,
+.isometric-brands .second-logo-9,
+.isometric-brands .third-logo-9,
+.isometric-brands .fourth-logo-9,
+.isometric-brands .fifth-logo-9,
+.isometric-brands .sixth-logo-9,
+.isometric-brands .seventh-logo-9 {
+  --logo-offset: 480px;
+}
+.isometric-brands .first-logo-10,
+.isometric-brands .second-logo-10,
+.isometric-brands .third-logo-10,
+.isometric-brands .fourth-logo-10,
+.isometric-brands .fifth-logo-10,
+.isometric-brands .sixth-logo-10,
+.isometric-brands .seventh-logo-10 {
+  --logo-offset: 540px;
+}
+
+.isometric-brands .second-logo-11,
+.isometric-brands .third-logo-11,
+.isometric-brands .fourth-logo-11,
+.isometric-brands .fifth-logo-11,
+.isometric-brands .sixth-logo-11 {
+  --logo-offset: 600px;
+}
+.isometric-brands .second-logo-12,
+.isometric-brands .third-logo-12,
+.isometric-brands .fourth-logo-12,
+.isometric-brands .fifth-logo-12,
+.isometric-brands .sixth-logo-12 {
+  --logo-offset: 660px;
+}
+.isometric-brands .second-logo-13,
+.isometric-brands .third-logo-13,
+.isometric-brands .fourth-logo-13,
+.isometric-brands .fifth-logo-13,
+.isometric-brands .sixth-logo-13 {
+  --logo-offset: 720px;
+}
+.isometric-brands .second-logo-14,
+.isometric-brands .third-logo-14,
+.isometric-brands .fourth-logo-14,
+.isometric-brands .fifth-logo-14,
+.isometric-brands .sixth-logo-14 {
+  --logo-offset: 780px;
+}
+.isometric-brands .second-logo-15,
+.isometric-brands .third-logo-15,
+.isometric-brands .fourth-logo-15,
+.isometric-brands .fifth-logo-15,
+.isometric-brands .sixth-logo-15 {
+  --logo-offset: 840px;
+}
+.isometric-brands .second-logo-16,
+.isometric-brands .third-logo-16,
+.isometric-brands .fourth-logo-16,
+.isometric-brands .fifth-logo-16,
+.isometric-brands .sixth-logo-16 {
+  --logo-offset: 900px;
+}
+.isometric-brands .second-logo-17,
+.isometric-brands .third-logo-17,
+.isometric-brands .fourth-logo-17,
+.isometric-brands .fifth-logo-17,
+.isometric-brands .sixth-logo-17 {
+  --logo-offset: 960px;
+}
+.isometric-brands .second-logo-18,
+.isometric-brands .third-logo-18,
+.isometric-brands .fourth-logo-18,
+.isometric-brands .fifth-logo-18,
+.isometric-brands .sixth-logo-18 {
+  --logo-offset: 1020px;
+}
+.isometric-brands .second-logo-19,
+.isometric-brands .third-logo-19,
+.isometric-brands .fourth-logo-19,
+.isometric-brands .fifth-logo-19,
+.isometric-brands .sixth-logo-19 {
+  --logo-offset: 1080px;
+}
+.isometric-brands .second-logo-20,
+.isometric-brands .third-logo-20,
+.isometric-brands .fourth-logo-20,
+.isometric-brands .fifth-logo-20,
+.isometric-brands .sixth-logo-20 {
+  --logo-offset: 1140px;
+}
+
+@keyframes isometric-brands-translate-up {
+  0% {
+    transform: translate(
+      calc(-1 * var(--logo-offset)),
+      calc(-1 * var(--logo-offset) * 0.5897435897)
+    );
+  }
+
+  to {
+    transform: translate(
+      calc(-1 * (var(--logo-offset) + 300px)),
+      calc(-1 * (var(--logo-offset) + 300px) * 0.5897435897)
+    );
+  }
+}
+
+@keyframes isometric-brands-translate-down {
+  0% {
+    transform: translate(calc(var(--logo-offset)), calc(var(--logo-offset) * 0.5897435897));
+  }
+
+  to {
+    transform: translate(
+      calc((var(--logo-offset) + 300px)),
+      calc((var(--logo-offset) + 300px) * 0.5897435897)
+    );
+  }
+}
+
+/* Narrow viewports only have room for the middle band, so the three lanes
+   that run closest to the edges are dropped rather than clipped. */
+@media (max-width: 550px) {
+  .isometric-brands .first-logo,
+  .isometric-brands .second-logo,
+  .isometric-brands .seventh-logo {
+    display: none;
+  }
+}
+
+/* Not in the source. The lanes are decorative, so an operating system that
+   has asked for less motion gets the composed still frame instead. */
+@media (prefers-reduced-motion: reduce) {
+  .isometric-brands .first-logo,
+  .isometric-brands .second-logo,
+  .isometric-brands .third-logo,
+  .isometric-brands .fourth-logo,
+  .isometric-brands .fifth-logo,
+  .isometric-brands .sixth-logo,
+  .isometric-brands .seventh-logo {
+    animation: none;
+  }
+}

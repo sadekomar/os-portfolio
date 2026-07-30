@@ -1,0 +1,35 @@
+/* The component carries its own brand tokens. In the source app these live in
+   the global stylesheet; here they are scoped to the root so the showcase can
+   be dropped into any page without the host defining anything. */
+.root {
+  --brand-ink: #061722;
+  --brand-marine: #082b3a;
+  --brand-mist: #eef3f1;
+  --brand-steel: #5f7077;
+  --brand-line: rgba(6, 23, 34, 0.13);
+  --brand-blue: #087ea4;
+}
+
+/* Timer fill for the active pill: the value's colour sweeps left-to-right
+   across the pill over one interval, acting as the countdown. The leading edge
+   is masked to the pill shape by overflow-hidden. */
+@keyframes pill-fill {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.pillFill {
+  /* Duration is overridden inline from AUTOPLAY_MS; keep in sync. */
+  animation: pill-fill 5000ms linear both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pillFill {
+    animation: none;
+    clip-path: inset(0 0 0 0);
+  }
+}

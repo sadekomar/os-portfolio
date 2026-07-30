@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 
+import { componentSlugs } from "@/data/components";
 import { posts } from "@/data/posts";
 /* The same list the routes are generated from, rather than a second copy of
    it. projects.ts already calls itself the source of truth for the static
@@ -41,6 +42,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: "monthly" as const,
       priority: 0.6,
+    })),
+    /* Same reasoning as the work pages: one list, read from the registry
+       the routes are generated from, so a component added there is in the
+       sitemap without anyone remembering to put it here. */
+    { url: `${siteUrl}/components`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    ...componentSlugs.map((slug) => ({
+      url: `${siteUrl}/components/${slug}`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
     })),
   ];
 }
