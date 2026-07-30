@@ -270,7 +270,7 @@ const workGroups: { title: string; items: WorkRow[] }[] = [
         slug: "argotemp",
         title: "Argotemp",
         description:
-          "Rental and maintenance operations modelled as reconciled state machines, with monthly invoicing and job extensions as first-class events.",
+          "Equipment rental and maintenance operations, where a rental has no status column at all: it is an append-only chain of jobs, reconciled against unit state on every transition and again nightly.",
       },
       {
         slug: "activity-management-platform",

@@ -803,7 +803,8 @@ export const allProjects: Record<ProjectKeys, Project> = {
       {
         title: "Operations and state machines",
         content: [
-          "The product models rental units as small state machines covering availability, in-use, maintenance, and out-of-service transitions. The maintenance flow is its own state machine on top, with the two reconciled so that a unit in maintenance is never accidentally rentable.",
+          "A unit is a small state machine with three states: available, hired, in maintenance. A rental is not. Rentals have no status column at all. A job is an append-only linked list, where each row points at the one it superseded and two booleans say whether it has been retired and whether it has a successor. Renewing a job creates a new row carrying the same job number, client, location and attached units, starting exactly where the old one ended, and retires its predecessor in the same transaction. Nothing is ever mutated in place, so the whole rental history stays readable back to the first hire.",
+          "The two machines have to agree, because the expensive failure is a unit sitting in the workshop that the system still thinks is rentable. Ending a job, and ending a maintenance record, are each a single transaction that closes the record and returns the unit to available in the same commit. A nightly job sweeps for rentals whose end date has passed, retires them, and frees their units, so the reconciliation happens eagerly on every transition and lazily once a day as a backstop.",
         ],
       },
       {
