@@ -2,8 +2,9 @@
 
 import type * as React from "react";
 
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useId } from "react";
 
+import { StackNote, useStackNote } from "./StackNote";
 import { TECH_MARKS, type TechMarkName } from "./marks";
 
 /* ── Stack ────────────────────────────────────────────────────────────────
@@ -310,12 +311,15 @@ const CATEGORIES: { title: string; items: Entry[] }[] = [
 ];
 
 export function Stack() {
+  /* One label for the whole table, and one set of listeners on the container
+     that owns it. A second pill after a first is a continued read, not a new
+     one: the note moves to it rather than a second tooltip opening. See
+     StackNote. */
+  const { anchor, tableProps } = useStackNote();
+
   return (
-    /* One provider for the whole table, so moving between pills skips the
-       open delay. A second pill after a first is a continued read, not a new
-       one, and re-charging 80ms each time makes scanning feel sticky. */
-    <TooltipProvider>
-      <div className="flex flex-col gap-1">
+    <>
+      <div className="flex flex-col gap-1" {...tableProps}>
         {CATEGORIES.map((category, i) => (
           <div
             key={category.title}
@@ -344,42 +348,47 @@ export function Stack() {
           </div>
         ))}
       </div>
-    </TooltipProvider>
-  );
-}
 
-function Pill({ name, mark, note }: Entry) {
-  const pill = <PillBody name={name} mark={mark} note={note} />;
-
-  if (!note) return pill;
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>{pill}</TooltipTrigger>
-      {/* Above by default: the pills wrap into rows, and a tooltip below one
-          covers the row it belongs next to. */}
-      <TooltipContent side="top">{note}</TooltipContent>
-    </Tooltip>
+      <StackNote anchor={anchor} />
+    </>
   );
 }
 
 /* A button, not a span, and only when there's something to read. Hover alone
    would hide these notes from keyboard and screen-reader users entirely, and
-   Radix only wires focus and Escape to a real control. Nothing navigates, so
-   the type is `button` and it does nothing on click. The interaction is the
-   reveal.
+   focus and Escape only reach a real control. Nothing navigates, so the type
+   is `button` and it does nothing on click. The interaction is the reveal.
 
-   Touch gets nothing here, which is deliberate rather than overlooked: Radix
-   doesn't open tooltips on tap, and the workarounds (tap-to-open, long-press)
-   put a modal-ish layer between a reader and a table they were scanning. The
-   notes are commentary; the pill is the content. */
-function PillBody({ name, mark, note, ...props }: Entry & React.ComponentProps<"button">) {
+   `aria-describedby` points at a visually hidden copy of the note rather than
+   at the floating label, which is one element shared by every pill and so
+   cannot be the description of any of them. It also means the note is
+   available to a screen reader without a hover ever happening, where the
+   tooltip this replaced only existed while it was open.
+
+   Touch gets nothing here, which is deliberate rather than overlooked: there
+   is no hover on a touchscreen, and the workarounds (tap-to-open,
+   long-press) put a modal-ish layer between a reader and a table they were
+   scanning. The notes are commentary; the pill is the content. */
+function Pill({ name, mark, note }: Entry) {
+  const noteId = useId();
   const Tag = note ? "button" : "span";
 
   return (
     <Tag
-      {...(note ? { type: "button" as const } : {})}
-      {...props}
+      {...(note
+        ? {
+            type: "button" as const,
+            /* The pointer handler on the table reads the note off here, so
+               there is one listener for the whole section and adding a pill
+               is a data change. See StackNote. */
+            "data-stack-note": note,
+            "aria-describedby": noteId,
+            /* Named explicitly because the description lives inside the
+               button: without this the accessible name would be the pill
+               plus the whole note, and every pill would announce twice. */
+            "aria-label": name,
+          }
+        : {})}
       className={
         "text-meta bg-wash text-foreground-muted inline-flex items-center gap-1.5 rounded-full py-1 pr-2.5 pl-2" +
         (note
@@ -418,6 +427,11 @@ function PillBody({ name, mark, note, ...props }: Entry & React.ComponentProps<"
         <span className="bg-foreground-ghost size-1.5 shrink-0 rounded-full" aria-hidden="true" />
       )}
       {name}
+      {note && (
+        <span id={noteId} className="sr-only">
+          {note}
+        </span>
+      )}
     </Tag>
   );
 }
