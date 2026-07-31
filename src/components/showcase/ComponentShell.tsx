@@ -134,9 +134,20 @@ function CopyButton({ code }: { code: string }) {
       type="button"
       onClick={copy}
       aria-label={state === "failed" ? "Copy failed" : "Copy source"}
-      className="text-foreground-faint hover:text-foreground absolute top-3 right-3 rounded-md p-1.5 transition-colors"
+      className="text-foreground-faint hover:text-foreground absolute top-3 right-3 flex items-center rounded-md p-1.5 transition-colors"
     >
-      {state === "done" ? <CheckGlyph /> : <CopyGlyph />}
+      {/* Copy scales down and blurs out, then the check scales up out of the
+          same point (see `.t-icon-swap` in globals.css). Neither is ever
+          unmounted: a glyph that mounts mid-move starts from whatever the
+          browser painted first, which is how the swap turns into a blink. */}
+      <span className="t-icon-swap" data-state={state === "done" ? "b" : "a"} aria-hidden="true">
+        <span className="t-icon" data-icon="a">
+          <CopyGlyph />
+        </span>
+        <span className="t-icon" data-icon="b">
+          <CheckGlyph />
+        </span>
+      </span>
       {state === "failed" && <span className="text-micro ml-1.5">Copy failed</span>}
     </button>
   );

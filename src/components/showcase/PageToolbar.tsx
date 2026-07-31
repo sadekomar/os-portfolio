@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import { SequencePager } from "@/components/sequence/Pager";
+import { AnimatedText } from "@/components/ui/animated-text";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -107,13 +108,40 @@ export function PageToolbar({
           aria-label={copyMarkdown.done ? "Copied" : "Copy page"}
           className="text-meta text-foreground-muted hover:text-foreground flex items-center gap-1.5 rounded-lg py-1.5 pr-2 pl-2.5 transition-colors"
         >
-          {copyMarkdown.done ? <CheckIcon /> : <CopyIcon />}
+          {/* Copy scales down and blurs out, then the check scales up out of
+              the same point (see `.t-icon-swap` in globals.css). Neither is
+              ever unmounted: a glyph that mounts mid-move starts from
+              whatever the browser painted first, which is how the swap turns
+              into a blink. */}
+          <span
+            className="t-icon-swap"
+            data-state={copyMarkdown.done ? "b" : "a"}
+            aria-hidden="true"
+          >
+            <span className="t-icon" data-icon="a">
+              <CopyIcon />
+            </span>
+            <span className="t-icon" data-icon="b">
+              <CheckIcon />
+            </span>
+          </span>
           {/* The label goes below sm rather than wrapping: at 390 the row is
               a back link and five controls, and "Copy page" set over two
               lines makes the whole toolbar taller than the line it sits on.
-              The glyph swapping to a check says the same thing. */}
-          <span className="hidden whitespace-nowrap sm:inline">
-            {copyMarkdown.done ? "Copied" : "Copy page"}
+              The glyph swapping to a check says the same thing.
+
+              The slot is sized by the longer of the two labels, held open by
+              an invisible copy of it, so "Copied" doesn't pull the button in
+              and shove the pager left. The button is a click target that
+              stays put under the pointer, which is worth more than the few
+              pixels of trailing space the shorter label leaves. */}
+          <span className="hidden justify-items-start whitespace-nowrap sm:grid">
+            <span className="invisible col-start-1 row-start-1" aria-hidden="true">
+              Copy page
+            </span>
+            <span className="col-start-1 row-start-1">
+              <AnimatedText>{copyMarkdown.done ? "Copied" : "Copy page"}</AnimatedText>
+            </span>
           </span>
         </button>
         <span aria-hidden="true" className="bg-foreground/10 h-4 w-px" />

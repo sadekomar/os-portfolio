@@ -742,6 +742,65 @@
   transition: transform 250ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* ── transitions.dev, Icon swap ─────────────────────────────────
+   Copy glyph → check, on the copy buttons. Both glyphs live in the
+   same grid cell, so the slot never changes size and nothing beside
+   it moves when the state flips.
+
+   Sequenced rather than cross-faded: the copy mark scales down and
+   blurs away, then the check scales up out of the same point. Run
+   together they read as two icons dissolving through each other; run
+   in series the one collapses and the other grows out of it. No
+   translation in either direction, so nothing travels.
+
+   Two numbers here are what the motion lives or dies on.
+
+   The overlap. A hard hand-off, exit and enter in two clean halves,
+   leaves a beat with no glyph on screen at all, and at this size
+   that reads as a blink rather than as a sequence. The check instead
+   starts at 80ms, while the copy mark is still on its way out and
+   already small and blurred enough not to compete. The order is
+   still legible, the slot is never empty. 150ms a leg, 230ms end to
+   end, which is the icon-swap duration.
+
+   The scale. 0.25 is a zoom, not a swap: at 15px the glyph vanishes
+   to a speck and snaps back, which is where the whole thing felt
+   twitchy. 0.9 is as far as UI chrome goes before the motion starts
+   reading as its own event. The sequence, not the size of the jump,
+   is what makes it legible, so the small number costs nothing. */
+.t-icon-swap {
+  display: inline-grid;
+}
+.t-icon-swap .t-icon {
+  grid-area: 1 / 1;
+  transition:
+    opacity 150ms ease-in-out,
+    filter 150ms ease-in-out,
+    transform 150ms ease-in-out;
+  will-change: opacity, filter, transform;
+}
+/* The arriving glyph lets the departing one get most of the way out. */
+.t-icon-swap[data-state="a"] .t-icon[data-icon="a"],
+.t-icon-swap[data-state="b"] .t-icon[data-icon="b"] {
+  opacity: 1;
+  filter: blur(0);
+  transform: scale(1);
+  transition-delay: 80ms;
+}
+.t-icon-swap[data-state="a"] .t-icon[data-icon="b"],
+.t-icon-swap[data-state="b"] .t-icon[data-icon="a"] {
+  opacity: 0;
+  filter: blur(2px);
+  transform: scale(0.9);
+  transition-delay: 0ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-icon-swap .t-icon {
+    transition: none !important;
+  }
+}
+
 /* ── Partial reveal ───────────────────────────────────────────────────────
    A list that shows its first few rows and feathers out into a "Show more",
    rather than hiding behind a closed disclosure. The difference is what the
