@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Icon } from "@/components/icon/Icon";
+import { SequenceLineNav, SequenceRail } from "@/components/sequence/LineNav";
 import { ComponentShell } from "@/components/showcase/ComponentShell";
 import { PageToolbar } from "@/components/showcase/PageToolbar";
 import {
@@ -14,7 +15,12 @@ import {
 import { ShowcasePreview, hasShowcaseEntry } from "@/components/showcase/registry";
 import { TableOfContents, type TocItem } from "@/components/showcase/TableOfContents";
 import { readShowcaseSource } from "@/components/showcase/source";
-import { componentNeighbours, componentSlugs, getComponent } from "@/data/components";
+import {
+  componentNeighbours,
+  componentSlugs,
+  getComponent,
+  showcaseComponents,
+} from "@/data/components";
 
 type Params = { params: Promise<{ component: string }> };
 
@@ -60,11 +66,32 @@ export default async function ComponentPage({ params }: Params) {
 
   return (
     <div className="relative w-full pt-16 pb-24 md:pt-24">
-      {/* The mirror of the set rail in layout.tsx: same 1440 breakpoint, same
-          top-anchored line, reading in the other direction. It keeps its own
-          `w-60` where the rail is now as wide as its longest title, because
-          this one holds file names that can run long and a table of contents
-          that reflows as you scroll would be worse than one that wraps. */}
+      {/* The set, in the left margin. It used to live in a layout wrapping
+          both this page and the index, which put it on the index too: a rail
+          listing six components down the side of a page whose whole body is
+          those same six components, naming them a second time in smaller
+          text. A contents rail is for when you are inside one entry and want
+          to see the others without leaving; on the index you are already
+          looking at the list.
+
+          Here rather than in a layout also means the slug is in hand, so
+          `activeHref` is passed and the rail skips reading the path. */}
+      <SequenceRail>
+        <SequenceLineNav
+          label="Components"
+          activeHref={`/components/${slug}`}
+          items={showcaseComponents.map((entry) => ({
+            title: entry.title,
+            href: `/components/${entry.slug}`,
+          }))}
+        />
+      </SequenceRail>
+
+      {/* The mirror of that rail: same 1440 breakpoint, reading in the other
+          direction. It keeps its own `w-60` where the rail is as wide as its
+          longest title, because this one holds file names that can run long
+          and a table of contents that reflows as you scroll would be worse
+          than one that wraps. */}
       <div className="absolute inset-y-0 right-0 hidden w-60 min-[1440px]:block">
         <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto pr-8">
           <TableOfContents items={toc} />

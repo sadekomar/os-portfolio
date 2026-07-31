@@ -315,14 +315,17 @@ const NavItem = memo(function NavItem({
    click away in the navbar and the header's pager and keys cover the same
    ground.
 
-   `align` is the only thing pages disagree about, and it is a real
-   disagreement rather than drift. Centred is the default: the rail holds
-   itself at eye height for the whole scroll, and a sequence that fits the
-   viewport never needs a scroll box. `top` is for a page that already has a
-   second rail anchored to the top on the other side (the components pages
-   and their table of contents), where a centred left rail against a
-   top-aligned right one reads as one of them having slipped. A top-parked
-   rail gets a scroll box, since it is the one that can outgrow its space. */
+   Every page centres the rail: it holds itself at eye height for the whole
+   scroll, and a sequence that fits the viewport needs no scroll box. The
+   components pages were the exception and parked theirs at the top, to line
+   up with the table of contents in the opposite margin; that turned out to
+   read as six lines stranded at the top of a long page, and they now centre
+   with the rest. See app/components/layout.tsx.
+
+   `align="top"` survives that change because the reason for it will come
+   back the moment a sequence outgrows the viewport: it is the alignment that
+   gets a scroll box, and a centred rail has nowhere to put one. Nothing
+   passes it today. */
 export function SequenceRail({
   side = "left",
   align = "center",
