@@ -323,15 +323,21 @@ function Work() {
 function Experience() {
   return (
     <Section title="Experience" id="experience">
-      <Row
-        href="https://instatus.com"
-        external
-        tourId="row:https://instatus.com"
-        title="Instatus"
-        logo="instatus"
-        meta="Dec 2024 – Present"
-        description="Full-stack software engineer."
-      />
+      {/* Where the tour's video parks. It is the Instatus row rather than the
+          section because the bubble is aimed at a thing, not at a heading: it
+          comes out of the O, arcs down the column and settles in the gutter
+          beside the row the first spoken line is about. See TourBubble. */}
+      <div data-tour-dock>
+        <Row
+          href="https://instatus.com"
+          external
+          tourId="row:https://instatus.com"
+          title="Instatus"
+          logo="instatus"
+          meta="Dec 2024 – Present"
+          description="Full-stack software engineer."
+        />
+      </div>
       <Row
         href="https://dell.com"
         external
