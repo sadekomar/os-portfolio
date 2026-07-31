@@ -350,20 +350,26 @@ export default async function Project({ params }: { params: Promise<{ project: s
 function Artifacts({ name }: { name: Artifact }) {
   const Block = artifacts[name];
 
-  /* `relative z-10` is the one thing here that isn't about width. The
-     contents rail is absolutely positioned, 336px wide and as tall as the
-     article, so at ≥1440 it paints over the left ~134px of anything this
-     wide, and being positioned, it wins the paint order against a static
-     sibling. A screenshot passing under it is the page's existing language
+  /* `relative z-30` is the one thing here that isn't about width, and it
+     belongs on the 1036px box rather than the full-width wrapper. The
+     contents rail is absolutely positioned at z-20, 336px wide and as tall
+     as the article, so at ≥1440 it covers the left ~134px of anything this
+     wide. A screenshot passing under it is the page's existing language
      and reads as film behind an index. A block with radio buttons and a
      submit in it cannot: the rail's links sit on top of the picker and take
      the clicks meant for it. Raising the artifact makes the opaque card
      occlude the rail for the height of the block and take its own hits
      back, which is the correct precedence: an index you can consult later
-     yields to a control you are using now. */
+     yields to a control you are using now.
+
+     On the wrapper, which is where this started, the raise reached further
+     than the card did. A transparent box still takes pointer events across
+     its full width, so a full-width sheet also covered the margin the rail
+     stands in, and the rail went quiet under every artifact on the page.
+     Keeping it on the inner box leaves the margins to the rail. */
   return (
-    <div className="relative z-10 w-full px-3">
-      <div className="mx-auto w-full max-w-[1036px]">
+    <div className="w-full px-3">
+      <div className="relative z-30 mx-auto w-full max-w-[1036px]">
         <Block />
       </div>
     </div>

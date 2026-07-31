@@ -337,8 +337,22 @@ export function SequenceRail({
 }) {
   return (
     <div
+      /* `z-20` and not paint order. The rail is absolutely positioned, so
+         for a long time it sat above the article for free: positioned beats
+         static. That only held while every page root was static, and they
+         are not, each of these pages wraps its article in a `relative` div
+         for its own reasons. Two positioned elements at `z-index: auto` are
+         resolved by document order, the rail is written first, and so the
+         article silently took the whole margin's pointer events. The rail
+         stayed visible and stopped answering the mouse, which is the worst
+         version of this bug: nothing looks broken.
+
+         So the order is stated rather than inherited. 20 puts the rail over
+         an article, the artifacts and live component stages take 30 to sit
+         back over the rail where the two genuinely overlap, and everything
+         here stays under the navbar and the palette at 40 and 50. */
       className={cn(
-        "absolute inset-y-0 hidden min-[1440px]:block",
+        "absolute inset-y-0 z-20 hidden min-[1440px]:block",
         side === "left" ? "left-0" : "right-0",
       )}
     >

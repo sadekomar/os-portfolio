@@ -236,16 +236,25 @@ function Column({ children, className }: { children: React.ReactNode; className?
    study's figures and artifacts already resolve to, so it is not a third
    measure being invented here.
 
-   `relative z-10` is the same fix the case-study artifacts carry. The rails
-   are absolutely positioned and as tall as the article, so at >=1440 they
-   paint over the outer ~40px of anything this wide and, being positioned,
-   win the paint order against a static sibling. A screenshot passing under
-   a rail is fine; a live component is not, because the rail's links sit on
-   top of it and take the clicks meant for it. */
+   `relative z-30` is the same fix the case-study artifacts carry, and it
+   goes on the 1036px box rather than the full-width wrapper around it. The
+   rails are absolutely positioned at z-20 and as tall as the article, so at
+   >=1440 they cover the outer ~40px of anything this wide. A screenshot
+   passing under a rail is fine; a live component is not, because the rail's
+   links sit on top of it and take the clicks meant for it. 30 puts the stage
+   back on top for exactly the width it occupies.
+
+   On the wrapper, which is where this started, the raise reached further
+   than the stage did, and it looked equivalent because the wrapper is
+   transparent. It isn't: a box takes pointer events across its whole width
+   whether or not anything is painted there, so a full-width sheet covered
+   the left margin the rail stands in for the height of every stage on the
+   page, and the rail went quiet. Keeping the raise on the inner box leaves
+   the margins to the rail. */
 function Stage({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative z-10 w-full px-3">
-      <div className="mx-auto w-full max-w-[1036px]">{children}</div>
+    <div className="w-full px-3">
+      <div className="relative z-30 mx-auto w-full max-w-[1036px]">{children}</div>
     </div>
   );
 }
