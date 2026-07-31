@@ -60,7 +60,9 @@ export function CaseStudyStats({ stats }: { stats: { value: string; label: strin
   if (stats.length === 0) return null;
 
   return (
-    <dl ref={rootRef} className="flex flex-wrap gap-x-16 gap-y-8">
+    /* `data-tour` so the guided tour can loop the cursor around the figures
+       while the voice is saying "what it did". See components/tour/script.ts. */
+    <dl ref={rootRef} data-tour="case-stats" className="flex flex-wrap gap-x-16 gap-y-8">
       {stats.map((stat, i) => (
         /* Label first in the DOM because it is the term the value describes;
            `flex-col-reverse` puts the value back on top visually. Reading

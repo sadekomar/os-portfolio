@@ -33,6 +33,14 @@ function travelMs(distance: number) {
 
 export type CursorHandle = {
   moveTo: (x: number, y: number) => Promise<void>;
+  /* Follow a path rather than travel to a point. `moveTo` is the wrong tool
+     for a sweep along a phrase or a loop around a figure: it derives its own
+     duration from distance and settles on an ease at both ends, so a path
+     expressed as twelve `moveTo`s is twelve separate arrivals and takes about
+     three seconds to draw a circle. One keyframe animation is one gesture,
+     one duration, and linear throughout, which is what a hand tracing
+     something actually looks like. */
+  glide: (points: { x: number; y: number }[], durationMs: number) => Promise<void>;
   press: () => Promise<void>;
   show: (x?: number, y?: number) => void;
   hide: () => void;
@@ -90,6 +98,30 @@ export function TourCursor({
         await Promise.all([
           animate(x, tx, { duration, ease }).finished,
           animate(y, ty, { duration, ease }).finished,
+        ]);
+      },
+      glide: async (points, durationMs) => {
+        if (points.length === 0) return;
+        const last = points[points.length - 1];
+        at.current = { x: last.x, y: last.y };
+
+        const xs = points.map((point) => point.x - DIAMETER / 2);
+        const ys = points.map((point) => point.y - DIAMETER / 2);
+
+        if (reduced) {
+          x.jump(xs[xs.length - 1]);
+          y.jump(ys[ys.length - 1]);
+          return;
+        }
+
+        /* Linear, and starting from wherever the cursor already is: the first
+           keyframe is prepended by the caller when the path should be entered
+           from a distance. An ease here would slow the middle of a trace,
+           which is the part the reader is reading. */
+        const duration = durationMs / 1000;
+        await Promise.all([
+          animate(x, xs, { duration, ease: "linear" }).finished,
+          animate(y, ys, { duration, ease: "linear" }).finished,
         ]);
       },
       press: async () => {

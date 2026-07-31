@@ -2,16 +2,29 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { AnimatePresence, motion } from "motion/react";
+import dynamic from "next/dynamic";
 
 import { useTour } from "@/components/tour/TourProvider";
+
+/* The two decorations of the invitation, and the only reason this component
+   would otherwise need `motion`. See components/tour/TourInvite.tsx: they are
+   aria-hidden, out of flow, shown once ever and 1.5s after paint, so there is
+   nothing here that has to be in the HTML or on the critical path. Both point
+   at the same module, so this is one chunk and one request. */
+const TourKnock = dynamic(() => import("@/components/tour/TourInvite").then((m) => m.TourKnock), {
+  ssr: false,
+});
+const TourInviteLabel = dynamic(
+  () => import("@/components/tour/TourInvite").then((m) => m.TourInviteLabel),
+  { ssr: false },
+);
 
 /* ── The O ────────────────────────────────────────────────────────────────
    The first letter of "Omar", and the only control on this page that is also
    a piece of the sentence it sits in.
 
    ── Why the invitation is one breath, once ────────────────────────────────
-   Three options were on the table and two of them are wrong for this site.
+   Three options were on the table.
 
    A bubble that parks itself on load converts best and is the loudest thing
    that could possibly happen on a page whose argument is that it is quiet: a
@@ -29,15 +42,54 @@ import { useTour } from "@/components/tour/TourProvider";
    they have read the name and the one-line claim, which is exactly the moment
    "want the tour?" becomes a question rather than an interruption.
 
+   ── And why the first option is now also taken ────────────────────────────
+   The paragraph above stands as the reasoning and no longer describes the
+   default. TourProvider now plays the tour unasked on a first visit to the
+   index, so the loud option won on the one load where a reader has no idea
+   what this site is, and the quiet one still covers every load after it.
+
+   The three things that make that survivable are all in TourProvider, and the
+   argument above is the reason each of them is there: the offer is taken back
+   the instant the reader touches anything, it happens once per browser and
+   never again, and it does not happen at all on a route the reader chose. A
+   tour that plays itself, cannot be escaped, and returns tomorrow would be
+   the pop-up. One that yields to the first scroll is a greeting.
+
+   What is left of the cost is real and worth naming: the reader who is
+   perfectly still for 2.6s and did want to read in peace gets a video anyway,
+   once. Skip is the second control in the bubble.
+
+   This component's own job in that arrangement is not to double up on it. It
+   reads the provider's key and stays quiet when the auto-start owns the
+   visit; see AUTO_KEY below.
+
    ── The accessibility trade ───────────────────────────────────────────────
    The button's accessible name is the letter, deliberately. Naming it "Play a
-   30 second tour" would make the h1 announce as "Hey, I'm Play a 30 second
+   40 second tour" would make the h1 announce as "Hey, I'm Play a 40 second
    tour mar", which trades one reader's affordance for another reader's
    heading. The description carries the meaning instead, and the same tour is
    reachable as a plainly labelled row in the ⌘K palette, which is where a
    keyboard-first reader is going to look for it anyway. */
 
 const SEEN_KEY = "tour:invited";
+
+/* TourProvider's key, read here and never written here. On a first visit to
+   the index the provider claims this browser's one unrequested tour, and it
+   does that in its own mount effect, which runs after this component's. So it
+   is read on the invitation's timer rather than on mount; see the note at the
+   read itself, which is a mistake worth not making twice.
+
+   It is asked because otherwise a first-time visitor gets both. The letter
+   would breathe at 1.5s, the label would appear beside it, and 1.1s later the
+   bubble would bloom out of the same letter and the label would withdraw
+   under it, which is the page making an offer and then interrupting itself to
+   take it. Whoever is playing the tour on this visit owns the invitation too.
+
+   And it stays owned. A reader who cancelled the auto-start by scrolling
+   during those 2.6s does not get the label back on their next visit, which is
+   the right way round: they have already been shown the tour once and moved,
+   and the second ask is the one that reads as nagging. */
+const AUTO_KEY = "tour:autoplayed";
 
 /* Long enough that the reader has taken in the name and the sentence under
    it, short enough that they are still on the intro rather than into Work. */
@@ -48,9 +100,15 @@ const INVITE_DELAY_MS = 1500;
 const INVITE_LINGER_MS = 7000;
 
 export function TourO() {
-  const { start, status, anchorRef } = useTour();
+  const { start, status, warm, anchorRef } = useTour();
   const localRef = useRef<HTMLButtonElement>(null);
   const [invited, setInvited] = useState(false);
+  /* Latches on the first invitation and never lets go. `invited` withdraws
+     after the linger, and unmounting the two pieces on that edge would mean
+     unmounting the AnimatePresence that owes them an exit: the label would
+     vanish rather than fade. Once the chunk is here, keeping two closed
+     AnimatePresence wrappers mounted costs nothing. */
+  const [armed, setArmed] = useState(false);
 
   /* Two refs on one node: the context ref is what the bubble measures its
      bloom against, and the local one is what this component needs for its own
@@ -69,15 +127,27 @@ export function TourO() {
     /* Wrapped because Safari in private browsing throws on localStorage
        rather than returning null, and a thrown storage read should cost the
        reader an invitation they will not see twice, not the page. */
-    let seen = true;
-    try {
-      seen = window.localStorage.getItem(SEEN_KEY) === "1";
-    } catch {
-      seen = false;
-    }
-    if (seen) return;
+    const read = (key: string) => {
+      try {
+        return window.localStorage.getItem(key) === "1";
+      } catch {
+        return false;
+      }
+    };
+
+    if (read(SEEN_KEY)) return;
 
     const show = window.setTimeout(() => {
+      /* AUTO_KEY is read here rather than beside SEEN_KEY above, and the
+         difference is one React ordering rule. Effects run child-first, so at
+         the moment this effect's body runs, TourProvider's effect has not:
+         the key is reliably absent even on the visit that is about to be
+         claimed, and gating on it up there suppressed nothing at all. By the
+         time this timer fires, a tick and a half later, the parent has long
+         since written it. */
+      if (read(AUTO_KEY)) return;
+
+      setArmed(true);
       setInvited(true);
       try {
         window.localStorage.setItem(SEEN_KEY, "1");
@@ -103,6 +173,15 @@ export function TourO() {
       <button
         ref={localRef}
         type="button"
+        /* Intent, not commitment. Both fire well before the click that means
+           it, and both are idempotent, so the tour's chunk is in the cache by
+           the time `start()` needs it and the bubble blooms on the same frame
+           as the press rather than a round trip later. `onFocus` is not
+           decoration: it is the keyboard reader's equivalent of the hover,
+           and without it Enter on this button would be the one path that
+           waits. */
+        onPointerEnter={warm}
+        onFocus={warm}
         onClick={() => {
           setInvited(false);
           start();
@@ -112,7 +191,7 @@ export function TourO() {
            in a way only a screen reader shows you: a heading's accessible
            name is computed from its own text content, so a hidden sentence
            anywhere inside the h1 becomes part of the heading, and this one
-           announced as "Hey, I'm O Plays a 30 second guided tour of this
+           announced as "Hey, I'm O Plays a 40 second guided tour of this
            site. mar."
 
            `title` contributes a *description* rather than content: the
@@ -120,7 +199,7 @@ export function TourO() {
            the explanation is still there for anyone whose reader announces
            descriptions. It also gives sighted mouse users the native
            tooltip, which is the same information by a second route. */
-        title="Play a 30 second tour of this site"
+        title="Play a 40 second tour of this site"
         /* `align-baseline` and no padding: this letter has to sit on the
            heading's baseline exactly as the glyph it replaces did, and any
            box model at all would kern the word open. The ring is drawn
@@ -136,38 +215,10 @@ export function TourO() {
           aria-hidden
           className="ring-foreground/20 pointer-events-none absolute -inset-x-1 -inset-y-0.5 rounded-full opacity-0 ring-1 transition-opacity duration-200 group-hover:opacity-100"
         />
-        <AnimatePresence>
-          {inviting && (
-            /* One breath. A ring that grows out of the letter and dissolves,
-               exactly once, which is a knock rather than a pulse. A repeating
-               animation on a portfolio index would be the page tapping the
-               reader on the shoulder until they respond. */
-            <motion.span
-              aria-hidden
-              key="knock"
-              className="ring-foreground/35 pointer-events-none absolute -inset-x-1 -inset-y-0.5 rounded-full ring-1"
-              initial={{ opacity: 0.55, scale: 0.9 }}
-              animate={{ opacity: 0, scale: 1.5 }}
-              transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
-            />
-          )}
-        </AnimatePresence>
+        {armed && <TourKnock inviting={inviting} />}
       </button>
 
-      <AnimatePresence>
-        {inviting && (
-          <motion.span
-            aria-hidden
-            className="text-meta text-foreground-faint pointer-events-none absolute top-full left-1/2 mt-1 -translate-x-1/2 whitespace-nowrap"
-            initial={{ opacity: 0, y: -3 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, transition: { duration: 0.35 } }}
-            transition={{ duration: 0.45, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
-          >
-            30s tour
-          </motion.span>
-        )}
-      </AnimatePresence>
+      {armed && <TourInviteLabel inviting={inviting} />}
     </span>
   );
 }

@@ -6,6 +6,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { Icon } from "@/components/icon/Icon";
+/* One named export off a module of pure declarations, so this costs the
+   case-study bundle the predicate and nothing else: `createStage` and the rest
+   of the driver are unreachable from here and shake out. Imported rather than
+   restated because the marker it reads is a contract between two files, and a
+   second copy of the key is how that contract quietly stops holding. */
+import { isSynthetic } from "@/components/tour/driver";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
@@ -143,8 +149,17 @@ function useSequenceKeys({
       if (ownsTheKeyboard(event.target, arrow || event.key === "Escape")) return;
       /* Escape mid-tour means "stop the tour", which the tour engine is
          already listening for. Without this the reader would get both: the
-         tour stops *and* the page they were being shown navigates away. */
-      if (tourIsRunning()) return;
+         tour stops *and* the page they were being shown navigates away. The
+         same goes for J and K, which the engine reads as the reader taking
+         the page back.
+
+         The tour's own presses are the exception, and they have to be: the
+         script narrates this pager ("hit your Arrow keys or JK"), and a
+         demonstration the demonstrator is locked out of is a claim the page
+         then refuses to back up. `isSynthetic` is the same marker the engine
+         uses to tell its keystrokes from a reader's, so the two sides of this
+         cannot disagree about which is which. */
+      if (!isSynthetic(event) && tourIsRunning()) return;
 
       if ((key === "j" || event.key === "ArrowRight") && next) {
         event.preventDefault();

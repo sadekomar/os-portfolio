@@ -58,9 +58,22 @@ export type TourStage = {
   activate: (selector: string) => Promise<void>;
   /* Nudge a horizontal scroller, for the case-study strip. */
   drag: (selector: string, dx: number) => Promise<void>;
+  /* Two nudges in opposite proportions, which is what a thrown scroller looks
+     like next to `drag`'s single push: for showing that a strip of screens is
+     a strip rather than a picture. */
+  flick: (selector: string, dx: number) => Promise<void>;
+  /* Sweep the cursor along a phrase, the way a finger underlines it. The
+     second argument is the words themselves, not a selector: see `rectFor`. */
+  trace: (selector: string, text?: string) => Promise<void>;
+  /* Loop the cursor once around something, for a figure the voice is naming
+     that has no affordance to point at. */
+  circle: (selector: string, text?: string) => Promise<void>;
   /* Focus an element and press a key on it, for demonstrating the Work
      list's roving tabindex. */
   key: (selector: string, key: string, times?: number) => Promise<void>;
+  /* The same press with no element behind it, for the handlers bound to the
+     window rather than to a list: the case studies' J/K pager. */
+  hotkey: (key: string, times?: number) => Promise<void>;
   reduced: boolean;
 };
 
@@ -201,6 +214,74 @@ function aimPoint(el: HTMLElement) {
     y: rect.top + rect.height / 2,
   };
 }
+
+/* ── Pointing at words ────────────────────────────────────────────────────
+   `trace` and `circle` are aimed at a phrase inside a sentence: "10M+
+   visits", the three customer names, a figure in the outcome row. None of
+   those is an element, and the obvious fix is to make them one, by wrapping
+   every phrase the tour wants in a span with a hook on it.
+
+   That fix is worse than this function. It puts the tour's choreography into
+   the site's editorial copy, where the next person to reword a description
+   silently breaks a cue, and it makes the prose a worse thing to read in the
+   source for the benefit of a forty-second video. A Range over the text node
+   asks the browser the same question the reader's eye is asking, needs no
+   markup at all, and degrades the way every other selector here degrades: the
+   words are gone, the rect is null, the cue is skipped.
+
+   Single text node only. A phrase split by a <strong> or a link mid-way
+   through returns nothing rather than the wrong box, which is the correct
+   failure: the cue drops and the tour carries on. */
+function rectFor(el: HTMLElement, text?: string): DOMRect | null {
+  if (!text) {
+    /* The union of the children rather than the element's own box, when it
+       has element children. A block-level container is as wide as the column
+       whatever is in it, and the case study's outcome row is the case that
+       showed why that matters: three figures ending 165px short of a 640px
+       <dl>, so a loop around the box spent its whole right-hand arc in empty
+       margin, pointing at nothing on the one gesture whose entire meaning is
+       "these". The union stops at the last figure.
+
+       Falls back to the element for a leaf, which is every other caller. */
+    const kids = Array.from(el.children) as HTMLElement[];
+    const boxes = kids.map((kid) => kid.getBoundingClientRect()).filter((r) => r.width > 0);
+    if (boxes.length > 0) {
+      const left = Math.min(...boxes.map((r) => r.left));
+      const top = Math.min(...boxes.map((r) => r.top));
+      const right = Math.max(...boxes.map((r) => r.right));
+      const bottom = Math.max(...boxes.map((r) => r.bottom));
+      return new DOMRect(left, top, right - left, bottom - top);
+    }
+    const rect = el.getBoundingClientRect();
+    return rect.width > 0 ? rect : null;
+  }
+
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  let node = walker.nextNode();
+  while (node) {
+    const index = node.textContent?.indexOf(text) ?? -1;
+    if (index >= 0) {
+      const range = document.createRange();
+      range.setStart(node, index);
+      range.setEnd(node, index + text.length);
+      const rect = range.getBoundingClientRect();
+      return rect.width > 0 ? rect : null;
+    }
+    node = walker.nextNode();
+  }
+  return null;
+}
+
+/* How long a sweep or a loop takes. Tied to the size of the thing rather than
+   fixed, for the same reason `travelMs` in TourCursor is tied to distance: the
+   cursor is being read, and a long phrase and a short one cannot take the same
+   time without one of them being wrong. */
+const TRACE_MS_PER_PX = 1.1;
+const TRACE_MIN_MS = 220;
+const TRACE_MAX_MS = 900;
+
+const paceFor = (length: number) =>
+  Math.min(TRACE_MAX_MS, Math.max(TRACE_MIN_MS, length * TRACE_MS_PER_PX));
 
 function pointerEvent(type: string, x: number, y: number, extra: PointerEventInit = {}) {
   return mark(
@@ -382,6 +463,96 @@ export function createStage({
          the same thing a trackpad flick does, snap points and all. */
       el.scrollBy({ left: dx, behavior: reduced ? "auto" : "smooth" });
       await sleep(reduced ? 0 : 420, signal);
+    },
+
+    async flick(selector, dx) {
+      const el = await resolve(selector);
+      if (!el) return;
+      await ensureVisible(el);
+      await moveCursor(el);
+      if (signal.aborted) return;
+      /* The long push, then a short one on its heels. A single `drag` proves
+         the strip moves; the second nudge is what makes it read as a hand
+         throwing it rather than as the page animating on its own, and it
+         lands on a different snap point, so the reader sees two screens
+         change rather than one. */
+      el.scrollBy({ left: dx, behavior: reduced ? "auto" : "smooth" });
+      await sleep(reduced ? 0 : 380, signal);
+      if (signal.aborted) return;
+      el.scrollBy({ left: Math.round(dx * 0.55), behavior: reduced ? "auto" : "smooth" });
+      await sleep(reduced ? 0 : 320, signal);
+    },
+
+    async trace(selector, text) {
+      const el = await resolve(selector);
+      if (!el) return;
+      await ensureVisible(el);
+      if (signal.aborted) return;
+
+      const rect = rectFor(el, text);
+      if (!rect) return;
+
+      /* Under the words rather than through them: a dot travelling across the
+         middle of a line covers the thing it is drawing attention to, which
+         is the one job it has. Two pixels below the box is where a hand would
+         hold a pen. */
+      const y = rect.bottom + 2;
+      await cursor()?.moveTo(rect.left, y);
+      if (signal.aborted) return;
+      await cursor()?.glide(
+        [
+          { x: rect.left, y },
+          { x: rect.right, y },
+        ],
+        paceFor(rect.width),
+      );
+    },
+
+    async circle(selector, text) {
+      const el = await resolve(selector);
+      if (!el) return;
+      await ensureVisible(el);
+      if (signal.aborted) return;
+
+      const rect = rectFor(el, text);
+      if (!rect) return;
+
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      /* Clear of the glyphs on both axes, and never tighter than a dot's own
+         width, so a one-word figure still gets a loop rather than a wobble. */
+      const rx = Math.max(24, rect.width / 2 + 16);
+      const ry = Math.max(16, rect.height / 2 + 12);
+
+      /* Sixteen points, starting and ending at the same place on the right,
+         which is where the cursor is brought before the loop opens: a circle
+         that starts wherever the cursor happened to be has a tail on it. */
+      const STEPS = 16;
+      const path = Array.from({ length: STEPS + 1 }, (_, i) => {
+        const angle = (i / STEPS) * Math.PI * 2;
+        return { x: cx + Math.cos(angle) * rx, y: cy + Math.sin(angle) * ry };
+      });
+
+      await cursor()?.moveTo(path[0].x, path[0].y);
+      if (signal.aborted) return;
+      await cursor()?.glide(path, paceFor((rx + ry) * 2));
+    },
+
+    async hotkey(key, times = 1) {
+      /* No element, no cursor move and no scroll. The handler this is for is
+         bound to the window (see the pager in components/sequence/Pager.tsx),
+         so there is nothing to focus and nothing to point at: the press is
+         the whole gesture. Dispatched on the body because a `window` target
+         is not something a keydown can have. */
+      release();
+      for (let i = 0; i < times; i++) {
+        if (signal.aborted) return;
+        document.body.dispatchEvent(mark(new KeyboardEvent("keydown", { key, bubbles: true })));
+        /* Longer than `key`'s beat: each of these is a route change, and two
+           presses inside one navigation would be the second one landing on a
+           page that is still the first one. */
+        await sleep(reduced ? 0 : 640, signal);
+      }
     },
 
     async key(selector, key, times = 1) {

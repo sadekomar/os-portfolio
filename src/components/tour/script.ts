@@ -58,12 +58,33 @@
 import type { TourStage } from "@/components/tour/driver";
 
 export type TourCue = {
+  /* When the reader should see this, which is the moment the word is said.
+     Copied from the WebVTT, never estimated. */
   at: number;
   say: string;
   /* The return is ignored, and `unknown` rather than `void` so a one-line
      cue can be `(s) => s.point(…)` without the arrow having to swallow the
      stage's own return value in a block body. */
   run?: (s: TourStage) => unknown;
+  /* ── Lead ────────────────────────────────────────────────────────────────
+     How long before `at` to *start* this cue's action, in seconds, because
+     every verb on the stage takes time to land and none of them are
+     instant. A cursor travels for 180-620ms, a smooth scroll settles in
+     400-600, a press animates for 300 before the route even changes. Fired
+     on the word, all of that happens *after* it, and the tour spends the
+     whole recording arriving a beat late. That is the single thing that made
+     this feel like a page reacting to a voice rather than a voice describing
+     a page.
+
+     So `at` is when the reader should see the thing, and `lead` is what it
+     costs to get there. The numbers are measured, not guessed, and the
+     measurements are in the table above the array below.
+
+     It applies only to `run`. The caption still changes exactly on `at`,
+     because a subtitle that anticipates the voice is a worse error than an
+     action that follows it: see TOUR_CAPTIONS and TOUR_ACTIONS below, which
+     is where the two schedules part company. */
+  lead?: number;
 };
 
 /* The case study the tour opens. One project, named once, because the tour
@@ -104,153 +125,436 @@ const COMPONENT = "decode-flow";
    talk being added above it, which a "first entry" selector would not. */
 const TALK = "loom-cairo-auc-venture-lab";
 
-/* ── What this take does not have ─────────────────────────────────────────
-   The keyboard line. The Work list is a single tab stop with a roving
-   tabindex, which is the one behaviour here nobody discovers by being told
-   about it, and demonstrating it silently under the hover line would have the
-   page making two arguments while the voice makes one. So the arrow presses
-   are out until a take narrates them, and `key` in driver.ts is unused rather
-   than deleted: it is four lines, and the line to restore it is one.
+/* The three rows the middle of the second line names, one per group, in the
+   order the voice says them: "the job, ventures I've founded, and client
+   work". By slug rather than by position, so reordering `workGroups` in
+   app/page.tsx moves nothing here.
 
-   The contributions graph and Resources are still out, for the same reason
-   they went in the previous take: nothing says them. `#code`, `#resources`
-   and the `data-tour="resources-more"` hook stay put, because the ids are
-   worth having on their own and the hook is one attribute. */
+   Wholana for the founded beat rather than Loom Cairo, and only because Loom
+   Cairo is where the tour is about to go: resting on it here and then resting
+   on it again four seconds later for the preview line would spend two
+   different sentences on one row. */
+const GROUP_ROWS = {
+  job: "/work/instatus",
+  founded: "/work/wholana",
+  client: "/work/argonaut",
+};
+
+/* ── Cues below the caption ───────────────────────────────────────────────
+   Most captions in this take carry more than one clause, and the page follows
+   the clauses rather than the caption. So the array has a second kind of
+   entry: silent cues, `say: ""`, timed to a phrase inside a line that is
+   already on screen. An empty `say` leaves the chip holding the sentence still
+   being spoken while the page moves under it.
+
+   Every `at` in here, silent cues included, is a phrase start copied from a
+   phrase-level WebVTT of the recording. An earlier pass had them estimated,
+   by reading each line at speaking pace and splitting the caption's span by
+   where the clause seemed to land, and it was wrong in the way estimates are:
+   not randomly, but drifting further behind as the recording went on, because
+   every line read slightly slower than it scanned. The lesson is cheap to
+   restate: if a beat needs to move, re-cut the transcript rather than nudge
+   the number.
+
+   ── What a verb costs ────────────────────────────────────────────────────
+   Measured on a production build, 1280x720, against the shipped recording.
+   These are what the `lead` on each cue is drawn from, and they are the
+   reason there is a `lead` at all:
+
+     goto                      0.02s   the route swap itself, then a 260ms
+                                       wait that nothing downstream needs
+     hotkey                    0.13s   dispatch, then the pager's own push
+     scrollBy                  0.11s   to the first frame of movement
+     scrollTo                  0.24s   a smooth scroll of a section, settled
+     hover / point, in view    0.27s   one cursor travel, clamped 180-620ms
+                              -0.42s   depending on how far it has to come
+     activate                  0.35s   300ms press animation, then the route
+     hover needing a scroll    0.55s   the scroll and the travel, in series
+     scrollTo the footer       1.22s   the full height of the index
+
+   Two of those are worth reading twice. A `goto` is essentially free, so a
+   cue that routes and then does something else should be led by the something
+   else, not by the pair. And `hover` varies by a factor of two on travel
+   distance alone, which is why the leads on the three group rows are not all
+   the same number.
+
+   Two consequences worth knowing before moving any of these. A lead does not
+   shorten the beat before it: `hover` holds the previous row's highlight
+   until the cursor has arrived, so an early fire overlaps the travel, not the
+   state. And vertical and horizontal scrolls do not contend, which is why the
+   flick and the scroll under it are allowed to overlap at all.
+
+   ── What this take does have, and what it still does not ─────────────────
+   The keyboard line is demonstrated on the case studies' own J/K pager, which
+   is what the voice is describing at that point in the recording, and getting
+   there took a change in Pager.tsx: it used to refuse every key while the
+   tour was running. See the note on `isSynthetic` there. The Work list's
+   roving tabindex is still the site's least discoverable good idea and still
+   has `key` in driver.ts pointed at it, but no line in this take narrates it,
+   and the rule further up this file is that the page does not make an
+   argument the voice is not making.
+
+   The contributions graph and Resources are out, for the same reason they
+   went in the previous take: nothing says them. `#code`, `#resources` and the
+   `data-tour="resources-more"` hook stay put, because the ids are worth
+   having on their own and the hook is one attribute. */
 export const TOUR: TourCue[] = [
   {
     at: 0,
     say: "Hey, I'm Omar. Let me show you around.",
   },
   {
-    at: 2.3,
-    say: "Top of the page is where I currently work, Instatus.",
+    /* "Full-stack software engineer" (2.5) into "currently at Instatus" (3.5),
+       which is one gesture: the Experience row for Instatus, whose own
+       description is the first of those two phrases word for word.
+
+       The longest lead in the array, and the only one that is two verbs in
+       series: the page has to scroll to Experience and then the cursor has to
+       cross to the row. Firing at 1.88 means both are spending "Let me show
+       you around" getting into position, which is the one line in the
+       recording that is explicitly about the page being about to move.
+
+       Measured at 0.62 end to end: 0.24 of scroll, then 0.35 of travel. */
+    at: 2.5,
+    lead: 0.62,
+    say: "Full-stack software engineer currently at Instatus, shipping features that serve 10M+ visits for customers like Sketch, Harvard, and Siemens.",
     run: async (s) => {
       await s.scrollTo("#experience");
-      await s.point('[data-tour="row:https://instatus.com"]');
+      await s.hover('[data-tour="row:https://instatus.com"]');
     },
   },
   {
-    at: 5.5,
-    say: "Status pages serving ten million visits a month, built by me, tech lead, two hundred high-end animations.",
+    /* "that serve 10M+ visits". The figure is not in the Experience row, it is
+       in the Work row's description a section further down, which is the only
+       place on the index those words exist. So the page goes to the words
+       rather than the words being duplicated up to the page: `trace` finds
+       them in the sentence and underlines them. */
+    at: 6.0,
+    lead: 0.4,
+    say: "",
+    run: (s) => s.trace(`[data-tour="row:${GROUP_ROWS.job}"]`, "10M+ visits"),
   },
   {
-    at: 11.0,
-    say: "Then the rest of the work, grouped: the job, the venture I founded, and the side project.",
+    /* "Sketch, Harvard, and Siemens." The same sentence, eight words further
+       along, so this is a sweep rather than a journey and the lead is shorter
+       than it looks: the cursor is already on the line.
+
+       It has to be finished before the scroll on the next cue starts pulling
+       the sentence upward, which is what sets the 0.35 rather than the 0.4 on
+       the trace above. Measured, the sweep lands at 8.55 and the scroll starts
+       at 8.6. */
+    at: 8.2,
+    lead: 0.35,
+    say: "",
+    run: (s) => s.trace(`[data-tour="row:${GROUP_ROWS.job}"]`, "Sketch, Harvard, Siemens"),
+  },
+  {
+    at: 9.0,
+    lead: 0.4,
+    say: "Then the rest of my work group: the job, ventures I've founded, and client work.",
     run: (s) => s.scrollTo("#work"),
   },
   {
-    at: 15.8,
-    say: "Rest on a row, and you get a look at it before you spend a click.",
+    /* One row per named group, on the beat of the name, a second apart. Three
+       hovers rather than three points, because the preview panel opening on
+       each is what makes them read as one list being walked rather than as the
+       cursor wandering.
+
+       The first two are already on screen after the scroll above, so they cost
+       a cursor travel and nothing else. */
+    at: 10.5,
+    lead: 0.45,
+    say: "",
+    run: (s) => s.hover(`[data-tour="row:${GROUP_ROWS.job}"]`),
+  },
+  {
+    at: 11.5,
+    lead: 0.45,
+    say: "",
+    run: (s) => s.hover(`[data-tour="row:${GROUP_ROWS.founded}"]`),
+  },
+  {
+    /* Client work is three Founded rows below the fold, so this one pays for a
+       scroll as well as a travel and fires while the previous phrase is still
+       being said. That is not a beat lost: `hover` releases the old row only
+       once the cursor has arrived, so Wholana stays lit through its own clause
+       and the page is simply already moving when this one starts.
+
+       Measured at 0.58: 0.3 of scroll, then 0.24 of travel. */
+    at: 12.5,
+    lead: 0.6,
+    say: "",
+    run: (s) => s.hover(`[data-tour="row:${GROUP_ROWS.client}"]`),
+  },
+  {
+    /* "Rest on a row" (13.5), and the row is Loom Cairo. The preview panel
+       that opens under it is what the next two phrases, "and you get a
+       preview" and "before you spend a click", are describing, and it needs no
+       cue of its own because the hover already opened it.
+
+       The short lead is the interesting one. This reads like it should cost a
+       scroll, since Loom Cairo is back up the list from Client work, and it
+       was given 0.85 on that assumption and landed 0.59 early. It costs a
+       travel and nothing else: the scroll the previous cue paid for to reach
+       Client work brought Loom Cairo into view on its way past, so
+       `ensureVisible` finds it already on screen and does nothing. Measured at
+       0.26, and given 0.3 rather than 0.26 because that "already on screen" is
+       a fact about a 720px viewport rather than about the page. */
+    at: 13.5,
+    lead: 0.3,
+    say: "Rest on a row and you get a preview before you spend a click.",
     run: (s) => s.hover(`[data-tour="row:${CASE_STUDY}"]`),
   },
   {
-    at: 19.2,
-    say: "Open one for the full case study:",
+    /* "Click one" (17.0). The press animation is 300ms before the route even
+       changes, which is most of this lead; measured at 0.35 end to end. */
+    at: 17.0,
+    lead: 0.4,
+    say: "Click one for the full case study: what it did, the real screens, and the thinking behind them.",
     run: (s) => s.activate(`[data-tour="row:${CASE_STUDY}"]`),
   },
   {
-    /* Two moves under one clause, awaited in order, because they are one
-       gesture: bring the strip into view, then show that it moves. Scrolling
-       to it and leaving it still would be pointing at a photograph. */
-    at: 20.8,
-    say: "what it did, the real screens, and the thinking behind them.",
+    /* "what it did," (19.0). The outcome row, and a loop around it rather than
+       a point at it: the figures have no affordance, nothing lights up under a
+       cursor resting on them, so a stationary dot beside a number reads as the
+       tour having stalled. A circle is the gesture for "these". */
+    at: 19.0,
+    lead: 0.4,
+    say: "",
+    run: (s) => s.circle('[data-tour="case-stats"]'),
+  },
+  {
+    /* "the real screens," (19.6). The tightest passage in the recording: three
+       phrases in 1.8s, each needing about half of that to land. The scroll
+       starts while the circle above is still closing, and that is the intended
+       reading rather than a collision, because it is one continuous movement
+       down the page: the cursor finishes on the figures, the page carries on
+       to the strip, the strip gets thrown. */
+    at: 19.6,
+    lead: 0.55,
+    say: "",
     run: async (s) => {
       await s.scrollTo("[data-case-bleed]", "center");
-      await s.drag("[data-case-bleed] .snap-x", 700);
+      await s.flick("[data-case-bleed] .snap-x", 700);
     },
   },
   {
-    /* Silent, and the only cue in the array that is not the start of a
-       caption. The line above is a list of three and the page has to keep up
-       with all three of them: the screens are dealt with by the drag, and
-       this is "the thinking behind them", which lands about here in the read.
-       An empty `say` leaves the caption where it is, so the chip still holds
-       the sentence being spoken while the page moves under it. */
-    at: 22.8,
+    /* "and the thinking behind them." (20.1), which is the prose under the
+       strip. Allowed to overlap the flick above, and this is the one place in
+       the array where two cues are deliberately in flight at once: that one
+       moves a scroller sideways and this one moves the window down, so they
+       are not competing for anything and the pair reads as a single gesture
+       rather than as two. */
+    at: 20.1,
+    lead: 0.15,
     say: "",
     run: (s) => s.scrollBy(700),
   },
   {
-    at: 24.2,
-    say: "Here is a roster of the components I'm proudest of,",
+    /* "You can also hit your Arrow keys" (20.8), and it presses an arrow key.
+       The pager binds both pairs, so the sentence's own two halves can each
+       get the key they name instead of J standing in for both. */
+    at: 20.8,
+    lead: 0.15,
+    say: "You can also hit your Arrow keys or JK for quick keyboard navigation.",
+    run: (s) => s.hotkey("ArrowRight", 1),
+  },
+  {
+    /* "or JK for quick keyboard navigation." (22.0), split across the two
+       letters it names: J forward, then K back, so the reader sees the key go
+       both ways rather than watching a list scroll one direction.
+
+       With the arrow above that is three route changes, and they are the point
+       rather than a cost: the case study under the bubble changes twice and
+       steps back once. It does not end where it started, and it should not:
+       K undoes one press, not two. */
+    at: 22.2,
+    lead: 0.15,
+    say: "",
+    run: (s) => s.hotkey("j", 1),
+  },
+  {
+    at: 23.2,
+    lead: 0.15,
+    say: "",
+    run: (s) => s.hotkey("k", 1),
+  },
+  {
+    /* "Here's a roster of the components" (24.0). Led by the route change
+       rather than by the cursor that follows it, and that is the general rule
+       for a `goto`: what the reader registers is the page becoming a different
+       page, and the cursor finding its row is the next beat, not this one.
+       Leading by the pair put the roster on screen half a second early. */
+    at: 24.0,
+    lead: 0.15,
+    say: "Here's a roster of the components I'm proudest of, also fully keyboard-navigable.",
     run: async (s) => {
       await s.goto("/components");
       await s.point(`[data-tour="component:${COMPONENT}"]`);
     },
   },
   {
-    /* The press lands on the second clause rather than the first, which buys
-       the component three and a half seconds on screen instead of the second
-       and a half it would get if the page waited for the next caption. */
-    at: 27.2,
-    say: "lifted out of the products they shipped in, running here as real files.",
-    run: async (s) => {
-      await s.activate(`[data-tour="component:${COMPONENT}"]`);
-      await s.scrollTo('[data-tour="component-preview"]', "center");
-    },
+    /* "I'm proudest of," (25.5) opens the one it is pointing at. Same 0.35 as
+       the case study above: an `activate` is a press animation and a push. */
+    at: 25.5,
+    lead: 0.4,
+    say: "",
+    run: (s) => s.activate(`[data-tour="component:${COMPONENT}"]`),
   },
   {
-    /* Landing only. The talk is deliberately not played: the tour is already
-       speaking, and starting a second video would put two voices in the room
-       at once, one of which the reader cannot pause without stopping the
-       other. The poster and the frame are the whole point here anyway, which
-       is that the recordings exist. */
-    at: 30.8,
-    say: "Talks, where you can watch my pitches and sessions over the years.",
+    /* "also fully keyboard-navigable." (26.5) brings the preview up, which is
+       the last two seconds of this stop and the reason the component is Decode
+       Flow: it animates itself, so it is already making its case by the time
+       it is centred. See COMPONENT above.
+
+       The obvious cue for this phrase is an arrow press, since the component
+       pages carry the same pager the case studies do. It is not here because
+       it would work: the press would land 0.35s after the preview arrived and
+       replace it with the next component's page, so the thing the whole stop
+       was building to would be on screen for a third of a second. */
+    at: 26.5,
+    lead: 0.4,
+    say: "",
+    run: (s) => s.scrollTo('[data-tour="component-preview"]', "center"),
+  },
+  {
+    /* "Talks is where you can watch" (28.5). Landing, then moving. The talk is
+       deliberately not played: the tour is already speaking, and starting a
+       second video would put two voices in the room at once, one of which the
+       reader cannot pause without stopping the other.
+
+       Split between the two things this cue does, rather than led by either.
+       At 0.6 the route landed 0.58 early and cut into the phrase before it; at
+       a `goto`'s usual 0.15 the talk would settle 0.35 late. 0.35 puts the
+       page change and the talk arriving about 0.15 either side of the word. */
+    at: 28.5,
+    lead: 0.35,
+    say: "Talks is where you can watch my pitches and session recaps.",
     run: async (s) => {
       await s.goto("/talks");
       await s.scrollTo(`#${TALK}`, "center");
     },
   },
   {
-    /* About and the blog are named rather than visited, and that is the whole
-       decision. Two more route changes at the end of a tour is the point where
-       a guided tour stops being a tour and becomes a slideshow, and the
-       Elsewhere section already links both of them in one sentence, so the
-       line can point at the thing instead of travelling to it. */
-    at: 34.8,
-    say: "Finally, there is an about page and a blog with some of my writing.",
+    /* "my pitches and session recaps." (29.5), plural, so the list moves. What
+       the line claims is that there are recordings, and a list going past says
+       that better than one frozen poster does. */
+    at: 29.5,
+    lead: 0.2,
+    say: "",
+    run: (s) => s.scrollBy(620),
+  },
+  {
+    /* "Finally, there's an About page" (31.2) and "and a Blog with some of my
+       writings." (32.2), a second apart, one route each. Long enough to see
+       what a page is and too short to start reading it, which is the correct
+       length for a line that is listing rather than describing: the reader is
+       being told these exist and where they are. */
+    at: 31.2,
+    lead: 0.15,
+    say: "Finally, there's an About page and a Blog with some of my writings.",
+    run: (s) => s.goto("/about"),
+  },
+  {
+    at: 32.2,
+    lead: 0.15,
+    say: "",
+    run: (s) => s.goto("/blog"),
+  },
+  {
+    /* "An email is the quickest way to reach me." (33.8): home, and to the
+       bottom of it, where the address actually is.
+
+       The longest single cue in the array at 1.2s measured, almost all of it
+       the scroll: it is the full height of the index, and the route change
+       under it costs 0.02. The lead is 0.9 rather than the 1.2 that would put
+       the footer exactly on the word, and the 0.3s of lateness is bought
+       deliberately. At 1.2 this fires at 32.6 and the blog, which arrived at
+       32.07, is on screen for half a second. Under a second is already "very
+       quickly"; half is a flicker.
+
+       ── Why the tour no longer comes home ──────────────────────────────────
+       There was a cue after this one, silent, on "Thank you!" (35.5), that
+       scrolled back to the top so the bubble could fly into the O it bloomed
+       out of. It measured 0.98s, so landing it on the word means firing at
+       34.5, and the footer only arrives at 34.1. It was a 0.4s stop at the
+       contact details on the way to somewhere else, which is worse than not
+       going: the whole reason this cue exists is to leave the reader on the
+       address.
+
+       So the tour ends at the footer, and TourBubble fades the circle in place
+       rather than returning it, because the letter is three thousand pixels
+       up. The return gesture is the nicer ending and this is the more useful
+       one. The reader gets nearly three seconds on the contact details, which
+       is what the last line of the recording is for. */
+    at: 33.8,
+    lead: 0.9,
+    say: "An email is the quickest way to reach me. Thank you!",
     run: async (s) => {
       await s.goto("/");
-      await s.scrollTo("#elsewhere");
+      await s.scrollTo("footer", "end");
     },
-  },
-  {
-    at: 38.2,
-    say: "And email is the quickest way to reach me. Thank you.",
-  },
-  {
-    /* The last cue is a return rather than a fade. The bubble came out of the
-       O and it goes back into it, and it cannot do that from the footer, so
-       the page comes home first. A tour that ends by dumping the reader at
-       the bottom of the page has taken them somewhere and left them there.
-
-       1.7s before the recording ends, and it is not a caption start either:
-       the provider stops the tour the frame `currentTime` passes the video's
-       duration, so this has to be early enough for a full-page smooth scroll
-       to land before the bubble starts shrinking, and late enough not to pull
-       the Elsewhere links off screen while the line about email is still
-       being said. `scrollSettled` caps a scroll at 1400ms, which set the
-       number; measured at 1.0s to reach the top from the footer. */
-    at: 39.3,
-    say: "",
-    run: (s) => s.scrollTop(),
   },
 ];
 
+/* ── The two schedules ────────────────────────────────────────────────────
+   Derived, so that the array above can stay in the order the recording is
+   spoken in, which is the order it has to be read and edited in.
+
+   They part company because `lead` applies to one of them and not the other.
+   An action fires early so that it arrives on its word; a caption fires on its
+   word exactly, because it *is* the word. A subtitle that anticipates the
+   voice is a worse error than an action that follows it: the action reads as
+   the page keeping up, and the caption reads as the transcript being wrong.
+
+   Sorted after the shift, because a long lead can move a cue before the one
+   authored ahead of it, and the engine walks these with an index rather than
+   searching. The captions need no sort: no lead is applied to them, so they
+   are already in order. */
+export const TOUR_CAPTIONS: { at: number; say: string }[] = TOUR.filter((cue) => cue.say).map(
+  (cue) => ({ at: cue.at, say: cue.say }),
+);
+
+export const TOUR_ACTIONS: { at: number; run: (s: TourStage) => unknown }[] = TOUR.filter(
+  (cue) => cue.run,
+)
+  .map((cue) => ({ at: cue.at - (cue.lead ?? 0), run: cue.run! }))
+  .sort((a, b) => a.at - b.at);
+
 /* Where the tour is over, and now only a stand-in for it: the recording is
-   41s and the provider reads its duration off the video, so this governs
+   37.2s and the provider reads its duration off the video, so this governs
    rehearsal and the handful of frames before `loadedmetadata` lands. Kept in
    step with the file anyway, because the one thing worse than an unused
-   number is one that used to be right. */
-export const TOUR_END = 41;
+   number is one that used to be right.
 
-/* The recording. 540x540, which is a centre crop of a 1080x1920 phone take:
+   Two pieces of copy quote a rounded version of this and neither imports it:
+   the "40s tour" label in TourInvite.tsx and the button description in
+   TourO.tsx. Restated rather than derived, because both of those are in the
+   always-loaded path and importing this module to format one number would
+   pull the whole cue array, closures and all, into the first-load bundle that
+   TourProvider exists to keep it out of. Round up when it changes: a tour
+   that comes in under its own estimate is the only direction of that error a
+   reader forgives. */
+export const TOUR_END = 37.2;
+
+/* The recording. 540x540, which is a square crop of a 1080x1920 phone take:
    the bubble is a circle, so anything outside the middle square was never
    going to be seen, and shipping 30MB of portrait video to display 128px of
    it is bandwidth spent on pixels behind a mask. The crop is offset to the
-   face rather than to the frame's centre, so it moves between takes; see the
-   ffmpeg line in the tour's notes.
+   face rather than to the frame's centre, so its Y moves between takes. For
+   this one, from portfolio-final.MOV:
+
+     ffmpeg -i take.MOV -vf "crop=1080:1080:0:480,scale=540:540" \
+       -c:v libx264 -profile:v high -level 3.0 -pix_fmt yuv420p \
+       -crf 26 -preset slow -r 30 \
+       -c:a aac -b:a 96k -ac 1 -ar 44100 \
+       -movflags +faststart public/tour/tour.mp4
+
+   The 480 is the only number to re-derive for a new take: pull a frame, put
+   the top of the head about 18% down the crop, and the framing matches every
+   take before it. Everything else is fixed by the player rather than by
+   taste, and +faststart matters because the file is fetched at the moment the
+   reader asks for the tour, not before it (`preload="none"`, see TourBubble).
 
    Absent, the whole thing still runs on a rehearsal clock with the lines
    printed on screen, which is how the choreography was timed before there was

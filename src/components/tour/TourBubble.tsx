@@ -231,7 +231,9 @@ export function TourBubble({
   anchorRef,
   reduced,
   src,
+  muted,
   onVideoError,
+  onUnmute,
   onSkip,
   onResume,
 }: {
@@ -243,7 +245,11 @@ export function TourBubble({
   anchorRef: RefObject<HTMLElement | null>;
   reduced: boolean;
   src: string;
+  /* Playing, but with the voice off, because the browser refused audio on a
+     tour nobody pressed. See the retry in TourEngine. */
+  muted: boolean;
   onVideoError: () => void;
+  onUnmute: () => void;
   onSkip: () => void;
   onResume: () => void;
 }) {
@@ -511,6 +517,20 @@ export function TourBubble({
 
       {open && (
         <div className="pointer-events-auto flex w-max items-center gap-1">
+          {/* First in the row, and styled like Resume rather than like Skip,
+              because on an auto-started tour it is the only control the reader
+              actually wants: the voice is the tour, and this is the button
+              that turns it on. It is absent from a tour started by pressing
+              the O, where the sound was never blocked in the first place. */}
+          {muted && status === "playing" && (
+            <button
+              type="button"
+              onClick={onUnmute}
+              className="text-meta text-foreground bg-surface-raised ring-foreground/8 hover:bg-wash focus-visible:ring-ring/20 rounded-full px-3 py-1 ring-1 transition-colors duration-150 focus-visible:ring-2 focus-visible:outline-none"
+            >
+              Sound on
+            </button>
+          )}
           {status === "yielded" && (
             <button
               type="button"
