@@ -59,11 +59,23 @@ import { PRODUCT, type StorefrontImage } from "@/components/case-study/storefron
    how the native photo scrubbers this pattern comes from have always
    behaved.
 
-   `selection` rather than `light` or `success`: 8ms at 0.3 intensity, the
-   preset built for exactly this, a value passing under a control. A scrub
-   across all four fires it four times in maybe 300ms, so anything with more
-   body turns into a buzz, and a two-part preset (`success`, `nudge`) would
-   still be playing its second tap when the next dot arrives.
+   A 10ms pulse at full intensity, written out rather than taken from the
+   `selection` preset, and the two are the same idea with one of them
+   unplayable. A scrub across all four fires this four times in maybe 300ms,
+   so anything with more body turns into a buzz and a two-part preset
+   (`success`, `nudge`) would still be playing its second tap when the next
+   dot arrives. That much `selection` had right. What it gets wrong is the
+   rendering: intensity is not a thing `navigator.vibrate` takes, so the
+   library approximates it by chopping the pulse into on and off slices, and
+   `selection` (8ms at 0.3) comes out as vibrate([2, 6]). Two milliseconds is
+   below the point where a phone's vibration motor has spun up at all, so the
+   Android path was firing correctly and producing nothing. At intensity 1
+   there is no chopping and the 10ms arrives whole.
+
+   None of which iOS reads. There the pattern is only a count: the library
+   clicks its hidden switch once per vibration in the list and the Taptic
+   engine picks the tick, so one call is one tick whatever the numbers say.
+   The numbers exist for the other half of the traffic.
 
    Fired on crossings only, never on every pointermove: `lastTickRef` holds
    the index the last tick belonged to, so a drag that travels 40px inside
@@ -181,7 +193,7 @@ export function StorefrontCarousel() {
          which for a scrub is after the next two have started, and awaiting it
          would serialise ticks behind each other. Nothing here needs to know
          that a tick landed. */
-      void trigger("selection");
+      void trigger([{ duration: 10, intensity: 1 }]);
     },
     [trigger],
   );
