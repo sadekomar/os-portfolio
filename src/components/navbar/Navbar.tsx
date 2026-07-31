@@ -14,8 +14,12 @@ import { menuPages } from "@/data/menuPages";
    Chrome (hairline + blurred backdrop) only arrives once something has
    scrolled underneath it and the separation is actually needed.
 
-   Two destinations don't earn a hamburger, so the same row serves every
-   breakpoint. See docs/north-stars.md.
+   The row served every breakpoint back when it held two destinations. It
+   holds five now, and five names plus the wordmark don't fit a phone at a
+   size worth reading, so below `sm` the links leave this row entirely and
+   move to the bottom dock in MobileMenu.tsx, which is where a thumb already
+   is. What stays up here on a phone is the wordmark alone.
+   See docs/north-stars.md.
 
    The hover pill is fully round, so it needs more horizontal padding than a
    rounded rect to look evenly weighted. That padding comes out of the nav's
@@ -60,35 +64,38 @@ export function NavBar() {
             the link is still a link, and the menu is the only thing the
             wrapper adds. See brand/BrandAssetsMenu.tsx. */}
         <BrandAssetsMenu>
-          <Link
-            href="/"
-            aria-current={isHome ? "page" : undefined}
-            className={`${linkClass} font-medium text-foreground`}
-          >
+          {/* Home now has its own navlink, so the wordmark drops aria-current
+              and leaves that link as the single current-page marker. */}
+          <Link href="/" className={`${linkClass} font-medium text-foreground`}>
             Omar Sadek
           </Link>
         </BrandAssetsMenu>
 
-        <ul className="flex items-center gap-0.5">
-          {menuPages
-            .filter((page) => page.slug !== "/")
-            .map((page) => {
-              const active = pathname === page.slug || pathname.startsWith(`${page.slug}/`);
+        {/* Below `sm` this row is empty: the same links live in the bottom
+            dock instead. See navbar/MobileMenu.tsx, mounted in layout.tsx. */}
+        <ul className="hidden items-center gap-0.5 sm:flex">
+          {menuPages.map((page) => {
+            /* "/" is a prefix of every route, so the startsWith test would
+               light Home up everywhere. It only ever matches exactly. */
+            const active =
+              page.slug === "/"
+                ? isHome
+                : pathname === page.slug || pathname.startsWith(`${page.slug}/`);
 
-              return (
-                <li key={page.slug}>
-                  <Link
-                    href={page.slug}
-                    aria-current={active ? "page" : undefined}
-                    className={`${linkClass} ${
-                      active ? "text-foreground" : "text-foreground-subtle hover:text-foreground"
-                    }`}
-                  >
-                    {page.name}
-                  </Link>
-                </li>
-              );
-            })}
+            return (
+              <li key={page.slug}>
+                <Link
+                  href={page.slug}
+                  aria-current={active ? "page" : undefined}
+                  className={`${linkClass} ${
+                    active ? "text-foreground" : "text-foreground-subtle hover:text-foreground"
+                  }`}
+                >
+                  {page.name}
+                </Link>
+              </li>
+            );
+          })}
 
           {/* Last in the row, and the only thing in it that isn't a
               destination. See command/CommandHint.tsx for why it's a chord

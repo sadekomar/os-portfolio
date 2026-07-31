@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Newsreader } from "next/font/google";
 import "./globals.css";
 import { CommandPaletteProvider } from "@/components/command/CommandPaletteProvider";
+import { MobileMenu } from "@/components/navbar/MobileMenu";
 import { NavBar } from "@/components/navbar/Navbar";
 import { PrintIdentity } from "@/components/print/PrintIdentity";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
@@ -256,6 +257,12 @@ export default function RootLayout({
           <TourProvider>
             <CommandPaletteProvider>
               <NavBar />
+              {/* The nav below `sm`, docked at the bottom of the viewport
+                  rather than in the header. Rendered here and not inside
+                  NavBar because it is fixed to the window: nesting it in a
+                  sticky header would only make it inherit that header's
+                  stacking context for nothing. See navbar/MobileMenu.tsx. */}
+              <MobileMenu />
               <div className="flex min-h-[calc(100lvh-3.5rem)] flex-col justify-between md:min-h-[calc(100lvh-4rem)]">
                 {/* `display: none` on screen, so it costs the layout above
                     nothing and never reaches the accessibility tree. See
