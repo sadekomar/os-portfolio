@@ -9,38 +9,46 @@ import {
   useState,
 } from "react";
 
-import {
-  AnimatePresence,
-  animate,
-  motion,
-  useMotionTemplate,
-  useMotionValue,
-  useReducedMotion,
-  useSpring,
-  useTransform,
-} from "motion/react";
-
 import { cn } from "@/lib/utils";
 
-/* The Work list's preview panel: one persistent object that travels the list,
-   not a card that is born and dies on every row.
+/* The Work list's preview panel: one persistent object that moves down the
+   list, not a card that is born and dies on every row.
 
    That distinction is the whole design. The panel has exactly one entrance
    (arriving in the list from outside it) and exactly one exit (leaving). Every
-   move in between is the same element sliding to a new anchor, because that is
-   what it is: the reader hasn't summoned a second panel, they've moved their
-   attention one row down and the panel followed. Fading out and back in would
-   assert nine panels where there is one, and each fade would cost the reader a
-   beat of re-acquisition on an element that never actually went anywhere.
+   move in between is the same element re-aimed at a new anchor, because that
+   is what it is: the reader hasn't summoned a second panel, they've moved
+   their attention one row down and the panel followed. Fading out and back in
+   would assert nine panels where there is one, and each fade would cost the
+   reader a beat of re-acquisition on an element that never actually went
+   anywhere.
+
+   ── Nothing here animates ──
+
+   The panel used to spring between anchors, and the argument for it was object
+   permanence: watch it travel and you know it is the same panel. It doesn't
+   need the tween to make that case. The panel never unmounts, so permanence is
+   already a fact of the DOM; the slide was only ever a restatement of it, and
+   it was a restatement the reader paid for.
+
+   The bill comes due on a sweep, which is the common gesture rather than the
+   rare one. The panel is re-aimed on every row the pointer crosses, so a tween
+   means it is permanently chasing a row the reader has already left: content
+   for row six, parked between four and five, arriving at six about when the
+   pointer reaches eight. That is not weight, it is lag, and a spring retargeted
+   mid-flight adds a wobble on top of it. Position is now what it should have
+   been from the start, a cheap style write that lands in the same commit as the
+   content it belongs to. This matches the filter builder's flyout rail in the
+   Wholana app, which arrived at the same answer for the same reason.
 
    Three pieces, split for one reason and it is a performance one. The anchor
-   state lives inside the layer and is written imperatively through a ref, so a
-   pointer sweeping nine rows re-renders one component instead of the entire
-   list. `useWorkPreview`'s callbacks are stable across renders, which is what
-   lets the rows take them without being re-rendered by them.
+   state lives inside the layer, so a pointer sweeping nine rows re-renders one
+   component instead of the entire list. `useWorkPreview`'s callbacks are stable
+   across renders, which is what lets the rows take them without being
+   re-rendered by them.
 
      useWorkPreview    geometry + wiring, held by the surface that owns the rows
-     WorkPreviewLayer  the travelling element, the only thing that re-renders
+     WorkPreviewLayer  the moving element, the only thing that re-renders
      WorkPreviewCard   the chrome */
 
 /* Panel geometry. Numbers rather than measurements because the flip decision
@@ -59,52 +67,19 @@ const EDGE_MARGIN = 8;
 
 /* Used for the bottom-edge clamp on the very first show, when there is no
    mounted panel to measure. Only has to be close: the card's height is fixed
-   by construction (see WorkPreviewCard, where the image sits in a fixed aspect box
-   precisely so that travelling between rows can never resize the panel). */
+   by construction (see WorkPreviewCard, where the image sits in a fixed aspect
+   box precisely so that moving between rows can never resize the panel). */
 const ASSUMED_PANEL_HEIGHT = 208;
-
-/* How far the panel leans toward the pointer within a row, in px. Small on
-   purpose: enough that the panel reads as attached to the pointer rather than
-   to the row's bounding box, not enough to be perceived as movement of its
-   own. Anything past ~10px stops being weight and starts being a wobble. */
-const FOLLOW_RANGE = 7;
 
 /* How long a leave keeps the panel alive: long enough for the pointer to cross
    the PANEL_GAP bridge onto the panel itself, short enough that the panel
    reads as gone the moment its row is exited. */
 const HIDE_GRACE_MS = 120;
 
-/* Travel, pointer-driven. A spring rather than a duration because the pointer
-   can retarget it mid-flight and a spring keeps its velocity through the
-   retarget where a tween would restart from zero. The slight bounce is the
-   panel having mass; it is a real object being dragged along the list. */
-const POINTER_TRAVEL = { type: "spring", duration: 0.34, bounce: 0.16 } as const;
-
-/* Travel, keyboard-driven, and deliberately half the pointer's duration with
-   the bounce taken out. Keyboard navigation is repeated (someone will hold
-   ArrowDown through nine rows) and animation on a repeated, keyboard-initiated
-   action reads as lag, not as craft. This is the shortest slide that still
-   carries the "same panel, new row" claim; any slower and the panel would be
-   arriving after the selection it is supposed to be describing. */
-const KEY_TRAVEL = { type: "spring", duration: 0.16, bounce: 0 } as const;
-
-/* Entrances ease-out: they start at full speed and settle, so the panel is
-   legible before it has finished arriving. Exits get a different, faster
-   treatment. The reader has already left, and an exit that takes as long as
-   an entrance is the interface holding the door. */
-const ENTER = { duration: 0.18, ease: [0.23, 1, 0.32, 1] } as const;
-const EXIT = { duration: 0.11, ease: [0.4, 0, 1, 1] } as const;
-
-export type PreviewSource = "pointer" | "keyboard";
-
 export type PreviewAnchor<T> = {
   item: T;
   top: number;
   left: number;
-  /* Which side of the row the panel ended up on, so the entrance can scale
-     out of the row rather than out of thin air. */
-  side: "right" | "left";
-  source: PreviewSource;
 };
 
 export type WorkPreviewHandle<T> = {
@@ -114,9 +89,6 @@ export type WorkPreviewHandle<T> = {
      landing on the panel itself, cancels it first. */
   scheduleHide: () => void;
   cancelHide: () => void;
-  /* Lean toward the pointer. Takes the pointer's offset from the row's
-     vertical centre in px; the layer decides how much of that to honour. */
-  follow: (offsetFromRowCentre: number) => void;
   height: () => number;
 };
 
@@ -124,7 +96,7 @@ export function useWorkPreview<T>() {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const layerRef = useRef<WorkPreviewHandle<T>>(null);
 
-  const showRow = useCallback((item: T, row: HTMLElement, source: PreviewSource) => {
+  const showRow = useCallback((item: T, row: HTMLElement) => {
     const wrapper = wrapperRef.current;
     const layer = layerRef.current;
     if (!wrapper || !layer) return;
@@ -148,7 +120,6 @@ export function useWorkPreview<T>() {
       return;
     }
 
-    const side: "right" | "left" = fitsRight ? "right" : "left";
     const left = fitsRight
       ? rowRect.right - wrapperRect.left + PANEL_GAP
       : rowRect.left - wrapperRect.left - PANEL_GAP - PANEL_WIDTH;
@@ -156,21 +127,20 @@ export function useWorkPreview<T>() {
     /* Keep the bottom edge on screen. Resolved here, before the anchor is
        handed over, rather than as a post-layout correction: a clamp applied
        after the panel has already been positioned is a visible second move,
-       and with the panel now animating between anchors that second move would
-       be animated too. */
+       and with nothing animating there is no tween left to hide it. The panel
+       has to land already in place. */
     const height = layer.height();
     const maxTop = Math.max(0, window.innerHeight - PANEL_GAP - height - wrapperRect.top);
     const top = Math.min(rowRect.top - wrapperRect.top, maxTop);
 
-    layer.show({ item, top, left, side, source });
+    layer.show({ item, top, left });
   }, []);
 
   const hide = useCallback(() => layerRef.current?.hide(), []);
   const scheduleHide = useCallback(() => layerRef.current?.scheduleHide(), []);
   const cancelHide = useCallback(() => layerRef.current?.cancelHide(), []);
-  const follow = useCallback((offset: number) => layerRef.current?.follow(offset), []);
 
-  return { wrapperRef, layerRef, showRow, hide, scheduleHide, cancelHide, follow };
+  return { wrapperRef, layerRef, showRow, hide, scheduleHide, cancelHide };
 }
 
 export function WorkPreviewLayer<T>({
@@ -181,20 +151,13 @@ export function WorkPreviewLayer<T>({
   children: (item: T) => ReactNode;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
-  const [entry, setEntry] = useState<{ item: T; side: "right" | "left" } | null>(null);
-  const reduced = useReducedMotion();
 
-  /* Position is carried on motion values rather than React state so that a
-     slide is a compositor-friendly transform write, not nine renders of the
-     list. `visible` mirrors `entry` as a ref because `show` runs imperatively
-     and can't wait for a render to learn whether this is an entrance or a
-     move. */
-  const visible = useRef(false);
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const lean = useSpring(0, { stiffness: 140, damping: 22, mass: 0.5 });
-  const ty = useTransform(() => y.get() + lean.get());
-  const transform = useMotionTemplate`translate3d(${x}px, ${ty}px, 0)`;
+  /* Item and position in one piece of state, which is the point of doing this
+     in React rather than on motion values: they land in the same commit. Held
+     apart, the panel would paint one frame of the new row's content at the old
+     row's coordinates, and with no tween covering the gap that frame is the
+     whole effect. */
+  const [entry, setEntry] = useState<{ item: T; top: number; left: number } | null>(null);
 
   const hideTimer = useRef<number | null>(null);
   const cancelHide = useCallback(() => {
@@ -203,10 +166,7 @@ export function WorkPreviewLayer<T>({
       hideTimer.current = null;
     }
   }, []);
-  const dismiss = useCallback(() => {
-    visible.current = false;
-    setEntry(null);
-  }, []);
+  const dismiss = useCallback(() => setEntry(null), []);
   const scheduleHide = useCallback(() => {
     cancelHide();
     hideTimer.current = window.setTimeout(dismiss, HIDE_GRACE_MS);
@@ -217,26 +177,7 @@ export function WorkPreviewLayer<T>({
     () => ({
       show: (next: PreviewAnchor<T>) => {
         cancelHide();
-
-        /* The one branch that matters. An entrance places the panel; a move
-           animates it. Under reduced motion every show is a placement, which
-           is the honest reading of the preference: the panel still appears,
-           it just never travels. */
-        if (!visible.current || reduced) {
-          x.jump(next.left);
-          y.jump(next.top);
-          lean.jump(0);
-        } else {
-          const travel = next.source === "keyboard" ? KEY_TRAVEL : POINTER_TRAVEL;
-          animate(x, next.left, travel);
-          animate(y, next.top, travel);
-          /* A keyboard move has no pointer to lean toward, so the lean unwinds
-             rather than being left frozen at whatever the pointer last said. */
-          if (next.source === "keyboard") lean.set(0);
-        }
-
-        visible.current = true;
-        setEntry({ item: next.item, side: next.side });
+        setEntry({ item: next.item, top: next.top, left: next.left });
       },
       hide: () => {
         cancelHide();
@@ -244,52 +185,30 @@ export function WorkPreviewLayer<T>({
       },
       scheduleHide,
       cancelHide,
-      follow: (offset: number) => {
-        if (reduced) return;
-        const clamped = Math.max(-1, Math.min(1, offset / 40));
-        lean.set(clamped * FOLLOW_RANGE);
-      },
+      /* Measured off the mounted panel while it is still showing the previous
+         row, which is sound only because the card's height is fixed by
+         construction. See WorkPreviewCard. */
       height: () => panelRef.current?.offsetHeight || ASSUMED_PANEL_HEIGHT,
     }),
-    [cancelHide, dismiss, scheduleHide, reduced, x, y, lean],
+    [cancelHide, dismiss, scheduleHide],
   );
 
+  if (!entry) return null;
+
   return (
-    /* Two nested elements, and the nesting is load-bearing: the outer one owns
-       the travel transform, the inner one owns the entrance and exit scale. On
-       a single element those two would be the same `transform` property and
-       the last writer would win. */
-    <motion.div
+    /* `left`/`top` rather than a transform: there is no animation left for the
+       compositor to run, and a plain offset write is the cheaper and more
+       obvious of the two once that is true. */
+    <div
       aria-hidden
-      style={{ transform }}
-      className="pointer-events-none absolute top-0 left-0 z-30 will-change-transform"
+      ref={panelRef}
+      style={{ left: entry.left, top: entry.top }}
+      onPointerEnter={cancelHide}
+      onPointerLeave={scheduleHide}
+      className="absolute z-30"
     >
-      <AnimatePresence>
-        {entry && (
-          <motion.div
-            key="panel"
-            ref={panelRef}
-            initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.97 }}
-            animate={reduced ? { opacity: 1 } : { opacity: 1, scale: 1 }}
-            exit={
-              reduced
-                ? { opacity: 0, transition: EXIT }
-                : { opacity: 0, scale: 0.985, transition: EXIT }
-            }
-            transition={reduced ? { duration: 0 } : ENTER}
-            /* Scaled out of the row it belongs to, not out of its own centre:
-               the panel is a thing the row produced, and an origin on the
-               far edge would have it growing away from its own source. */
-            style={{ transformOrigin: entry.side === "right" ? "0% 16px" : "100% 16px" }}
-            onPointerEnter={cancelHide}
-            onPointerLeave={scheduleHide}
-            className="pointer-events-auto"
-          >
-            {children(entry.item)}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
+      {children(entry.item)}
+    </div>
   );
 }
 
@@ -297,13 +216,13 @@ export function WorkPreviewLayer<T>({
    tooltip takes for the same reason: a floating element has no parent to be
    lighter than.
 
-   Its height is fixed by construction and that is a physics decision, not a
-   layout one. If the card resized as it travelled (a taller hero here, a
-   two-line role there) the "one persistent object" claim would break on
-   every move, and the bottom-edge clamp would have to re-run mid-slide. A
-   fixed aspect box for the image and a single clamped line for the role means
-   the panel that leaves row one is dimensionally the panel that arrives at
-   row nine. */
+   Its height is fixed by construction, and that matters more now that nothing
+   animates, not less. If the card resized per row (a taller hero here, a
+   two-line role there) the "one persistent object" claim would break on every
+   move, and the bottom-edge clamp would be measuring the outgoing panel to
+   place the incoming one. A fixed aspect box for the image and a single
+   clamped line for the role means the panel that leaves row one is
+   dimensionally the panel that arrives at row nine. */
 export function WorkPreviewCard({
   className,
   children,

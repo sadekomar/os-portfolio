@@ -105,7 +105,7 @@ export function WorkRows({ groups }: { groups: WorkGroup[] }) {
      thing the pointer already did. */
   const flat = useMemo(() => groups.flatMap((group) => group.items), [groups]);
 
-  const { wrapperRef, showRow, hide, scheduleHide, cancelHide, follow, layerRef } =
+  const { wrapperRef, showRow, hide, scheduleHide, cancelHide, layerRef } =
     useWorkPreview<WorkItem>();
 
   /* The only piece of selection in React state, and it is here because the
@@ -149,7 +149,7 @@ export function WorkRows({ groups }: { groups: WorkGroup[] }) {
       el.focus({ preventScroll: true });
       el.scrollIntoView({ block: "nearest" });
 
-      showRow(flat[next], el, "keyboard");
+      showRow(flat[next], el);
     },
     [flat, rowAt, showRow],
   );
@@ -221,7 +221,7 @@ export function WorkRows({ groups }: { groups: WorkGroup[] }) {
       setTabStop(index);
       if (!el.matches(":focus-visible")) return;
       shown.current = index;
-      showRow(flat[index], el, "keyboard");
+      showRow(flat[index], el);
     },
     [flat, showRow],
   );
@@ -238,9 +238,8 @@ export function WorkRows({ groups }: { groups: WorkGroup[] }) {
   );
 
   /* Pointer tracking as a native listener on the container rather than a
-     handler per row: one subscription, no per-row props, and the same
-     listener can serve both jobs: deciding which row is under the pointer,
-     and feeding the panel the pointer's height within it. */
+     handler per row: one subscription, no per-row props, and no row that has
+     to be re-rendered to learn the pointer is over it. */
   useEffect(() => {
     const wrapper = wrapperRef.current;
     if (!wrapper) return;
@@ -271,15 +270,12 @@ export function WorkRows({ groups }: { groups: WorkGroup[] }) {
 
       if (index !== shown.current) {
         shown.current = index;
-        showRow(flat[index], el, "pointer");
+        showRow(flat[index], el);
       } else {
         /* Same row, but the pointer may have arrived back from the panel with
            a dismissal already armed. Coming home cancels it. */
         cancelHide();
       }
-
-      const rect = el.getBoundingClientRect();
-      follow(event.clientY - (rect.top + rect.height / 2));
     };
 
     /* Leaving a row but not the list only schedules a dismissal; leaving the
@@ -296,7 +292,7 @@ export function WorkRows({ groups }: { groups: WorkGroup[] }) {
         const el = rowAt(back);
         if (el) {
           shown.current = back;
-          showRow(flat[back], el, "keyboard");
+          showRow(flat[back], el);
           return;
         }
       }
@@ -310,7 +306,7 @@ export function WorkRows({ groups }: { groups: WorkGroup[] }) {
       wrapper.removeEventListener("pointermove", onPointerMove);
       wrapper.removeEventListener("pointerout", onPointerOut);
     };
-  }, [cancelHide, flat, follow, rowAt, scheduleHide, showRow, wrapperRef]);
+  }, [cancelHide, flat, rowAt, scheduleHide, showRow, wrapperRef]);
 
   /* A resize invalidates the side the panel chose and the clamp it was placed
      under, and re-deriving both from a pointer that may no longer be over
