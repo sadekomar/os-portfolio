@@ -56,7 +56,16 @@ export default function CommandPalette({
   const pathname = usePathname();
   const router = useRouter();
   const { theme, resolved, setTheme } = useTheme();
-  const { start: startTour } = useTour();
+  const { start: startTour, warm: warmTour } = useTour();
+
+  /* The palette is one of exactly two ways into the tour, and by the time this
+     component exists the reader has already pressed something. Fetching the
+     tour's engine now, while they are reading a list, is the difference
+     between "Play the guided tour" starting on the press and starting after a
+     round trip. Idempotent, and free for anyone whose engine is already up. */
+  useEffect(() => {
+    warmTour();
+  }, [warmTour]);
 
   const [query, setQuery] = useState("");
   const [confirm, setConfirm] = useState<(Confirm & { id: string }) | undefined>();
