@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const siteUrl = "https://sadekomar.com";
+import { siteUrl } from "@/lib/site";
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -23,7 +23,11 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: "CCBot", allow: "/" },
       { userAgent: "DuckAssistBot", allow: "/" },
     ],
+    /* No `host` line. It is a Yandex extension that Google and Bing both
+       ignore, so its only real effect here was to be a fourth place the
+       origin was asserted, free to fall out of step with the canonical
+       tags and the sitemap without anything failing. The sitemap URL
+       below already tells every crawler which host owns this file. */
     sitemap: `${siteUrl}/sitemap.xml`,
-    host: siteUrl,
   };
 }

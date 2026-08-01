@@ -13,6 +13,7 @@ import { CaseStudyFigure } from "@/components/case-study/Figure";
 import { CaseStudyStats } from "@/components/case-study/Stats";
 import { SequenceLineNav, SequenceRail } from "@/components/sequence/LineNav";
 import { SequencePager } from "@/components/sequence/Pager";
+import { siteUrl } from "@/lib/site";
 import { slugify } from "@/lib/slug";
 
 export const dynamicParams = false;
@@ -20,8 +21,6 @@ export const dynamicParams = false;
 export async function generateStaticParams() {
   return projectOrder.map((project) => ({ project }));
 }
-
-const siteUrl = "https://sadekomar.com";
 
 /* Search results and share cards get the project, not the site default.
    The intro doubles as the description, clipped at a word boundary.

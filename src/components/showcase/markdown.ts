@@ -1,4 +1,5 @@
 import type { ShowcaseComponent } from "@/data/components";
+import { siteUrl as SITE_URL } from "@/lib/site";
 
 import type { SourceFile } from "./source";
 
@@ -13,8 +14,6 @@ import type { SourceFile } from "./source";
    note about what changed when the component was lifted. A summary that
    quietly dropped that note would be the one part of the page worth having
    and the part an assistant would most confidently repeat wrongly. */
-
-export const SITE_URL = "https://sadekomar.com";
 
 export function componentMarkdown(component: ShowcaseComponent, files: SourceFile[]) {
   const url = `${SITE_URL}/components/${component.slug}`;

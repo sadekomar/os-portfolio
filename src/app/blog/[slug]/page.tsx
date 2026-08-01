@@ -8,14 +8,13 @@ import { Icon } from "@/components/icon/Icon";
 import { SequenceLineNav, SequenceRail } from "@/components/sequence/LineNav";
 import { SequencePager } from "@/components/sequence/Pager";
 import { formatDate, getPost, posts } from "@/data/posts";
+import { siteUrl } from "@/lib/site";
 
 export const dynamicParams = false;
 
 export async function generateStaticParams() {
   return posts.map((post) => ({ slug: post.slug }));
 }
-
-const siteUrl = "https://sadekomar.com";
 
 export async function generateMetadata({
   params,

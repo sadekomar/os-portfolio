@@ -1,4 +1,5 @@
 import { allProjects, type ProjectKeys } from "@/app/work/[project]/projects";
+import { siteUrl as SITE_URL } from "@/lib/site";
 
 /* ── Page → Markdown ──────────────────────────────────────────────────────
    What "Copy page as Markdown" and the two Open-in-a-chat actions hand off.
@@ -28,8 +29,6 @@ import { allProjects, type ProjectKeys } from "@/app/work/[project]/projects";
    by refusing to build the link and copying instead (see `chatUrl`), because
    a Markdown document silently cut off mid-sentence is worse than an honest
    "this was too long to put in a link". */
-
-const SITE_URL = "https://sadekomar.com";
 
 /* Re-exported rather than redefined: the case-study page stamps its section
    ids with this exact function, and a jump target that disagrees with the id
