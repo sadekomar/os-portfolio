@@ -1,5 +1,19 @@
 import type { NextConfig } from "next";
 
+/* No `@next/bundle-analyzer` here, and that is the considered answer rather
+   than an omission. It is a webpack plugin: it hooks `config.plugins` through
+   `webpack()`, and this project builds with Turbopack, which is the Next 16
+   default and what actually ships. Wiring it up would mean either a callback
+   nothing calls, or forcing `next build --webpack` to read it, at which point
+   the numbers describe a bundler the site is not built with. Two bundlers do
+   not agree on chunk boundaries, and chunk boundaries are the whole question.
+
+   `pnpm analyze` runs Turbopack's own analyzer instead (`next build
+   --experimental-analyze`), which writes a browsable report and a per-module
+   size table to .next/diagnostics/analyze. Same information, measured on the
+   build that is actually deployed, and nothing to guard in this file because
+   it is a build flag rather than a config branch. */
+
 const nextConfig: NextConfig = {
   images: {
     /* YouTube poster frames for the facade embeds on /talks. Scoped to the
