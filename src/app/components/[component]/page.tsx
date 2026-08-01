@@ -21,6 +21,7 @@ import {
   getComponent,
   showcaseComponents,
 } from "@/data/components";
+import { siteUrl } from "@/lib/site";
 
 type Params = { params: Promise<{ component: string }> };
 
@@ -36,11 +37,31 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   /* Bare here, because the root layout's template appends the site name.
      The share cards get the full string, since they travel without it. */
   const shared = `${component.title} | Omar Sadek`;
+  const url = `/components/${slug}`;
+
+  /* Neither object names an image, and that is what makes the generated
+     card the card: opengraph-image.tsx in this segment is appended to
+     whatever `images` is already here, so listing one would ship two
+     og:image tags and every scraper takes the first. `twitter.images`
+     resolves from openGraph when unset, which also keeps the per-component
+     alt text the image route supplies. */
   return {
     title: component.title,
     description: component.description,
-    openGraph: { title: shared, description: component.description, type: "article" },
-    twitter: { card: "summary_large_image", title: shared, description: component.description },
+    alternates: { canonical: url },
+    openGraph: {
+      type: "article",
+      url,
+      title: shared,
+      description: component.description,
+      siteName: "Omar Sadek",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: shared,
+      description: component.description,
+      creator: "@omarsadekk",
+    },
   };
 }
 
@@ -57,6 +78,63 @@ export default async function ComponentPage({ params }: Params) {
      and every assistant fetches. One document, three ways of reaching it. */
   const markdown = componentMarkdown(component, files);
 
+  const url = `${siteUrl}/components/${slug}`;
+
+  /* The middle crumb is a real 200 page, unlike the case studies' Work crumb,
+     which has to point at the home page's /#work fragment because there is no
+     /work route. /components exists, so the trail is three plain URLs. */
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: siteUrl },
+      { "@type": "ListItem", position: 2, name: "Components", item: `${siteUrl}/components` },
+      { "@type": "ListItem", position: 3, name: component.title, item: url },
+    ],
+  };
+
+  /* SoftwareSourceCode rather than the CreativeWork the case studies use, and
+     the difference is that this page is not a description of something built
+     elsewhere: the files listed under Source are on the page in full, read off
+     disk from the same paths `codeRepository` links to. Every field below is
+     something a reader can check against what is rendered.
+
+     `programmingLanguage` reuses the highlighter's own language tag for each
+     file rather than being declared alongside the component, so a component
+     that one day ships only CSS cannot end up claiming TypeScript because a
+     second table was never updated.
+
+     No `datePublished` and no version. Neither is on the page, and a date
+     invented for a schema field is the one kind of error a machine acts on.
+     `author` is a reference to the Person the root layout defines, not a
+     second copy of it. */
+  const languageNames: Record<string, string> = { css: "CSS", ts: "TypeScript", tsx: "TSX" };
+  const languages = [
+    ...new Set(files.map((file) => languageNames[file.language] ?? file.language)),
+  ];
+
+  const sourceJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareSourceCode",
+    "@id": `${url}#source`,
+    name: component.title,
+    description: component.description,
+    url,
+    codeRepository: githubUrl(slug, component.files[0]),
+    programmingLanguage: languages,
+    runtimePlatform: "React",
+    image: {
+      "@type": "ImageObject",
+      url: `${url}/opengraph-image/card`,
+      width: 1200,
+      height: 630,
+    },
+    author: { "@id": `${siteUrl}/#person` },
+    creator: { "@id": `${siteUrl}/#person` },
+    isPartOf: { "@id": `${siteUrl}/components#collection` },
+    inLanguage: "en",
+  };
+
   const toc: TocItem[] = [
     { id: "features", label: "Features" },
     { id: "usage", label: "Usage" },
@@ -66,6 +144,13 @@ export default async function ComponentPage({ params }: Params) {
 
   return (
     <div className="relative w-full pt-16 pb-24 md:pt-24">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([breadcrumbJsonLd, sourceJsonLd]),
+        }}
+      />
+
       {/* The set, in the left margin. It used to live in a layout wrapping
           both this page and the index, which put it on the index too: a rail
           listing six components down the side of a page whose whole body is

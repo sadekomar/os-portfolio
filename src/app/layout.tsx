@@ -7,7 +7,8 @@ import { NavBar } from "@/components/navbar/Navbar";
 import { PrintIdentity } from "@/components/print/PrintIdentity";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { TourProvider } from "@/components/tour/TourProvider";
-import { MAILTO } from "@/data/contact";
+import { EMAIL } from "@/data/contact";
+import { siteUrl } from "@/lib/site";
 import { THEME_COLOR, THEME_SCRIPT } from "@/lib/theme";
 import { Footer } from "../components/footer/Footer";
 
@@ -54,8 +55,6 @@ const newsreader = Newsreader({
   style: ["italic"],
   display: "swap",
 });
-
-const siteUrl = "https://sadekomar.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -143,7 +142,13 @@ const personJsonLd = {
   jobTitle: "Full-Stack Software Engineer",
   description:
     "Full-stack engineer at Instatus and founder of Wholana. Builds status page infrastructure, chat integrations, and research tools for short-form creators.",
-  email: MAILTO,
+  /* The bare address, not MAILTO. Schema.org's `email` is a Text property
+     holding an address; the `mailto:` scheme belongs to the href that
+     wraps one, and everything else on the site wants the href, which is
+     why contact.ts exports both. Google happens to strip the prefix, but
+     the stricter consumers of this graph do not, and they read the whole
+     literal as the address. */
+  email: EMAIL,
   knowsAbout: [
     "Full-Stack Development",
     "Design Engineering",

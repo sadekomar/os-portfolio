@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { formatDate, posts } from "@/data/posts";
+import { siteUrl } from "@/lib/site";
 
 /* This page spent its life as two sentences of placeholder behind a
    `noindex`, which was the right call while there was nothing here: a thin
@@ -16,7 +17,17 @@ export const metadata: Metadata = {
   title: "Blog",
   description:
     "Essays by Omar Sadek on design engineering: typography and layout shift in Next.js, and building a UI system with no borders and no shadows.",
-  alternates: { canonical: "/blog" },
+  /* The feed's discovery tag is declared here rather than in the root
+     layout, and not only because the layout would then advertise a blog
+     feed from every page of the site. `alternates` is inherited verbatim by
+     any page that doesn't override it, so a `types` entry at the root would
+     also arrive on /about and each case study carrying the layout's
+     canonical with it, which is the bug the note in layout.tsx describes.
+     The page that owns the feed is the one that lists what is in it. */
+  alternates: {
+    canonical: "/blog",
+    types: { "application/rss+xml": "/feed.xml" },
+  },
   /* `openGraph` and `twitter` are declared rather than inherited, and that
      is not belt-and-braces: metadata merges shallowly, so without these two
      objects the index page's card would be inherited *whole*, and a link to
@@ -54,8 +65,60 @@ export const metadata: Metadata = {
    read-time estimate (a read time is a claim about the reader) and no
    thumbnails. Depth lives one click down. */
 export default function Blog() {
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: siteUrl },
+      { "@type": "ListItem", position: 2, name: "Blog", item: `${siteUrl}/blog` },
+    ],
+  };
+
+  /* `Blog` with a `blogPost` array, not `ItemList`. ItemList is the right
+     type for an ordering that exists only on the listing page: a top ten, a
+     set of search results, a carousel. This list is not that. It is every
+     post there is, in publication order, on the page the posts belong to,
+     and `Blog` is the type schema.org defines for exactly that relationship.
+     ItemList would have described the ordering and said nothing about what
+     was ordered, which is the half a crawler already has from the sitemap.
+
+     Each entry reuses the `@id` the post's own page declares, `<url>#post`,
+     so the two documents describe one node rather than two. That is the
+     reason the entries are deliberately thin: headline, description, url,
+     date, and nothing else. The post page is where that node is defined in
+     full, with its image, its author reference and its dateModified, and a
+     second partial copy under the same id is not extra information, it is
+     an invitation to reconcile two versions of the same thing. */
+  const blogJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    "@id": `${siteUrl}/blog#blog`,
+    name: "Writing",
+    description:
+      "Essays by Omar Sadek on design engineering: typography and layout shift in Next.js, and building a UI system with no borders and no shadows.",
+    url: `${siteUrl}/blog`,
+    mainEntityOfPage: `${siteUrl}/blog`,
+    author: { "@id": `${siteUrl}/#person` },
+    publisher: { "@id": `${siteUrl}/#person` },
+    isPartOf: { "@id": `${siteUrl}/#website` },
+    inLanguage: "en",
+    blogPost: posts.map((post) => ({
+      "@type": "BlogPosting",
+      "@id": `${siteUrl}/blog/${post.slug}#post`,
+      headline: post.title,
+      description: post.description,
+      url: `${siteUrl}/blog/${post.slug}`,
+      datePublished: post.date,
+    })),
+  };
+
   return (
     <main className="max-w-measure-gutter text-body mx-auto w-full px-6 pt-16 pb-24 md:pt-24">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify([breadcrumbJsonLd, blogJsonLd]) }}
+      />
+
       <div className="mb-12">
         <h1 className="text-headline text-foreground mb-4 font-medium">Writing</h1>
         <p className="max-w-measure text-body text-foreground-muted">
@@ -93,6 +156,26 @@ export default function Blog() {
           </Link>
         ))}
       </div>
+
+      {/* Under the list rather than beside the heading, and set in the same
+          13px the dates are: a feed is for the reader who has already
+          decided there is something here worth following, and they reach
+          that decision at the bottom of the list, not above it.
+
+          A plain anchor, not `next/link`. /feed.xml is a route handler
+          rather than a page, so there is nothing for the router to
+          prefetch, and a client navigation to it would only ever end in the
+          browser handing the document straight back to the network. `px-3`
+          lines it up with the text of the rows above, whose own padding the
+          -mx-3 wrapper cancels. */}
+      <p className="text-meta text-foreground-faint mt-8 px-3">
+        <a
+          href="/feed.xml"
+          className="decoration-foreground-ghost hover:text-foreground-subtle hover:decoration-foreground-faint focus-visible:ring-ring/20 rounded-sm underline underline-offset-4 transition-colors duration-150 focus-visible:ring-2 focus-visible:outline-none"
+        >
+          RSS
+        </a>
+      </p>
     </main>
   );
 }

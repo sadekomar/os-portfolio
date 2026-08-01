@@ -33,6 +33,15 @@ export async function GET(_request: Request, { params }: { params: Promise<{ com
          Markdown, and a browser that downloads it instead of showing it has
          answered a question nobody asked. */
       "Content-Disposition": "inline",
+      /* This document is the page it mirrors, word for word, at a second
+         URL, so left indexable it is a near-duplicate competing with the
+         page in the same results. `noindex` as a header rather than a
+         Disallow in robots.txt, and the difference is the whole point of
+         the route: Disallow stops the fetch, and every consumer this exists
+         for (the View as Markdown link, the Copy button, the assistants the
+         "Open in" menu hands a URL to) has to be able to fetch it. noindex
+         says read it, do not list it. */
+      "X-Robots-Tag": "noindex",
     },
   });
 }

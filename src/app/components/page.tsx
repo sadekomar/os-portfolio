@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { showcaseComponents } from "@/data/components";
+import { siteUrl } from "@/lib/site";
 
 const DESCRIPTION =
   "Interface components pulled out of the products they were built for, running here as they shipped.";
@@ -9,7 +10,64 @@ const DESCRIPTION =
 export const metadata: Metadata = {
   title: "Components",
   description: DESCRIPTION,
-  openGraph: { title: "Components | Omar Sadek", description: DESCRIPTION, type: "website" },
+  /* Relative, resolved against the `metadataBase` in the root layout. This
+     page had no canonical at all, which on a URL that is reachable as
+     /components and /components/ and with any tracking parameter appended is
+     an invitation to a crawler to treat each of those as its own page. */
+  alternates: { canonical: "/components" },
+  openGraph: {
+    type: "website",
+    url: "/components",
+    title: "Components | Omar Sadek",
+    description: DESCRIPTION,
+    siteName: "Omar Sadek",
+  },
+  /* Declared rather than inherited, for the reason spelled out on /blog:
+     metadata merges shallowly, so with no `twitter` object of its own this
+     page was unfurling on X with the *homepage's* title and description,
+     which said nothing about components to anyone who saw the card. The
+     card image itself comes from opengraph-image.tsx in this segment and is
+     deliberately not named here, since Next appends the file-convention
+     image and a second one would emit two tags. */
+  twitter: {
+    card: "summary_large_image",
+    title: "Components | Omar Sadek",
+    description: DESCRIPTION,
+    creator: "@omarsadekk",
+  },
+};
+
+/* The index as an entity, so the six pages under it are read as a set rather
+   than as six unrelated URLs that happen to share a path prefix. The
+   `isPartOf` reference ties it to the WebSite node the root layout defines,
+   the same way the essays and the case studies tie themselves in.
+
+   The list carries only what the page itself renders: each component's name,
+   its one-line description and its URL. Nothing about how it was built, and
+   no ratings or counts, because none of that is on the page to corroborate
+   it. */
+const collectionJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "@id": `${siteUrl}/components#collection`,
+  url: `${siteUrl}/components`,
+  name: "Components",
+  description: DESCRIPTION,
+  isPartOf: { "@id": `${siteUrl}/#website` },
+  author: { "@id": `${siteUrl}/#person` },
+  inLanguage: "en",
+  mainEntity: {
+    "@type": "ItemList",
+    numberOfItems: showcaseComponents.length,
+    itemListOrder: "https://schema.org/ItemListOrderAscending",
+    itemListElement: showcaseComponents.map((component, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: component.title,
+      description: component.description,
+      url: `${siteUrl}/components/${component.slug}`,
+    })),
+  },
 };
 
 /* The index is the blog index with a project name where the date goes: one
@@ -21,6 +79,11 @@ export const metadata: Metadata = {
 export default function ComponentsIndex() {
   return (
     <main className="max-w-measure-gutter text-body mx-auto w-full px-6 pt-16 pb-24 md:pt-24">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionJsonLd) }}
+      />
+
       <div className="mb-12">
         <h1 className="text-headline text-foreground mb-4 font-medium">Components</h1>
         <p className="max-w-measure text-body text-foreground-muted">{DESCRIPTION}</p>
