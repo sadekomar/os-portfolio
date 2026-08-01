@@ -1,11 +1,9 @@
-"use client";
-
 import type * as React from "react";
 
-import { useId } from "react";
-
-import { StackNote, useStackNote } from "./StackNote";
+import { StackNoteLayer } from "./StackNote";
 import { TECH_MARKS, type TechMarkName } from "./marks";
+
+import { slugify } from "@/lib/slug";
 
 /* ── Stack ────────────────────────────────────────────────────────────────
    A reference table, not a skills display.
@@ -310,16 +308,23 @@ const CATEGORIES: { title: string; items: Entry[] }[] = [
   },
 ];
 
+/* A server component, and the table is the reason it can be. It is a
+   constant rendered once, so the only thing here that ever needed the
+   browser was the hover label, and that has been lifted into
+   StackNoteLayer. What the boundary buys is that `CATEGORIES` above and
+   `TECH_MARKS` in marks.ts are read during the render and then stay behind:
+   the notes reach the reader as `data-stack-note` attributes in the HTML,
+   which the delegated listener was always reading them from anyway, and the
+   47 icon paths reach them as drawn `<path d>` rather than as a dictionary
+   the client has to be shipped in order to look them up. */
 export function Stack() {
-  /* One label for the whole table, and one set of listeners on the container
-     that owns it. A second pill after a first is a continued read, not a new
-     one: the note moves to it rather than a second tooltip opening. See
-     StackNote. */
-  const { anchor, tableProps } = useStackNote();
-
   return (
     <>
-      <div className="flex flex-col gap-1" {...tableProps}>
+      {/* One label for the whole table, and one set of listeners on the
+          container that owns it. A second pill after a first is a continued
+          read, not a new one: the note moves to it rather than a second
+          tooltip opening. See StackNote. */}
+      <StackNoteLayer className="flex flex-col gap-1">
         {CATEGORIES.map((category, i) => (
           <div
             key={category.title}
@@ -347,9 +352,7 @@ export function Stack() {
             </ul>
           </div>
         ))}
-      </div>
-
-      <StackNote anchor={anchor} />
+      </StackNoteLayer>
     </>
   );
 }
@@ -370,7 +373,12 @@ export function Stack() {
    long-press) put a modal-ish layer between a reader and a table they were
    scanning. The notes are commentary; the pill is the content. */
 function Pill({ name, mark, note }: Entry) {
-  const noteId = useId();
+  /* Derived from the name rather than from `useId`, because `useId` is a
+     hook and this is a server component now. Deriving it is not a downgrade:
+     an `aria-describedby` target only has to be unique in the document, the
+     47 names in the table are distinct, and a stable id is one fewer thing
+     that can differ between the server's markup and the client's. */
+  const noteId = `stack-note-${slugify(name)}`;
   const Tag = note ? "button" : "span";
 
   return (

@@ -26,6 +26,39 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
    The grid's docblock makes the argument in full. The two components should
    stay the same; if one grows a behaviour the other should get it too. */
 
+/* ── The client half of the table ─────────────────────────────────────────
+   The only reason any of this section is a client component. The table
+   itself is a constant array rendered once and never touched again, so it
+   is rendered on the server and handed in as `children`: elements created
+   on the server and passed through a client boundary as a prop stay on the
+   server, which keeps `CATEGORIES` and the 40KB of vendored SVG path data
+   in `marks.ts` out of the browser's bundle entirely.
+
+   That the hover layer can be lifted off the table like this is not luck.
+   The container already carried every listener and read its answer off
+   `data-stack-note` in the DOM, precisely so adding a pill would be a data
+   change rather than a wiring change. A delegated listener does not care
+   whether the nodes underneath it were rendered here or upstream, so the
+   boundary costs the behaviour nothing. */
+export function StackNoteLayer({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  const { anchor, tableProps } = useStackNote();
+
+  return (
+    <>
+      <div className={className} {...tableProps}>
+        {children}
+      </div>
+      <StackNote anchor={anchor} />
+    </>
+  );
+}
+
 /* Matches the tooltip primitive's `sideOffset`, so a note sits off its pill
    by the same distance every other floating label on the site does. */
 const OFFSET = 8;
@@ -56,7 +89,7 @@ function anchorFrom(target: EventTarget | null): Anchor | null {
   return { note, x: box.left + box.width / 2, y: box.top - OFFSET };
 }
 
-export function useStackNote() {
+function useStackNote() {
   const [anchor, setAnchor] = useState<Anchor | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   /* A mirror of "is a label on screen", read inside the pointer handler.
@@ -152,7 +185,7 @@ export function useStackNote() {
   };
 }
 
-export function StackNote({ anchor }: { anchor: Anchor | null }) {
+function StackNote({ anchor }: { anchor: Anchor | null }) {
   const ref = useRef<HTMLDivElement>(null);
 
   /* Position is written straight to the node instead of being rendered.
