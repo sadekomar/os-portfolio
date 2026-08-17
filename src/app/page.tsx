@@ -142,12 +142,21 @@ function Intro() {
           anyway.
 
           The title first, flat and unadorned, then the claim. Two sentences
-          rather than one clause doing both jobs: "full-stack software
-          engineer" is the search term a recruiter arrives with and the fact
-          the reader needs before anything else here means much, and folding
-          it into the second sentence would bury it mid-line. Stated on its
-          own in four words it costs nothing and reads as a label rather than
-          a boast, which is exactly what a job title should be.
+          rather than one clause doing both jobs: the title is the fact the
+          reader needs before anything else here means much, and folding it
+          into the second sentence would bury it mid-line. Stated on its own
+          it costs nothing and reads as a label rather than a boast, which is
+          exactly what a job title should be.
+
+          It says "product engineer" rather than "full-stack software
+          engineer", which is a trade made deliberately and against the
+          earlier note here. Full-stack is the string a recruiter types, but
+          it is also the frame in which Wholana reads as a side project and
+          the nightly show reads as a distraction; product engineer is the
+          only frame where both are evidence. The search term did not have to
+          be given up to make the trade — it still sits in the keywords and in
+          every description this page emits, where it does the finding without
+          doing the positioning.
 
           Then the two halves that are actually mine, named separately on
           purpose: the interface and the system under it are what the case
@@ -165,7 +174,7 @@ function Intro() {
           just enthusiasm. */}
       <div className="text-body text-foreground-muted">
         <p>
-          I’m a full-stack software engineer. I build interfaces that are delightful to use, on
+          I’m a product engineer. I build interfaces that are delightful to use, on
           systems that hold up in production.
         </p>
       </div>

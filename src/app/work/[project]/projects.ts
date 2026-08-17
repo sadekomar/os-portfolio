@@ -1009,7 +1009,7 @@ export const allProjects: Record<ProjectKeys, Project> = {
     intro:
       "A dashboard created to help a UN Agency manage and coordinate activities across different regions, varying scales, and various stakeholders.",
     role: "Product design and front-end",
-    period: "2023",
+    period: "Sep 2024 – Nov 2024",
     technologies: {
       backend: [],
       frontend: ["Figma", "React", "TypeScript", "Tailwind", "HTML", "MUI"],

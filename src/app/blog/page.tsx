@@ -31,9 +31,9 @@ export const metadata: Metadata = {
   /* `openGraph` and `twitter` are declared rather than inherited, and that
      is not belt-and-braces: metadata merges shallowly, so without these two
      objects the index page's card would be inherited *whole*, and a link to
-     /blog would unfurl as "Omar Sadek | Full-Stack Software Engineer &
-     Founder" with the homepage's description under it, and nothing about
-     it would say the reader was being sent to a list of essays.
+     /blog would unfurl as "Omar Sadek | Product Engineer & Founder" with
+     the homepage's description under it, and nothing about it would say
+     the reader was being sent to a list of essays.
 
      No `images` key on either, on purpose. There is an opengraph-image.tsx
      in this segment and Next appends it to whatever is listed here; naming

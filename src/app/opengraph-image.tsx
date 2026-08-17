@@ -10,7 +10,7 @@ import { OG_CONTENT_TYPE, OG_SIZE, renderOgCard } from "@/components/og/card";
 
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
-export const alt = "Omar Sadek: full-stack engineer at Instatus, founder of Wholana";
+export const alt = "Omar Sadek: product engineer at Instatus, founder of Wholana";
 
 export default async function Image() {
   return renderOgCard({
@@ -18,6 +18,6 @@ export default async function Image() {
     /* No eyebrow: the title is already the name, and an eyebrow above it
        would be a label on a label. Every other card needs one because its
        title is a section rather than a person. */
-    subtitle: "Full-stack engineer at Instatus. Founder of Wholana.",
+    subtitle: "Product engineer at Instatus. Founder of Wholana.",
   });
 }

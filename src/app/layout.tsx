@@ -59,7 +59,7 @@ const newsreader = Newsreader({
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Omar Sadek | Full-Stack Software Engineer & Founder",
+    default: "Omar Sadek | Product Engineer & Founder",
     template: "%s | Omar Sadek",
   },
   /* Every string in this file names only things a visitor can actually find
@@ -72,6 +72,13 @@ export const metadata: Metadata = {
     "Omar Sadek is a full-stack engineer at Instatus and the founder of Wholana. Status page infrastructure by day, research tools for short-form creators by night.",
   keywords: [
     "Omar Sadek",
+    /* "Product Engineer" is the title every headline slot on the site now
+       states; the two below it are search terms rather than claims. A
+       recruiter arrives typing "full-stack software engineer" far more often
+       than "product engineer", and a keyword costs nothing where no reader
+       sees it, so the noun the site leads with and the noun it is findable
+       under do not have to be the same string. */
+    "Product Engineer",
     "Full-Stack Software Engineer",
     "Design Engineer",
     "Wholana",
@@ -96,7 +103,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "profile",
     url: siteUrl,
-    title: "Omar Sadek | Full-Stack Software Engineer & Founder",
+    title: "Omar Sadek | Product Engineer & Founder",
     description:
       "Full-stack engineer at Instatus, founder of Wholana. I build interfaces, the data models under them, and the distance between the two.",
     siteName: "Omar Sadek",
@@ -108,7 +115,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Omar Sadek | Full-Stack Software Engineer & Founder",
+    title: "Omar Sadek | Product Engineer & Founder",
     description:
       "Full-stack engineer at Instatus, founder of Wholana. I build interfaces, the data models under them, and the distance between the two.",
     creator: "@omarsadekk",
@@ -139,7 +146,7 @@ const personJsonLd = {
   name: "Omar Sadek",
   url: siteUrl,
   image: `${siteUrl}/me.png`,
-  jobTitle: "Full-Stack Software Engineer",
+  jobTitle: "Product Engineer",
   description:
     "Full-stack engineer at Instatus and founder of Wholana. Builds status page infrastructure, chat integrations, and research tools for short-form creators.",
   /* The bare address, not MAILTO. Schema.org's `email` is a Text property
