@@ -5,6 +5,10 @@ Tailwind v4, and a component layer I wrote rather than installed.
 
 **Live:** [sadekomar.com](https://sadekomar.com)
 
+![The guided tour playing on the homepage: a synthetic cursor moves down the page while speech bubbles narrate each section and the rows it points at highlight in turn.](docs/media/tour.gif)
+
+*`src/components/tour/` driving itself — the tour engine, its script, and the synthetic cursor.*
+
 ## Why this is public
 
 The site argues that I care about how an interface behaves. That argument is worth
