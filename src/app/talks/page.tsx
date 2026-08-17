@@ -36,13 +36,20 @@ export const metadata: Metadata = {
       "Talks, panels and pitches: moderating at the Creative Industry Summit, speaking with E7kky, and pitching Loom Cairo at AUC Venture Lab.",
     creator: "@omarsadekk",
   },
-  /* Noindex until the TODOs in data/talks.ts are real. Two of the three
-     entries still carry a placeholder date, and one a placeholder title,
-     and a page indexed in that state is one where the first thing a search
-     result can show is the word TODO. `follow` stays on so the outbound
-     links (the Summit, the Loom Cairo case study) still pass through.
-     One line to reverse, and the sitemap entry goes back with it. */
-  robots: { index: false, follow: true },
+  /* This carried `robots: { index: false, follow: true }` for as long as
+     data/talks.ts had a literal "TODO" string inside a description array, on
+     the reasoning that the worst thing a search result can lead with is the
+     word TODO. That placeholder is gone — the Summit panel now names its four
+     panellists, sourced to a panellist's own recap — so the directive goes
+     with it and the sitemap entry comes back.
+
+     The stated reason had also gone stale, which is worth recording as a
+     caution about comments that outlive their subject: it claimed "two of the
+     three entries still carry a placeholder date, and one a placeholder
+     title". There are four entries, every date is real, and three of the four
+     are corroborated outside this repo — a deck's own traction slide, a recap
+     post plus a weekday check, and a panellist's account. The noindex rested
+     on one description line, not on the dates or the titles. */
 };
 
 /* Talks are artifacts, the same class of thing as the case studies: a real
@@ -66,8 +73,8 @@ export default function Talks() {
       <div className="max-w-measure-gutter mx-auto w-full px-6">
         <h1 className="text-headline mb-4 font-medium text-foreground">Talks</h1>
         <p className="max-w-measure text-body text-foreground-muted">
-          Rooms I’ve stood in: a live show I hosted, two pitches, and a panel I moderated.
-          Recordings where they exist.
+          Rooms I’ve stood in: a live show I hosted, a panel I moderated, an investor pitch, and a
+          demo day. Recordings where they exist.
         </p>
       </div>
 

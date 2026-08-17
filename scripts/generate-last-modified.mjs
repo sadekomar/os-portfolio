@@ -69,6 +69,12 @@ const routes = {
   "/about": ["src/app/about"],
   "/blog": ["src/app/blog/page.tsx", "src/data/posts.ts"],
   "/components": ["src/app/components/page.tsx", "src/data/components.ts"],
+  /* Both halves, because a talk's copy and the page's layout change
+     independently and either one is a real revision. Omitting this key while
+     /talks sits in the sitemap would not error — it would silently report
+     LAST_MODIFIED_FALLBACK forever, which is exactly the overstated-lastmod
+     failure the sitemap's own header comment exists to prevent. */
+  "/talks": ["src/app/talks", "src/data/talks.ts"],
   ...Object.fromEntries(
     componentSlugs.map((slug) => [
       `/components/${slug}`,
@@ -98,14 +104,22 @@ function lastCommitDate(pathspecs) {
   return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
 }
 
-function main() {
-  /* One cheap probe before doing anything, so a checkout without history
-     is a clean no-op rather than twenty caught exceptions. */
-  execFileSync("git", ["rev-parse", "--git-dir"], {
-    cwd: repoRoot,
-    stdio: "ignore",
-  });
+/* One cheap probe, so a checkout without history is a clean no-op rather than
+   twenty caught exceptions — and, more to the point, so "there is no git here"
+   can be told apart from "git is here and something is broken". The bare catch
+   below used to treat those as the same event, which meant an authoring bug in
+   this script was indistinguishable from a shallow clone: both printed one
+   warning and shipped the stale snapshot. */
+function hasGitHistory() {
+  try {
+    execFileSync("git", ["rev-parse", "--git-dir"], { cwd: repoRoot, stdio: "ignore" });
+    return true;
+  } catch {
+    return false;
+  }
+}
 
+function main() {
   const entries = [];
   for (const [route, pathspecs] of Object.entries(routes)) {
     entries.push([route, lastCommitDate(pathspecs) ?? EPOCH]);
@@ -139,15 +153,30 @@ ${body}
   console.log(`lastModified: wrote ${entries.length} routes to src/data/lastModified.ts`);
 }
 
+const gitAvailable = hasGitHistory();
+
 try {
   main();
 } catch (error) {
-  /* Never fail the build over this. Without history the committed snapshot
-     is still there and still correct as of the last machine that had one,
-     and a sitemap with slightly stale dates is a far smaller problem than
-     a deploy that does not happen.
+  /* With a repo present, a throw in here is a bug in this script or a broken
+     git invocation — not an environment doing its best. Those must be loud.
+     Swallowing them is how the map silently became eleven stale dates while
+     every build reported success.
 
-     The one case that would be fatal is the snapshot being absent as well,
+     Without a repo, the original reasoning stands and the build continues:
+     the committed snapshot is still correct as of the last machine that had
+     history, and a sitemap with slightly stale dates is a far smaller problem
+     than a deploy that does not happen. */
+  if (gitAvailable) {
+    console.error(
+      `lastModified: git is available but the lookup failed, which is a bug rather than a missing checkout — ${
+        error instanceof Error ? (error.stack ?? error.message) : String(error)
+      }`,
+    );
+    process.exit(1);
+  }
+
+  /* The one case that would be fatal is the snapshot being absent as well,
      because the sitemap imports it: that is a module-resolution error, not
      a stale date. So if it is missing, stub it. */
   console.warn(

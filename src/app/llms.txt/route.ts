@@ -2,6 +2,7 @@ import { allProjects, projectOrder } from "@/app/work/[project]/projects";
 import { showcaseComponents } from "@/data/components";
 import { EMAIL, contacts } from "@/data/contact";
 import { posts } from "@/data/posts";
+import { talks } from "@/data/talks";
 import { siteUrl } from "@/lib/site";
 
 /* ── /llms.txt ────────────────────────────────────────────────────────────
@@ -18,12 +19,11 @@ import { siteUrl } from "@/lib/site";
    projects.ts appears here on the next build, and one that is renamed
    cannot end up described here under its old name.
 
-   /talks is deliberately absent. It is `noindex` because data/talks.ts
-   still carries a TODO in place of a panel's through-line, and the reason
-   to keep an unfinished page out of a crawler's hands applies at least as
-   strongly to a file whose entire purpose is to tell a model what to read.
-   Whoever finishes the talks copy takes the noindex off, and adds a section
-   here at the same time.
+   /talks was deliberately absent while it was `noindex`: keeping an
+   unfinished page out of a crawler's hands applies at least as strongly to a
+   file whose entire purpose is to tell a model what to read. The note here
+   asked whoever finished the talks copy to take the noindex off and add the
+   section in the same change. Both are done, so the section is below.
 
    `force-static` for the same reason as feed.xml: nothing this reads can
    change between requests, only between deploys. */
@@ -63,13 +63,24 @@ export function GET() {
     )
     .join("\n");
 
+  /* Role first, then the event, because "Moderator" and "Panellist" are
+     different jobs and data/talks.ts types them as a union specifically so a
+     reader cannot assume the more flattering one. A model summarising this
+     file is exactly the reader most likely to make that assumption. */
+  const speaking = talks
+    .map(
+      (talk) =>
+        `- [${talk.title}](${siteUrl}/talks#${talk.slug}): ${talk.role}, ${talk.event}, ${talk.date}. ${firstSentence(talk.description[0] ?? "")}`,
+    )
+    .join("\n");
+
   const elsewhere = contacts
     .map((contact) => `- [${contact.name}](${contact.url})`)
     .join("\n");
 
   const body = `# Omar Sadek
 
-> Full-stack software engineer at Instatus and founder of Wholana. This site is the work, the writing that came out of it, and the components lifted from the products themselves.
+> Product engineer at Instatus and founder of Wholana. This site is the work, the writing that came out of it, and the components lifted from the products themselves.
 
 The site is a Next.js App Router application. Every list on it, the case studies, the essays, the components and the sitemap, is generated from a data module in the repository, so a page and its structured data cannot disagree about what exists. This file is generated from those same modules.
 
@@ -90,6 +101,12 @@ ${writing}
 Components taken out of shipped products and documented one page each, at ${siteUrl}/components. The links below are the markdown form of each page: description, behaviour, usage, and the full source of every file. Where a component is adapted from someone else's work, or was changed to run outside its product, the page says so.
 
 ${components}
+
+## Talks
+
+Rooms Omar has stood in, in the order the page lists them, at ${siteUrl}/talks. Not chronological: data/talks.ts is ordered deliberately, the same way the work index is. Recordings are embedded where they exist; an entry without one still names the session, the role and the date rather than being held back until footage turns up.
+
+${speaking}
 
 ## About
 

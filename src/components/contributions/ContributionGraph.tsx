@@ -116,7 +116,11 @@ const useContributionGraph = () => {
   return context;
 };
 
-const fillHoles = (activities: Activity[]): Activity[] => {
+/* Exported for tests only — nothing else imports either this or
+   `groupByWeeks`. They are the two functions in this file that can be wrong
+   without being loud: a dropped day or a mis-padded first week renders as a
+   calendar that looks entirely plausible and is off by a column. */
+export const fillHoles = (activities: Activity[]): Activity[] => {
   if (activities.length === 0) {
     return [];
   }
@@ -151,7 +155,7 @@ const fillHoles = (activities: Activity[]): Activity[] => {
   });
 };
 
-const groupByWeeks = (activities: Activity[], weekStart: WeekDay = 0): Week[] => {
+export const groupByWeeks = (activities: Activity[], weekStart: WeekDay = 0): Week[] => {
   if (activities.length === 0) {
     return [];
   }

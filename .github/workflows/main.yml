@@ -1,15 +1,25 @@
 name: OS Portfolio CI/CD
 
+# `pull_request` as well as `push`, because a pipeline that only runs after
+# main already has the commit cannot block anything: there is no check for
+# branch protection to require and nothing to read before merging. The push
+# trigger stays for the deploy artifact.
 on:
   push:
     branches:
       - main
+  pull_request:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # generate-last-modified.mjs resolves each route to the last commit
+          # that touched its files, so a shallow clone would report today for
+          # everything. The script's own catch would swallow that silently.
+          fetch-depth: 0
 
       - uses: pnpm/action-setup@v4
 
@@ -21,7 +31,32 @@ jobs:
       - name: clean install
         run: pnpm install --frozen-lockfile
 
+      # Next 16 dropped the lint phase from `next build`, so without this step
+      # eslint.config.mjs is enforced nowhere except by hand.
+      - run: pnpm lint
+
+      # `next build` does typecheck, but it does it after a full compile. This
+      # fails in seconds on the common error instead of minutes.
+      - run: pnpm exec tsc --noEmit
+
+      - run: pnpm test
+
       - run: pnpm build
+
+      # Visibility, not a gate. `build` regenerates src/data/lastModified.ts
+      # from `git log`, so any commit that touches a route's own sources moves
+      # that route's date — which means the committed copy is always exactly
+      # one commit behind and `--exit-code` here would fail on nearly every
+      # PR. The deployed sitemap is regenerated at build and is always right;
+      # the committed copy is a mirror for readers of the repo. Printing the
+      # drift keeps it visible without crying wolf.
+      #
+      # The failures that DO gate are elsewhere, where they can be precise:
+      # the generator now exits non-zero when git is present but the lookup
+      # breaks (a bug, versus a shallow clone), and lastmod.test.ts fails if a
+      # route reaches the sitemap without a key in the generator's route map.
+      - name: report lastModified drift
+        run: git --no-pager diff --stat -- src/data/lastModified.ts
 
       - name: Upload artifact (detailed report)
         uses: actions/upload-artifact@v4

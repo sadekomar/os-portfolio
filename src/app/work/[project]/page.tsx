@@ -13,6 +13,7 @@ import { CaseStudyFigure } from "@/components/case-study/Figure";
 import { CaseStudyStats } from "@/components/case-study/Stats";
 import { SequenceLineNav, SequenceRail } from "@/components/sequence/LineNav";
 import { SequencePager } from "@/components/sequence/Pager";
+import { clipAtWord } from "@/lib/clip";
 import { siteUrl } from "@/lib/site";
 import { slugify } from "@/lib/slug";
 
@@ -40,10 +41,7 @@ export async function generateMetadata({
   const project = allProjects[key as ProjectKeys];
   if (!project) return {};
 
-  const description =
-    project.intro.length > 155
-      ? `${project.intro.slice(0, project.intro.lastIndexOf(" ", 155))}…`
-      : project.intro;
+  const description = clipAtWord(project.intro, 155);
   const url = `/work/${key}`;
 
   return {

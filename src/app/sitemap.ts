@@ -3,6 +3,7 @@ import type { MetadataRoute } from "next";
 import { componentSlugs } from "@/data/components";
 import { LAST_MODIFIED_FALLBACK, lastModified } from "@/data/lastModified";
 import { posts } from "@/data/posts";
+import { resolveLastModified } from "@/lib/lastmod";
 import { siteUrl } from "@/lib/site";
 /* The same list the routes are generated from, rather than a second copy of
    it. projects.ts already calls itself the source of truth for the static
@@ -29,13 +30,13 @@ import { projectOrder } from "@/app/work/[project]/projects";
    both years ago and Bing only nominally reads priority. They are kept
    because they cost nothing and describe the site accurately, but nothing
    should be reasoned about on their basis. */
+/* A route absent from the generated map, or a map written by a build that
+   could not reach git, must not produce `Invalid Date`: Next serialises that
+   to an empty `<lastmod>` element and the whole sitemap fails schema
+   validation, taking the nineteen good URLs with it. The guard itself lives in
+   lib/lastmod.ts, where both failure modes are pinned by tests. */
 function modified(route: string): Date {
-  const parsed = new Date(lastModified[route] ?? LAST_MODIFIED_FALLBACK);
-  /* A route absent from the generated map, or a map written by a build
-     that could not reach git, must not produce `Invalid Date`: Next
-     serialises that to an empty `<lastmod>` element and the whole sitemap
-     fails schema validation, taking the nineteen good URLs with it. */
-  return Number.isNaN(parsed.getTime()) ? new Date(LAST_MODIFIED_FALLBACK) : parsed;
+  return resolveLastModified(lastModified, route, LAST_MODIFIED_FALLBACK);
 }
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -53,11 +54,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.8,
     },
-    /* /blog was omitted alongside /talks while both were noindex,
+    /* /blog was omitted alongside /talks while both were noindex, because
        submitting a URL you have asked not to be indexed is a contradictory
-       signal. There are posts now, so /blog is back and its `noindex` is
-       gone. /talks stays out until the TODO dates and titles in
-       data/talks.ts are real.
+       signal. Both are back: /blog when it had posts, /talks now that the
+       placeholder line in data/talks.ts is filled in and its `noindex` has
+       come off. The rule those two omissions encoded is the one to keep —
+       this list and the routes' own `robots` have to agree, and the sitemap
+       is the copy that gets noticed last.
 
        /blog is also the one route here with a `changeFrequency` faster than
        monthly, because it is the only part of the site that gains a page
@@ -104,5 +107,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly" as const,
       priority: 0.5,
     })),
+    /* `yearly`, and the only route here that gets it: a talk is a fixed event
+       that happened on a date, so this page changes when a new one is added
+       and essentially never otherwise. Overstating it would be the same
+       mistake as the build-time dates this file was written to remove.
+
+       Priority above the component pages and below /blog. It is third-party
+       evidence — someone else's stage, someone else's invitation — which is a
+       different kind of claim from anything self-published here. */
+    {
+      url: `${siteUrl}/talks`,
+      lastModified: modified("/talks"),
+      changeFrequency: "yearly",
+      priority: 0.7,
+    },
   ];
 }

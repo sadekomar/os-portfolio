@@ -8,7 +8,9 @@
     "build": "node scripts/generate-last-modified.mjs && next build",
     "analyze": "node scripts/generate-last-modified.mjs && next build --experimental-analyze",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@radix-ui/react-context-menu": "^2.3.7",
@@ -43,6 +45,7 @@
     "postcss": "^8",
     "prettier-plugin-tailwindcss": "^0.6.8",
     "tailwindcss": "^4.3.3",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.10"
   }
 }
