@@ -795,9 +795,20 @@
   transition-delay: 0ms;
 }
 
+/* Reduced motion means fewer and gentler, not none: the crossfade is the
+   thing that tells a reader the glyph changed at all, so opacity keeps its
+   normal duration and only the 2px blur and the 0.9 scale are dropped. The
+   hidden glyph is still scaled and blurred, it just gets there in one tick,
+   which is invisible at opacity 0.
+
+   This used to be `transition: none`, which turned Copy→Check into a hard
+   cut. That is a regression against the standard rather than a concession to
+   it — see .agents/skills/emil-design-eng, "Keep opacity and color
+   transitions that aid comprehension. Remove movement and position
+   animations." A cut removes the comprehension and keeps nothing. */
 @media (prefers-reduced-motion: reduce) {
   .t-icon-swap .t-icon {
-    transition: none !important;
+    transition: opacity 150ms ease-in-out;
   }
 }
 
@@ -969,16 +980,27 @@
   outline-offset: 2px;
 }
 
+/* Sorted by what each one actually animates, rather than by which component
+   it belongs to. `.t-tab` and `.t-switch-option` transition `color` and
+   nothing else — they were in this list for years with nothing to remove, so
+   the only effect was to make the two instruments that never moved feel
+   cheaper than the ones that did. They are now left alone deliberately.
+
+   What genuinely travels or resizes still stops: the pill (transform +
+   width), the accordion panel (grid-template-rows), the chevron (scaleY),
+   the partial reveal (max-height + the mask's solid stop). */
 @media (prefers-reduced-motion: reduce) {
   .t-tabs-pill,
-  .t-tab,
   .t-acc-panel,
-  .t-acc-panel-inner,
   .t-acc-chevron,
   .t-reveal,
-  .t-switch-pill,
-  .t-switch-option {
+  .t-switch-pill {
     transition: none !important;
+  }
+  /* Opacity stays, the 2px blur goes. The panel's content still fades in as
+     the section opens, which is the part that says "this is new". */
+  .t-acc-panel-inner {
+    transition: opacity 250ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 }
 
@@ -1241,39 +1263,50 @@
   outline-offset: -2px;
 }
 
+/* Same split as the tabs block above. The box carry (width, height,
+   border-radius) and the plus-to-close rotate are movement and stop; the
+   toggle's and the links' background/colour lanes are not movement and had
+   nothing to remove, so they keep their normal timing. Without this the only
+   control a phone user has also loses its press and hover feedback the
+   moment they ask the OS for less motion, which is the opposite trade. */
 @media (prefers-reduced-motion: reduce) {
   .t-morph,
   .t-morph[data-open="true"],
-  .t-morph-toggle,
-  .t-morph-toggle svg,
-  .t-morph-menu,
-  .t-morph-link {
+  .t-morph-toggle svg {
     transition: none !important;
+  }
+  /* Opacity stays, the 4px blur goes: the menu still fades in rather than
+     appearing between frames. */
+  .t-morph-menu {
+    transition: opacity 90ms var(--ease-out-quint);
   }
 }
 
 /* ── Command palette ──────────────────────────────────────────────────────
-   The palette arrives; it does not fly in. Two properties move, opacity and
-   a 2% scale, over 200ms on the same cubic-bezier(0.22, 1, 0.36, 1) the
-   tabs, the accordion and the theme switch all use, so the one new modal on
-   the site is on the site's existing curve rather than on a library's.
+   The panel does not animate. Not gently, not quickly — at all.
 
-   The 6px of travel is the smallest amount that reads as "this came from
-   somewhere" at a glance; anything more and a panel that appears under the
-   reader's hands starts to feel like it has to be waited for. Exit runs at
-   150ms because a dismissal has no information in it. The only job is to
-   not blink.
+   It used to: opacity, a 2% scale and 6px of travel over 200ms, on the site's
+   one curve, and the argument written here was that this is the restrained
+   version of a modal entrance. The argument was answered by this repo's own
+   skills, which name the command palette specifically and twice. From
+   .agents/skills/find-animation-opportunities, as its worked example of a
+   *rejected* candidate: "command palette open/close. Rejected:
+   keyboard-initiated, 100+/day. Never animate." From emil-design-eng, the
+   same case in the "No animation. Ever." row.
 
-   `translate` rather than `transform`: Tailwind v4 emits the centring
-   `-translate-x-1/2` through the standalone `translate` property, so these
-   frames have to carry the -50% along or the panel would jump to the left
-   edge for the length of the animation. Scale stays on its own property for
-   the same reason: the three are independent in v4 and mixing them into one
-   `transform` shorthand is what would clobber the layout.
+   The reasoning holds up better than the animation did. ⌘K is not a
+   navigation a reader needs oriented; it is a thing they do reflexively,
+   dozens of times a session, usually already typing. 200ms of entrance is
+   200ms of the input not being ready, paid every single time, and the reader
+   who pays it most is the one who liked the feature enough to learn the
+   shortcut. Worse, Radix unmounts on close, so ⌘K pressed twice in quick
+   succession restarted the frames from scale 0.98 rather than retargeting —
+   keyframes cannot be interrupted, which is the failure the skill's
+   "keyframes on a rapidly-triggered element" rule is about.
 
-   Radix's Presence waits for `animationend` before unmounting, which is what
-   makes the exit frames run at all; without them the panel would vanish on
-   the same tick Escape was pressed. */
+   The scrim keeps its crossfade. That is not the panel arriving, it is the
+   page behind it receding, it carries no travel, and it is what stops the
+   modal reading as a hard cut on the surrounding layout. */
 @keyframes cmd-overlay-in {
   from {
     opacity: 0;
@@ -1290,60 +1323,24 @@
     opacity: 0;
   }
 }
-@keyframes cmd-panel-in {
-  from {
-    opacity: 0;
-    scale: 0.98;
-    translate: -50% -6px;
-  }
-  to {
-    opacity: 1;
-    scale: 1;
-    translate: -50% 0;
-  }
-}
-@keyframes cmd-panel-out {
-  from {
-    opacity: 1;
-    scale: 1;
-    translate: -50% 0;
-  }
-  to {
-    opacity: 0;
-    scale: 0.98;
-    translate: -50% -4px;
-  }
-}
-
 .cmd-overlay[data-state="open"] {
   animation: cmd-overlay-in 200ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .cmd-overlay[data-state="closed"] {
   animation: cmd-overlay-out 150ms cubic-bezier(0.22, 1, 0.36, 1);
 }
-.cmd-panel[data-state="open"] {
-  animation: cmd-panel-in 200ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-.cmd-panel[data-state="closed"] {
-  animation: cmd-panel-out 150ms cubic-bezier(0.22, 1, 0.36, 1);
-}
 
-/* Not `animation: none`, since Presence would then never hear `animationend` and
-   the panel would stay in the DOM after closing, trapping focus. The frames
-   still run, they just run in one tick and only on opacity, so nothing
-   travels or scales across the screen. */
-@media (prefers-reduced-motion: reduce) {
-  .cmd-overlay[data-state],
-  .cmd-panel[data-state] {
-    animation-duration: 1ms;
-  }
-  .cmd-panel[data-state="open"] {
-    animation-name: cmd-overlay-in;
-  }
-  .cmd-panel[data-state="closed"] {
-    animation-name: cmd-overlay-out;
-  }
-}
+/* The panel itself has no animation, deliberately, and there is nothing here
+   to reduce for `prefers-reduced-motion` either: the scrim's crossfade is
+   opacity only, which is the lane reduced motion is supposed to keep.
+
+   Removing the panel frames is safe with Presence, contrary to what the note
+   here used to claim. Presence only waits for `animationend` when there is an
+   animation to wait for; with `animationName: none` it unmounts on the same
+   layout effect (react-presence/dist/index.mjs, the
+   `currentAnimationName === "none"` branch of the present→absent effect). The
+   1ms-duration workaround this replaced was guarding against a hazard that
+   only exists for a zero-duration *named* animation. */
 
 /* ── Scroll reveal ────────────────────────────────────────────────────────
    Cards and rows arrive as you reach them: 8px of travel and a fade, on the
