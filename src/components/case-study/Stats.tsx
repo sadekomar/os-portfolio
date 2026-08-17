@@ -29,7 +29,31 @@ import { TextMorph } from "torph/react";
    Reduced motion needs no branch here: torph's own `respectReducedMotion`
    defaults on, so those readers get the same swap with the transition off.
    The mask is never a state anyone is stuck in; it resolves on the
-   observer, not on a hover or a click. */
+   observer, not on a hover or a click.
+
+   ── Why the mask is not in the HTML ──────────────────────────────────────
+   The mask is a browser-only state, and it has to be, because the shipped
+   HTML is the one artefact here that gets read by things that never run the
+   animation: a crawler, a reader with JS off, a page whose hydration threw.
+   A `<dd>` holding 00M+ tells all three of them that the product serves no
+   traffic. The real figure sitting in a neighbouring `sr-only` span does not
+   repair that; it is the wrong number in the visible node.
+
+   So the server emits the figure, plainly, in one node. `useLayoutEffect`
+   then arms the animation, which is the same pre-paint guarantee the footer
+   clock gets from its em-space placeholder, reached from the other side:
+   layout effects run in the hydration commit, before the browser paints, so
+   the mask is in the DOM by the first frame and nobody sees the value it
+   replaced. `useEffect` would not do — it lands after paint, and the reader
+   would watch the real figure appear and then be overwritten by zeros.
+
+   Arming also swaps the markup, not just the string. Before it, the figure
+   is one node with no `aria-hidden` and no duplicate; after it, the pair the
+   morph needs. Which means the mask never reaches the a11y tree and never
+   reaches the HTML, rather than being hidden from one and left in the other.
+   The mask string is the initial `shown` state, so torph mounts on it and
+   has nothing to animate: the first transition anyone sees is the intended
+   one, mask → figure, when the observer fires. */
 
 const maskDigits = (value: string) => value.replace(/\d/g, "0");
 
@@ -83,6 +107,21 @@ export function CaseStudyStats({ stats }: { stats: { value: string; label: strin
 
 function Stat({ value, revealed, index }: { value: string; revealed: boolean; index: number }) {
   const [shown, setShown] = React.useState(() => maskDigits(value));
+  /* False through the server render and the hydration render, so the two
+     agree and there is no mismatch to suppress. Flipped in the commit that
+     hydration ends with, which is still before paint. */
+  const [armed, setArmed] = React.useState(false);
+
+  /* `react-hooks/set-state-in-effect` is right about the general case and
+     wrong about this one. The rule's objection is the cascading render; that
+     render is the entire point here, and there is no other mechanism that
+     produces it before paint. `useSyncExternalStore`, which is how
+     LastShippedLine reads its clock, checks the client snapshot in a passive
+     effect, so the swap would land a frame late and the figure would be seen
+     and then overwritten — the flash this whole arrangement removes. One
+     extra render per stat, twice per page, on mount. */
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  React.useLayoutEffect(() => setArmed(true), []);
 
   React.useEffect(() => {
     if (!revealed) return;
@@ -94,14 +133,19 @@ function Stat({ value, revealed, index }: { value: string; revealed: boolean; in
     return () => window.clearTimeout(timer);
   }, [revealed, value, index]);
 
+  /* What the server sends and what a reader without working JS keeps: the
+     figure itself, no mask, no aria-hidden, no second copy of it to read. */
+  if (!armed) {
+    return <span>{value}</span>;
+  }
+
   return (
     <>
       {/* The real figure, always, from a node that never changes. This is
           what a screen reader announces; it would otherwise narrate the
           mask, or re-announce the value mid-morph as the segments swap
-          underneath it, and it is what the figure is doing in the shipped
-          HTML at all, since the visible node renders masked until the
-          observer fires. */}
+          underneath it. `sr-only` is clipped rather than laid out, so
+          arming does not change the row's width. */}
       <span className="sr-only">{value}</span>
       <span aria-hidden="true">
         <TextMorph duration={600}>{shown}</TextMorph>
