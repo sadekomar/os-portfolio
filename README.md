@@ -40,3 +40,5 @@ contribution graph degrades gracefully without it.
 
 Code is MIT. The writing, the brand marks and the case-study content are not —
 please don't redeploy this as your own site.
+
+See [`LICENSE`](./LICENSE) for the MIT text and [`NOTICE.md`](./NOTICE.md) for what it does and doesn't cover.
