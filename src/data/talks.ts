@@ -123,14 +123,31 @@ export const talks: Talk[] = [
     role: "Speaker",
     /* The oldest entry by three years, and the one that most earns its place:
        it is the only thing on the site that shows the 2022 internship as work
-       rather than as a date range in the Experience list. */
+       rather than as a date range in the Experience list.
+
+       Corroborated to the day by my own recap of the program, posted the week
+       after: "Last Thursday, I finished the Dell Technologies Summer Academy
+       Program", and the pitches were the final day of it. 8 September 2022 was
+       a Thursday. Cited because this is the entry whose date looks least
+       defensible — four years back, no organiser page still up — and it is in
+       fact the best-evidenced one here. */
     date: "8 September 2022",
     location: "Cairo, Egypt",
     /* 1920×864, a 2.22:1 ultrawide, and the reason the embed sizes itself
-       off the source ratio rather than snapping to 16:9. */
+       off the source ratio rather than snapping to 16:9. The ratio is not an
+       accident of the venue: the clip was cut for that same recap post ("here's
+       a clip from my pitch") and re-uploaded here, which is the LinkedIn-only
+       path the note at the top of this file prescribes. Worked example, if
+       anyone needs one. */
     video: { youtubeId: "WWikoFQjsp0", width: 1920, height: 864, poster: "maxresdefault" },
     description: [
       "The closing presentation of Dell’s Summer Academy, for a team project called Gnosis, after the Greek for knowledge through observation. The pitch starts from Ebbinghaus: high-school students forget something like 95% of what they were taught, so the resources spent teaching them are mostly spent twice. In Egypt that sits on top of a second split, where the education that works is priced out of reach and the education people can afford doesn’t.",
+      /* "Ran design thinking at it" is the program's own first module, not a
+         method named in hindsight to make the pivot sound deliberate: the
+         recap has the Academy opening on it, before any of the technical
+         courses. Worth pinning down, because a portfolio claiming a process
+         produced a result is exactly the claim a reader should discount by
+         default. */
       "The part worth keeping is that the team ran design thinking at it and landed somewhere other than where they started. The obvious culprits (disengaged students, disengaged teachers, underfunding) didn’t survive contact with the research. What was left was pedagogy: the discipline of how information is conveyed, which most teachers are never taught and many can’t name. Gnosis was the response, built around a lecture engine that walks an educator through designing a lecture against pedagogical principles rather than leaving them to reinvent it.",
     ],
   },
@@ -147,12 +164,15 @@ export const talks: Talk[] = [
     video: { youtubeId: "uAv6y67whGs", width: 576, height: 1024, poster: "maxresdefault" },
     description: [
       "A panel on building brands in a region that doesn’t hand you the numbers: no reliable market data, no benchmarks worth trusting, and decisions that have to get made anyway. I moderated.",
-      /* TODO: replace this line with the actual through-line. The 31-second
-         clip is an outdoor stage and a handful of panellists, and it establishes
-         that the session happened and what it was called, not what was
-         argued in it. Who was on it, and what you were steering them
-         towards, is the part only you have. */
-      "TODO: who was on the panel, and where you were steering it.",
+      /* The roster is not in the clip — 31 seconds of an outdoor stage
+         establishes that the session happened, not who was on it. It comes
+         from Samar Abdelaal's own LinkedIn recap of the summit, which names
+         all four panellists with their titles and names me as moderator, so
+         every title below is a panellist's first-party account rather than
+         something reconstructed off the video. Titles are as she gave them;
+         hers she didn't state, so she gets her company and not a guess. */
+      "On it: Sherif El Madany, Marketing Director at Mountain View; Rokaya El Maraashly, Managing Director at TAC Universe; Ahmed ElBatt, Strategy & Planning Director at Peace Cake; and Samar Abdelaal of Awe Research, the summit’s research partner. A client-side marketer, an agency MD, a strategy director and a researcher: four different places to be standing when the numbers aren’t there, which is the only reason a panel on this beats one person saying it.",
+      "Where I steered it: off the complaint and onto the method. The easy version of this session is forty minutes of agreeing that MENA data is bad. The useful version is what each of them actually does on a Monday without it — what you can infer, what you have to go and measure yourself, and which decisions you make anyway rather than waiting for a number that is never arriving. Insight as the thing that reduces uncertainty enough to move, not as the line item you fund once there's budget spare.",
     ],
     link: { label: "Creative Industry Summit", href: "https://creativeindmena.com" },
   },
