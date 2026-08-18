@@ -9,6 +9,7 @@ import {
 } from "@/components/contributions/GitHubContributions";
 import { LastShipped } from "@/components/contributions/LastShipped";
 import { getContributions } from "@/lib/contributions";
+import { Credits } from "@/components/index/Credits";
 import { Resources } from "@/components/index/Resources";
 import { Row } from "@/components/index/Row";
 import { WorkRows, type WorkItem } from "@/components/index/WorkRows";
@@ -74,6 +75,12 @@ export default function Home() {
           else gets one line and carries on to the way to reach me. */}
       <Resources />
       <Elsewhere />
+      {/* Last, after the way to reach me, and outside the Section rhythm on
+          purpose. It is the only block on this page centred rather than
+          flush left, which is how a reader knows the document is over
+          before they have read a word of it. See components/index/Credits.tsx
+          for what it credits and, more to the point, what it doesn't. */}
+      <Credits />
     </main>
   );
 }
