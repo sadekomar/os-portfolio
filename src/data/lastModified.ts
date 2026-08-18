@@ -11,8 +11,8 @@
 export const LAST_MODIFIED_FALLBACK = "2026-07-31T00:00:00.000Z";
 
 export const lastModified: Record<string, string> = {
-  "/": "2026-08-18T08:33:33.000Z",
-  "/about": "2026-08-18T08:33:33.000Z",
+  "/": "2026-08-18T09:47:44.000Z",
+  "/about": "2026-08-18T09:47:44.000Z",
   "/blog": "2026-08-17T22:38:04.000Z",
   "/components": "2026-08-01T00:33:12.000Z",
   "/talks": "2026-08-17T22:38:04.000Z",
