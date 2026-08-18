@@ -35,6 +35,15 @@ jobs:
       # eslint.config.mjs is enforced nowhere except by hand.
       - run: pnpm lint
 
+      # next-env.d.ts is gitignored, and it is the file that pulls in
+      # next/image-types/global — the only thing declaring a module for a
+      # png/jpg/webp import. A fresh clone has no copy, so tsc ran blind to
+      # every image in the tree and failed with 66 TS2307s that reproduce
+      # nowhere locally, because a local checkout always has one left behind
+      # by an earlier build. `next typegen` writes it, and the route types,
+      # without paying for the full compile this step exists to front-run.
+      - run: pnpm exec next typegen
+
       # `next build` does typecheck, but it does it after a full compile. This
       # fails in seconds on the common error instead of minutes.
       - run: pnpm exec tsc --noEmit
