@@ -244,7 +244,7 @@ const workGroups: { title: string; items: WorkRow[] }[] = [
         slug: "wholana",
         title: "Wholana",
         description:
-          "An AI research workspace for TikTok, built for Egyptian creators. Sweeps 900+ creators nightly and decodes what works into a shared craft vocabulary. Solo build, 14 releases since March.",
+          "An AI research workspace for TikTok, built for Egyptian creators. Sweeps 900+ creators nightly and decodes what works into a shared craft vocabulary. Solo build, 20 paying users.",
       },
       {
         slug: "tiktok-news-network",

@@ -22,5 +22,5 @@ export const lastModified: Record<string, string> = {
   "/components/expandable-features": "2026-08-01T00:33:34.000Z",
   "/components/isometric-brands": "2026-08-01T00:33:34.000Z",
   "/components/whatsapp-screen": "2026-08-01T00:33:34.000Z",
-  "/work": "2026-08-17T22:38:04.000Z",
+  "/work": "2026-08-18T08:24:59.000Z",
 };

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Image, { StaticImageData } from "next/image";
 import Link from "next/link";
 
+import { ProjectBooks } from "@/components/about/ProjectBooks";
+
 import { CaseStudyScroller, type ScrollerImage } from "@/components/case-study/Scroller";
 
 import me from "../../../public/me.png";
@@ -376,6 +378,20 @@ export default function About() {
             for how unpleasant taste can be up close.
           </p>
           <MediaRow items={books} ratio="poster" />
+
+          {/* The four that came off the case studies. Kept separate from the
+              row above rather than folded into it, because the line above says
+              "not a reading list" and means it: those three are re-reads, these
+              four each changed one piece of work. The note is on a tooltip so
+              the distinction costs a reader who does not care nothing at all. */}
+          <h3 className="text-body text-foreground mt-8 mb-2 font-medium">
+            And four that changed a project
+          </h3>
+          <p className="max-w-measure text-body-sm text-foreground-muted mb-2">
+            These used to sit at the bottom of the case studies they belong to. Hover or focus one
+            for what it actually changed.
+          </p>
+          <ProjectBooks />
         </Column>
 
         <Column className="mb-10">

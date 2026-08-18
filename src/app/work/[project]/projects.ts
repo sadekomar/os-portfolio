@@ -19,11 +19,9 @@ export type ProjectKeys = (typeof projectOrder)[number];
 import loomPreview from "./(loom)/loom-preview.png";
 import loomAPI from "./(loom)/loom-api.png";
 import loomWebApp from "./(loom)/loom-web-app.png";
-import loomBooks from "./(loom)/loom-books.png";
 import loomBrands from "./(loom)/loom-brands.png";
 import loomDb from "./(loom)/loom-db.png";
 
-import ladsBooks from "./(lads)/ll-books.png";
 import ladsNavigation from "./(lads)/ll-navigation.png";
 import ladsPreview from "./(lads)/ll-preview.png";
 import ladsProblem from "./(lads)/ll-problem.png";
@@ -69,7 +67,6 @@ import argoArms from "./(argonaut)/argo-arms.webp";
 
 import unPreview from "./(un)/un-preview.png";
 import unActions from "./(un)/un-actions.png";
-import unBooks from "./(un)/un-books.png";
 import unDoubleDiamond from "./(un)/un-double-diamond.png";
 import unWebApp from "./(un)/un-web-app.png";
 
@@ -664,21 +661,6 @@ export const allProjects: Record<ProjectKeys, Project> = {
           "The mistake was not the scraper or the search or the two years. It was sequencing: I built a supply-side pipeline of real technical difficulty for a market where I had never established who pays, and by the time the answer mattered the only lever left was a raise. The rule I took out of it is unglamorous and I have applied it since — find the point where money changes hands before building the thing that depends on it. Wholana has seat billing in it, and paying users on it, because this one did not.",
         ],
       },
-      {
-        title: "Books I read that were relevant to this project",
-        content: [
-          "Clean Code by Robert C Martin came in especially handy for structuring code and laying out everything when it came to OOP.",
-          "Thoughts on Design by Paul Rand talks about well-renowned designer Paul Rand’s approach to design and how he tackles everything.",
-        ],
-        figure: {
-          images: [
-            {
-              src: loomBooks,
-              alt: "Covers of Clean Code by Robert C. Martin and Thoughts on Design by Paul Rand",
-            },
-          ],
-        },
-      },
     ],
   },
   argonaut: {
@@ -886,20 +868,6 @@ export const allProjects: Record<ProjectKeys, Project> = {
           "Since certain components were either locked behind expensive themes, not available in the exact styles I was going for, or not available at all, I created custom components. I created a customer reviews marquee, autoplaying video, mega menu, and hotspots component. Shopify Liquid uses plain HTML, CSS, and JavaScript and it has an object to expose certain variables so that the Shopify admin can interface with the component without having to change the source code, making it much more maintainable.",
         ],
       },
-      {
-        title: "Books I read that were relevant to this project",
-        content: [
-          "Thinking With Type By Ellen Lupton was such an interesting read and it was really instrumental in changing the way I perceive typography and its immense importance, paying attention to concepts such as modulation, line height, weight, x-height, and so much more...",
-        ],
-        figure: {
-          images: [
-            {
-              src: ladsBooks,
-              alt: "Cover of Thinking with Type by Ellen Lupton, second edition",
-            },
-          ],
-        },
-      },
     ],
   },
   alunaut: {
@@ -1085,20 +1053,6 @@ export const allProjects: Record<ProjectKeys, Project> = {
           "On a final note, working in a collaborate Git environment is valuable, but it has its own set of challenges. It’s important to adhere to commit naming conventions, utilize feature branches to maintain organization. It’s important to maintain a clean commit history, ensuring a smoother dev process and less errors.",
           "This project was well received by the client and will be utilized to streamline their management process and inform better decision-making.",
         ],
-      },
-      {
-        title: "Books I read that were relevant to this project",
-        content: [
-          "Change by Design By Tim Brown was an awesome read to learn more about design thinking and how the whole process works.",
-        ],
-        figure: {
-          images: [
-            {
-              src: unBooks,
-              alt: "Cover of Change by Design by Tim Brown, revised and updated edition",
-            },
-          ],
-        },
       },
     ],
   },
