@@ -212,7 +212,7 @@ export const allProjects: Record<ProjectKeys, Project> = {
     stats: [
       { value: "28K+", label: "Videos in the corpus" },
       { value: "900+", label: "Creators swept nightly" },
-      { value: "14", label: "Public releases since March" },
+      { value: "$100", label: "MRR, from 20 paying users" },
     ],
     technologies: {
       backend: [
@@ -407,7 +407,7 @@ export const allProjects: Record<ProjectKeys, Project> = {
       {
         title: "Workspaces, auth and billing",
         content: [
-          "Wholana is properly multi-tenant: a personal workspace per user, a switcher, invitations, and seat-based team billing through Polar with three live plans. Collections, lenses and scripts belong to the workspace rather than to a person, so research done by one member compounds for everyone else instead of being trapped in their account.",
+          "Billing went in early, and it went in for a reason: the last product I founded reached 40,000 unique visitors with nowhere to charge any of them, and no amount of pipeline engineering was going to fix that after the fact. Wholana is properly multi-tenant: a personal workspace per user, a switcher, invitations, and seat-based team billing through Polar with three live plans. Collections, lenses and scripts belong to the workspace rather than to a person, so research done by one member compounds for everyone else instead of being trapped in their account.",
           "Auth runs on Better Auth with Google OAuth and One Tap. The session cookie is scoped across subdomains on purpose: it is what lets the app's session authorise the sync engine on a different host, which is the sort of detail that is invisible when it works and a login loop when it does not.",
         ],
         figure: {
@@ -418,7 +418,7 @@ export const allProjects: Record<ProjectKeys, Project> = {
             },
           ],
           caption:
-            "Seats are the billing unit, so the invite screen quotes the bill.",
+            "Seats are the billing unit, so the invite screen quotes the bill. This is my own workspace on the team plan, not a customer: the real revenue is on the row above, and a screenshot of a six-seat team at $120 a month would be describing one that does not exist.",
         },
       },
       {
@@ -495,7 +495,7 @@ export const allProjects: Record<ProjectKeys, Project> = {
         title: "The distribution problem, solved with software",
         content: [
           "A nightly show is a nightly deadline. The hard constraint is not production, it is knowing what actually happened on the Egyptian internet that day before the rest of the internet does, every single day, without spending the whole day scrolling.",
-          "TNN runs on Wholana, the research platform I built. It aggregates posts from Egypt's 2,000 most popular TikTok creators and lets me filter by engagement and date window, so the show's rundown is a query rather than a scroll. Curation becomes a data problem with a repeatable answer, which is the only reason a nightly cadence is sustainable solo.",
+          "TNN runs on Wholana, the research platform I built. It aggregates posts from Egypt's 900+ most popular TikTok creators and lets me filter by engagement and date window, so the show's rundown is a query rather than a scroll. Curation becomes a data problem with a repeatable answer, which is the only reason a nightly cadence is sustainable solo.",
         ],
         figure: {
           images: [
@@ -537,11 +537,11 @@ export const allProjects: Record<ProjectKeys, Project> = {
     title: "Loom Cairo (later Univyr)",
     mark: "loom",
     intro:
-      "Loom Cairo, later rebranded as Univyr, was a search engine for local fashion that aggregated over 300 Egyptian brand websites into a single platform. Operated 2023 to 2025. Grew to 40,000+ users and 70+ brand partnerships, and was accepted into AUC Venture Lab.",
+      "Loom Cairo, later rebranded as Univyr, was a search engine for local fashion that aggregated over 300 Egyptian brand websites into a single platform. Operated 2023 to 2025, reached 70+ brand partnerships and 40,000+ unique visitors at its peak, and was accepted into AUC Venture Lab. It shut down because it never had a place to charge anybody, which is the part of it worth reading.",
     role: "Founder: solo design and engineering",
     period: "2023 – 2025",
     stats: [
-      { value: "40,000+", label: "Users" },
+      { value: "40,000+", label: "Unique visitors, post-TechTalk peak" },
       { value: "300+", label: "Brand sites aggregated" },
       { value: "70+", label: "Brand partnerships" },
     ],
@@ -571,7 +571,7 @@ export const allProjects: Record<ProjectKeys, Project> = {
         title: "Context",
         content: [
           "The Egyptian local fashion scene exploded over the last several years, but buying anything still meant clicking through dozens of brand sites. There was no unified place to discover and filter local fashion. I founded Loom Cairo to solve that, then rebranded as Univyr.",
-          "Operated 2023 to 2025. Grew to 40,000+ users and 70+ brand partnerships. Accepted into AUC Venture Lab (V-Lab). I architected and shipped the full system solo.",
+          "Operated 2023 to 2025. Grew to 70+ brand partnerships and, at its peak, 40,000+ unique visitors. Accepted into AUC Venture Lab (V-Lab). I architected and shipped the full system solo.",
         ],
       },
       {
@@ -651,10 +651,17 @@ export const allProjects: Record<ProjectKeys, Project> = {
         ],
         artifact: "storefront-carousel",
       },
+      /* This section used to be titled "Outcome" and was one line long: the
+         three headline numbers restated, plus the operating dates. A company
+         that ran for two years, rebuilt itself end to end, pitched for money
+         and then stopped does not have an outcome consisting of its own stats
+         row. The ending was the outcome, and it was missing. */
       {
-        title: "Outcome",
+        title: "Why it ended",
         content: [
-          "40,000+ users, 70+ brand partnerships, accepted into AUC Venture Lab. Operated 2023 to 2025.",
+          "In June 2025 I pitched Univyr at AUC Venture Lab: $150K for 10%. The traction slide was honest and, for its size, good — 4,700 monthly active users, 76% of them returning, 3.5 minutes of average retention against a market average of two. It did not close. The objection was not the growth and not the engineering; it was that nobody could point at the moment money changed hands. An aggregator that sends free traffic to brands it does not take a cut from has 300 suppliers and no customers.",
+          "Then the demand showed up anyway. A TechTalk appearance put the product in front of a national audience and traffic went to 40,000+ unique visitors, roughly eight times the base it had been growing off. I do not have retention data from that window — the analytics went with the product — so I will not claim the spike stuck. What I can say is the thing that matters: the biggest audience Univyr ever had arrived after the raise had already failed, and there was still no toll booth for them to walk through. The investors had been right, and the traffic proved it rather than rescuing it.",
+          "The mistake was not the scraper or the search or the two years. It was sequencing: I built a supply-side pipeline of real technical difficulty for a market where I had never established who pays, and by the time the answer mattered the only lever left was a raise. The rule I took out of it is unglamorous and I have applied it since — find the point where money changes hands before building the thing that depends on it. Wholana has seat billing in it, and paying users on it, because this one did not.",
         ],
       },
       {

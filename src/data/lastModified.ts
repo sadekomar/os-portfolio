@@ -11,16 +11,16 @@
 export const LAST_MODIFIED_FALLBACK = "2026-07-31T00:00:00.000Z";
 
 export const lastModified: Record<string, string> = {
-  "/": "2026-08-01T00:33:44.000Z",
+  "/": "2026-08-17T22:38:04.000Z",
   "/about": "2026-07-29T13:46:42.000Z",
-  "/blog": "2026-08-01T00:33:12.000Z",
+  "/blog": "2026-08-17T22:38:04.000Z",
   "/components": "2026-08-01T00:33:12.000Z",
-  "/talks": "2026-08-17T20:05:07.000Z",
+  "/talks": "2026-08-17T22:38:04.000Z",
   "/components/brand-values-dial": "2026-08-01T00:33:34.000Z",
   "/components/color-pills": "2026-08-01T00:33:34.000Z",
   "/components/decode-flow": "2026-08-01T00:33:34.000Z",
   "/components/expandable-features": "2026-08-01T00:33:34.000Z",
   "/components/isometric-brands": "2026-08-01T00:33:34.000Z",
   "/components/whatsapp-screen": "2026-08-01T00:33:34.000Z",
-  "/work": "2026-08-01T00:31:46.000Z",
+  "/work": "2026-08-17T22:38:04.000Z",
 };
