@@ -16,7 +16,7 @@ import { allProjects, type ProjectKeys } from "@/app/work/[project]/projects";
 import { DownloadResume } from "@/components/resume/DownloadResume";
 import { Stack } from "@/components/stack/Stack";
 import { TourO } from "@/components/tour/TourO";
-import { contacts } from "@/data/contact";
+import { MAILTO, contacts } from "@/data/contact";
 
 /* The canonical lives here rather than in the root layout, and that is the
    whole point: metadata merges shallowly from the root down, so a canonical
@@ -407,7 +407,7 @@ function Elsewhere() {
         <Prose href="/resume.pdf" download="resume-omar-sadek.pdf">
           résumé
         </Prose>
-        . The quickest way to reach me is <Prose href="mailto:sadekm.omar@gmail.com">email</Prose>.
+        . The quickest way to reach me is <Prose href={MAILTO}>email</Prose>.
       </p>
       <ul className="text-body-sm flex flex-wrap gap-x-5 gap-y-2 px-3">
         {contacts.map((contact) => (

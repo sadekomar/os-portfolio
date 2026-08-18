@@ -7,7 +7,7 @@
    written into the letterhead, the footer, the index, the command palette
    and the JSON-LD, and five literals is five chances to change four of
    them. */
-export const EMAIL = "sadekm.omar@gmail.com";
+export const EMAIL = "omar@sadekomar.com";
 export const MAILTO = `mailto:${EMAIL}`;
 
 export const contacts = [
