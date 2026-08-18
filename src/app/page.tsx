@@ -52,9 +52,9 @@ export default function Home() {
        characters of the text actually set in it. */
     <main className="max-w-measure-gutter text-body mx-auto w-full px-6 pt-16 pb-24 md:pt-24">
       <Intro />
-      {/* Experience before Work: two rows of employment are the fastest
+      {/* Experience before Work: a short list of employment is the fastest
           answer to "who is this", and the nine-row Work list reads as the
-          evidence for them rather than as a wall to get past first. */}
+          evidence for it rather than as a wall to get past first. */}
       <Experience />
       <Work />
       <Code />
@@ -331,7 +331,33 @@ function Work() {
 
 function Experience() {
   return (
+    /* Ordered strictly by start date, newest first, which is the only rule
+       that survives the overlaps: Wholana runs alongside Instatus, and
+       Instatus started while Loom Cairo was still going. Sorting by end date
+       would put an open-ended row above a finished one for no reason a reader
+       could name, and sorting by "current first" would need a second rule the
+       moment two rows are current. Start date needs one.
+
+       The list is five rows rather than the two it opened with. The two were
+       not a claim about the length of the career, but they were the only
+       arithmetic on the page, and a reader doing it got twenty months. The
+       missing rows were already here in the Work list and the case studies;
+       this is the same material read as employment. Nothing new is asserted:
+       every date matches the case study it belongs to. */
     <Section title="Experience" id="experience">
+      {/* Wholana and Loom Cairo link to their case studies rather than
+          outward. Instatus and Dell link to the employer because there is an
+          employer to link to; Loom Cairo shut down and the UN dashboard was
+          never public, so an external link would be a dead one. Wholana has a
+          live site, but the case study is the better answer to "what did he
+          do there", which is the question this list is being asked. */}
+      <Row
+        href="/work/wholana"
+        title="Wholana"
+        logo="wholana"
+        meta="Mar 2026 – Present"
+        description="Founder and engineer."
+      />
       {/* Where the tour's video parks. It is the Instatus row rather than the
           section because the bubble is aimed at a thing, not at a heading: it
           comes out of the O, arcs down the column and settles in the gutter
@@ -347,6 +373,20 @@ function Experience() {
           description="Full-stack software engineer."
         />
       </div>
+      <Row
+        href="/work/activity-management-platform"
+        title="UNITAR (UN agency)"
+        logo="unitar"
+        meta="Sep 2024 – Nov 2024"
+        description="Software engineering contract."
+      />
+      <Row
+        href="/work/loom-cairo"
+        title="Loom Cairo (later Univyr)"
+        logo="loom"
+        meta="Jun 2023 – Oct 2025"
+        description="Founding engineer."
+      />
       <Row
         href="https://dell.com"
         external

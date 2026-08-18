@@ -219,12 +219,20 @@ function pageActions(context: ActionContext): Action[] {
       run: () =>
         context.pathname === "/" ? context.jumpTo("work") : context.navigate("/#work"),
     },
-    ...menuPages.map((page) => ({
-      id: `page-${page.slug}`,
-      label: page.name,
-      meta: page.slug,
-      run: () => context.navigate(page.slug),
-    })),
+    /* Work is in menuPages too now, so the nav can reach it, but the entry
+       above is the better one here: it scrolls when the reader is already on
+       the index instead of navigating to the page they are looking at. Hash
+       entries are skipped rather than the nav entry being special-cased,
+       because "a fragment needs the scroll-or-navigate treatment" is the
+       general rule and there is nothing specific to Work about it. */
+    ...menuPages
+      .filter((page) => !page.slug.includes("#"))
+      .map((page) => ({
+        id: `page-${page.slug}`,
+        label: page.name,
+        meta: page.slug,
+        run: () => context.navigate(page.slug),
+      })),
   ];
 }
 

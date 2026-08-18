@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation";
 import { menuPages } from "@/data/menuPages";
 
 /* ── The nav below `sm` ───────────────────────────────────────────────────
-   Five links plus a wordmark is more than a phone's top row will hold at a
+   Six links plus a wordmark is more than a phone's top row will hold at a
    readable size, so on touch the links leave the header and become one
    control docked at the bottom-right of the viewport, where a thumb already
    is. The header keeps the wordmark and nothing else. The morph itself (a
@@ -17,7 +17,7 @@ import { menuPages } from "@/data/menuPages";
    that drives `data-open` and the behaviour a menu has to have to be one.
 
    The panel is not a modal. It doesn't trap focus, lock the scroll or lay
-   an overlay over the page, because it is five links in a 192px box, and
+   an overlay over the page, because it is six links in a 192px box, and
    every one of those would be a bigger interruption than the thing they
    were protecting. What it does have is the four ways out a reader will
    actually try: the ×, a tap outside, Escape, and following a link.
@@ -98,8 +98,12 @@ export function MobileMenu() {
             keyboard lands inside a panel that isn't on screen. */}
         <ul className="t-morph-menu" inert={!open}>
           {menuPages.map((page) => {
-            const active =
-              page.slug === "/"
+            /* Same rule as the desktop row, for the same reasons: a fragment
+               entry (Work is `/#work`) is never current, because the hash is
+               not part of the pathname. See navbar/Navbar.tsx. */
+            const active = page.slug.includes("#")
+              ? false
+              : page.slug === "/"
                 ? pathname === "/"
                 : pathname === page.slug || pathname.startsWith(`${page.slug}/`);
 

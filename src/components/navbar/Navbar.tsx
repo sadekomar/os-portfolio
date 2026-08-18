@@ -15,7 +15,7 @@ import { menuPages } from "@/data/menuPages";
    scrolled underneath it and the separation is actually needed.
 
    The row served every breakpoint back when it held two destinations. It
-   holds five now, and five names plus the wordmark don't fit a phone at a
+   holds six now, and six names plus the wordmark don't fit a phone at a
    size worth reading, so below `sm` the links leave this row entirely and
    move to the bottom dock in MobileMenu.tsx, which is where a thumb already
    is. What stays up here on a phone is the wordmark alone.
@@ -76,9 +76,18 @@ export function NavBar() {
         <ul className="hidden items-center gap-0.5 sm:flex">
           {menuPages.map((page) => {
             /* "/" is a prefix of every route, so the startsWith test would
-               light Home up everywhere. It only ever matches exactly. */
-            const active =
-              page.slug === "/"
+               light Home up everywhere. It only ever matches exactly.
+
+               A fragment entry (Work is `/#work`) is never current: the hash
+               is not part of the pathname, so nothing here could tell whether
+               the reader is looking at that section. Home already lights up on
+               the index, and lighting Work up beside it would claim a
+               precision this test does not have. Stated rather than left to
+               fall out of the comparisons below — it does fall out of them
+               today, by accident, and that is not a thing to rely on. */
+            const active = page.slug.includes("#")
+              ? false
+              : page.slug === "/"
                 ? isHome
                 : pathname === page.slug || pathname.startsWith(`${page.slug}/`);
 

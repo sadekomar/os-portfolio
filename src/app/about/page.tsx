@@ -290,9 +290,9 @@ export default function About() {
             someone’s decision.
           </p>
           <p className="max-w-measure text-body text-foreground-muted mb-4">
-            I came at the work sideways: a degree in Electronics Engineering, finished in 2023, with
-            CS50 somewhere in the middle of it in 2021, which is where I started actually building
-            things rather than reading about them. The pull has never been a particular language or
+            I came at the work sideways: a BSc in Electronics &amp; Communications Engineering from
+            Misr International University, 2018 to 2023, with CS50 somewhere in the middle of it in
+            2021, which is where I started actually building things rather than reading about them. The pull has never been a particular language or
             framework. It’s the stretch between not knowing how something works and having it
             running.
           </p>
