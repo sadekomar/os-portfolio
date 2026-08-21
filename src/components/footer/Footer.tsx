@@ -26,6 +26,15 @@ const contact = [
   { name: "Email", href: MAILTO, external: true },
 ];
 
+/* The two handles are the shortest route into the work: a reader who has
+   read this far and wants to know what "@Instatus" means is asking for the
+   case study, not for the company's marketing site, and the case study is
+   the one of those two that this site can actually answer with. Same hover
+   underline as every other link in the footer, so they read as links
+   without carrying a persistent rule through the middle of a sentence. */
+const handleLink =
+  "rounded-sm underline decoration-transparent underline-offset-4 transition-colors duration-150 hover:text-foreground hover:decoration-foreground-faint focus-visible:ring-2 focus-visible:ring-ring/20 focus-visible:outline-none";
+
 export function Footer() {
   return (
     <footer className="max-w-measure-gutter text-body mx-auto w-full px-6 pb-12">
@@ -43,16 +52,16 @@ export function Footer() {
           <div className="text-body-sm mt-1 grid gap-0.5 text-foreground-subtle">
             <p>
               Full-stack engineer{" "}
-              <a
-                href="https://instatus.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-sm underline decoration-transparent underline-offset-4 transition-colors duration-150 hover:text-foreground hover:decoration-foreground-faint focus-visible:ring-2 focus-visible:ring-ring/20 focus-visible:outline-none"
-              >
+              <Link href="/work/instatus" className={handleLink}>
                 @Instatus
-              </a>
+              </Link>
             </p>
-            <p>Founder @Wholana</p>
+            <p>
+              Founder{" "}
+              <Link href="/work/wholana" className={handleLink}>
+                @Wholana
+              </Link>
+            </p>
             <p>Cairo, Egypt</p>
             <p>
               <LocalTime />
