@@ -4,7 +4,6 @@ import { memo, useEffect, useRef, useState } from "react";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "motion/react";
 
 import { cn } from "@/lib/utils";
 
@@ -61,11 +60,13 @@ import { cn } from "@/lib/utils";
    with film running past it loses the film. Fading costs the rail nothing:
    it's back within 200ms, and it was never the thing being read. */
 
-const lineVariants = {
-  normal: { width: 24 },
-  active: { width: 40 },
-  hover: { width: 40 },
-};
+/* The mark's two lengths. They were a `motion` variant set driving a spring,
+   which is 144KB of animation library to take one 1px rule from 24 to 40 and
+   back. The spring was overdamped, so there was no bounce in it to lose: what
+   it actually rendered was an ease, and an ease is something CSS already has.
+   Both lengths go out as custom properties because the spacer ticks between
+   entries are already sized off the resting one. */
+const LINE_WIDTH = { rest: 24, extended: 40 };
 
 export type LineNavItem = {
   title: string;
@@ -111,7 +112,12 @@ export function SequenceLineNav({
         obscured && "opacity-0",
         className,
       )}
-      style={{ "--line-nav-width": `${lineVariants.normal.width}px` } as React.CSSProperties}
+      style={
+        {
+          "--line-nav-width": `${LINE_WIDTH.rest}px`,
+          "--line-nav-width-extended": `${LINE_WIDTH.extended}px`,
+        } as React.CSSProperties
+      }
     >
       <ul className="flex flex-col gap-2">
         {items.map((item, index) => (
@@ -241,8 +247,6 @@ function scrollBoxOf(element: HTMLElement) {
   return null;
 }
 
-const MotionLink = motion.create(Link);
-
 const NavItem = memo(function NavItem({
   title,
   href,
@@ -265,20 +269,18 @@ const NavItem = memo(function NavItem({
       {/* The row is a 1px line; the `after` pseudo-element pads the hit area
           back out to a comfortable target without giving the mark any height
           of its own. */}
-      <MotionLink
+      <Link
         href={href}
         aria-current={active ? "page" : undefined}
         prefetch
         className="group focus-visible:ring-ring/20 relative flex h-px items-center gap-3 rounded-sm after:absolute after:top-1/2 after:left-0 after:size-full after:-translate-y-1/2 after:p-3.5 focus-visible:ring-2 focus-visible:outline-none"
-        initial={false}
-        animate={active ? "active" : "normal"}
-        whileHover="hover"
       >
-        <motion.span
-          className="bg-foreground/15 group-hover:bg-foreground group-aria-[current=page]:bg-foreground block h-px shrink-0 transition-colors duration-150 ease-out"
-          variants={lineVariants}
-          transition={{ type: "spring", stiffness: 200, damping: 20 }}
-        />
+        {/* Hover and current both extend the mark to the same length, so they
+            can share one rule and it does not matter which wins. Width and
+            colour keep the two durations they had rather than being collapsed
+            into one shorthand: the length is the slower gesture, the tone
+            lands with the label beside it. */}
+        <span className="t-line-nav-mark bg-foreground/15 group-hover:bg-foreground group-aria-[current=page]:bg-foreground group-hover:w-[var(--line-nav-width-extended)] group-aria-[current=page]:w-[var(--line-nav-width-extended)] block h-px w-[var(--line-nav-width)] shrink-0 [transition:width_300ms_cubic-bezier(0.22,1,0.36,1),background-color_150ms_ease-out]" />
         {/* Every title is legible at rest. The rail names the whole sequence,
             not just the entry you're on. Only tone separates them: the
             current one solid, the rest at 40%, the same two weights the meta
@@ -286,7 +288,7 @@ const NavItem = memo(function NavItem({
         <span className="text-case-caption text-foreground-faint group-hover:text-foreground group-aria-[current=page]:text-foreground whitespace-nowrap transition-colors duration-150 ease-out">
           {title}
         </span>
-      </MotionLink>
+      </Link>
 
       {/* Two spacer ticks between entries, so the rail reads as a continuous
           ruled measure rather than a column of separate dashes. */}

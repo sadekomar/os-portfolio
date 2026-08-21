@@ -1017,6 +1017,16 @@
   .t-acc-panel-inner {
     transition: opacity 250ms cubic-bezier(0.22, 1, 0.36, 1);
   }
+
+  /* The line rail's mark. The length is the part that moves, so the length is
+     the part that stops moving; the tone still crossfades, because a colour
+     arriving over 150ms is not motion and it is what ties the mark to the
+     label beside it. Worth noting this rung only became reachable when the
+     mark stopped being a `motion` spring: the spring answered to its own
+     config and never read this query at all. */
+  .t-line-nav-mark {
+    transition: background-color 150ms ease-out;
+  }
 }
 
 /* ── transitions.dev, Plus-to-menu morph ────────────────────────
