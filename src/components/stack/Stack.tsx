@@ -1,6 +1,7 @@
 import type * as React from "react";
 
 import { StackNoteLayer } from "./StackNote";
+import { Reveal } from "@/components/ui/reveal";
 import { TECH_MARKS, type TechMarkName } from "./marks";
 
 import { slugify } from "@/lib/slug";
@@ -308,52 +309,114 @@ const CATEGORIES: { title: string; items: Entry[] }[] = [
   },
 ];
 
-/* A server component, and the table is the reason it can be. It is a
-   constant rendered once, so the only thing here that ever needed the
-   browser was the hover label, and that has been lifted into
-   StackNoteLayer. What the boundary buys is that `CATEGORIES` above and
-   `TECH_MARKS` in marks.ts are read during the render and then stay behind:
-   the notes reach the reader as `data-stack-note` attributes in the HTML,
-   which the delegated listener was always reading them from anyway, and the
-   47 icon paths reach them as drawn `<path d>` rather than as a dictionary
-   the client has to be shipped in order to look them up. */
-export function Stack() {
-  return (
-    <>
-      {/* One label for the whole table, and one set of listeners on the
-          container that owns it. A second pill after a first is a continued
-          read, not a new one: the note moves to it rather than a second
-          tooltip opening. See StackNote. */}
-      <StackNoteLayer className="flex flex-col gap-1">
-        {CATEGORIES.map((category, i) => (
-          <div
-            key={category.title}
-            /* Label above the pills on narrow screens, beside them from sm up.
-             The label column is sized to the longest title so the pills
-             start on one line down the whole table. The alignment is what
-             makes it read as a table rather than as six stacked lists. */
-            className="grid gap-x-6 gap-y-2 rounded-lg px-3 py-3 sm:grid-cols-[10.5rem_1fr]"
-          >
-            <h3 className="text-meta text-foreground-subtle flex items-baseline gap-2 font-medium">
-              {/* Ordinals are a scanning aid and a promise that the list is
-                finite. Tabular, so the column of digits stays a column. */}
-              <span className="text-foreground-ghost tabular-nums">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              {category.title}
-            </h3>
+/* How many categories stay visible when the table is collapsed. Two, and
+   they are the first two: Languages and Frontend.
 
-            <ul className="flex flex-wrap gap-1.5">
-              {category.items.map((item) => (
-                <li key={item.name}>
-                  <Pill {...item} />
-                </li>
-              ))}
-            </ul>
-          </div>
+   ── Why the table folds at all ───────────────────────────────────────────
+   Seven categories and forty-seven pills is the longest section on the
+   index, and it is the one written for scanning rather than reading. Open,
+   it made the index look like a CV with a skills wall in the middle of it,
+   which is the impression this site is otherwise built to avoid: it puts a
+   list of tool names between the work and the way to reach me, and a reader
+   who has just finished the case studies gets a keyword dump as the thing
+   they read last.
+
+   Folding is the cheaper fix than cutting, and the honest one. The names
+   still have to be here (a recruiter filtering for "Postgres" is doing a
+   lookup, and this is the only page that answers it), but they do not have
+   to be the loudest thing in the column. Two categories say what kind of
+   table this is; the fade says there is more of it; the rest is one press
+   away for the reader who came for exactly that. Nothing is hidden from
+   search, because the pills are in the HTML either way.
+
+   Two rather than Resources' four because a category is a whole row of
+   pills rather than one line, and Frontend alone wraps to three rows, so
+   two of these is already the taller teaser. They are also the right two:
+   they answer "what does he write in" and "what does he build the screen
+   with", and everything under the fold answers "how does he run it", which
+   is a follow-up question. */
+const TEASER = 2;
+
+/* A server component, and the table is the reason it can be. It is a
+   constant rendered once, so the only things here that ever needed the
+   browser were the hover label and the fold, and both have been lifted into
+   client components that take their content as props. What the boundary
+   buys is that `CATEGORIES` above and `TECH_MARKS` in marks.ts are read
+   during the render and then stay behind: the notes reach the reader as
+   `data-stack-note` attributes in the HTML, which the delegated listener was
+   always reading them from anyway, and the 47 icon paths reach them as drawn
+   `<path d>` rather than as a dictionary the client has to be shipped in
+   order to look them up. */
+export function Stack() {
+  const hidden = CATEGORIES.length - TEASER;
+
+  return (
+    /* One label for the whole table, and one set of listeners on the
+       container that owns it. A second pill after a first is a continued
+       read, not a new one: the note moves to it rather than a second
+       tooltip opening. See StackNote.
+
+       The listeners stay on this container rather than moving inside the
+       fold, which is what keeps the fold free: the handler finds its answer
+       with `closest("[data-stack-note]")` from whatever the pointer is over,
+       and it does not care that half the pills are now inside a masked div
+       that was rendered upstream. */
+    <StackNoteLayer className="flex flex-col gap-1">
+      <Reveal
+        teaser={CATEGORIES.slice(0, TEASER).map((category, i) => (
+          <Category key={category.title} category={category} index={i} />
         ))}
-      </StackNoteLayer>
-    </>
+        rest={CATEGORIES.slice(TEASER).map((category, i) => (
+          <Category key={category.title} category={category} index={i + TEASER} />
+        ))}
+        /* The reveal's wrapper is a flex child of the gapped column above,
+           so without this the four categories inside it would collapse into
+           one block with no space between them while every category above
+           the fold kept its gap. */
+        restClassName="flex flex-col gap-1"
+        /* Named, not just counted. "Show 4 more" over a table of pills reads
+           as four pills. */
+        more={`Show ${hidden} more categories`}
+      />
+    </StackNoteLayer>
+  );
+}
+
+/* The ordinal is passed in rather than derived from a map index, because the
+   list is rendered in two slices now and a second `map` would restart the
+   numbering at 01 halfway down the table. */
+function Category({
+  category,
+  index,
+}: {
+  category: (typeof CATEGORIES)[number];
+  index: number;
+}) {
+  return (
+    <div
+      /* Label above the pills on narrow screens, beside them from sm up.
+         The label column is sized to the longest title so the pills start on
+         one line down the whole table. The alignment is what makes it read
+         as a table rather than as six stacked lists. */
+      className="grid gap-x-6 gap-y-2 rounded-lg px-3 py-3 sm:grid-cols-[10.5rem_1fr]"
+    >
+      <h3 className="text-meta text-foreground-subtle flex items-baseline gap-2 font-medium">
+        {/* Ordinals are a scanning aid and a promise that the list is
+            finite. Tabular, so the column of digits stays a column. */}
+        <span className="text-foreground-ghost tabular-nums">
+          {String(index + 1).padStart(2, "0")}
+        </span>
+        {category.title}
+      </h3>
+
+      <ul className="flex flex-wrap gap-1.5">
+        {category.items.map((item) => (
+          <li key={item.name}>
+            <Pill {...item} />
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
