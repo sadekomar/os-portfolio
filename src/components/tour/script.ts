@@ -101,8 +101,12 @@ export type TourCue = {
 
    Of the three, Loom Cairo is the strongest thing to hand a first-time
    visitor: founded, 40,000 users, and four separate strips to drag. Move this
-   to "/work/wholana" the day that page has screens, and change nothing
-   else. */
+   to "/work/wholana" the day that page has screens, and change nothing else.
+
+   It is an Experience row rather than a Work row since the dedupe, which this
+   constant does not care about: it is a slug, and both lists render rows
+   whose `data-tour` is `row:` plus the href. The cue that hovers it does care,
+   because the distance to it changed; see the lead on that cue. */
 const CASE_STUDY = "/work/loom-cairo";
 
 /* The component the tour opens on /components, and it is chosen on one
@@ -125,10 +129,15 @@ const COMPONENT = "decode-flow";
    talk being added above it, which a "first entry" selector would not. */
 const TALK = "loom-cairo-auc-venture-lab";
 
-/* The three rows the middle of the second line names, one per group, in the
-   order the voice says them: "the job, ventures I've founded, and client
-   work". By slug rather than by position, so reordering `workGroups` in
-   app/page.tsx moves nothing here.
+/* The three rows the middle of the second line names, in the order the voice
+   says them: "the job, ventures I've founded, and client work". By slug
+   rather than by position, so reordering either list moves nothing here.
+
+   They are no longer one per group, and that is the dedupe's doing: Instatus
+   and Wholana are Experience rows now, and only Argonaut is still in Work.
+   The line the voice says is unaffected, because it names kinds of work and
+   not headings, and all three rows still preview on hover now that Experience
+   renders through WorkRows too.
 
    Wholana for the founded beat rather than Loom Cairo, and only because Loom
    Cairo is where the tour is about to go: resting on it here and then resting
@@ -220,15 +229,16 @@ export const TOUR: TourCue[] = [
     say: "Full-stack software engineer currently at Instatus, shipping features that serve 10M+ visits for customers like Sketch, Harvard, and Siemens.",
     run: async (s) => {
       await s.scrollTo("#experience");
-      await s.hover('[data-tour="row:https://instatus.com"]');
+      await s.hover(`[data-tour="row:${GROUP_ROWS.job}"]`);
     },
   },
   {
-    /* "that serve 10M+ visits". The figure is not in the Experience row, it is
-       in the Work row's description a section further down, which is the only
-       place on the index those words exist. So the page goes to the words
-       rather than the words being duplicated up to the page: `trace` finds
-       them in the sentence and underlines them. */
+    /* "that serve 10M+ visits". The figure used to live only in the Work row's
+       description a section further down, so this cue travelled to it. The
+       dedupe folded that description into the Experience row and deleted the
+       Work one, so the words are now in the row the cursor is already resting
+       on: no journey, just `trace` finding them in the sentence under it and
+       underlining them. */
     at: 6.0,
     lead: 0.4,
     say: "",
@@ -249,19 +259,25 @@ export const TOUR: TourCue[] = [
     run: (s) => s.trace(`[data-tour="row:${GROUP_ROWS.job}"]`, "Sketch, Harvard, Siemens"),
   },
   {
+    /* No `run`. This used to scroll to #work on the word "work", back when all
+       three rows the line names were in that list. Two of them are Experience
+       rows now, so the scroll would leave on the first named thing and come
+       straight back for it; the hovers below reach their own rows and the page
+       arrives at Work under the third of them instead. The line still lands on
+       a page that is moving, just moving one cue later. */
     at: 9.0,
-    lead: 0.4,
     say: "Then the rest of my work group: the job, ventures I've founded, and client work.",
-    run: (s) => s.scrollTo("#work"),
   },
   {
-    /* One row per named group, on the beat of the name, a second apart. Three
-       hovers rather than three points, because the preview panel opening on
-       each is what makes them read as one list being walked rather than as the
-       cursor wandering.
+    /* One row per named kind of work, on the beat of the name, a second apart.
+       Three hovers rather than three points, because the preview panel opening
+       on each is what makes them read as one list being walked rather than as
+       the cursor wandering. All three open one now: Experience previews too
+       since the dedupe, which is what lets this walk cross the two sections
+       without the affordance dropping out halfway.
 
-       The first two are already on screen after the scroll above, so they cost
-       a cursor travel and nothing else. */
+       The first two are Experience rows the page has not moved away from since
+       cue 2.5, so they cost a cursor travel and nothing else. */
     at: 10.5,
     lead: 0.45,
     say: "",
@@ -274,15 +290,18 @@ export const TOUR: TourCue[] = [
     run: (s) => s.hover(`[data-tour="row:${GROUP_ROWS.founded}"]`),
   },
   {
-    /* Client work is three Founded rows below the fold, so this one pays for a
-       scroll as well as a travel and fires while the previous phrase is still
-       being said. That is not a beat lost: `hover` releases the old row only
-       once the cursor has arrived, so Wholana stays lit through its own clause
-       and the page is simply already moving when this one starts.
+    /* The first row of the walk that is still in Work, so this one pays for the
+       whole trip down from Experience and fires while the previous phrase is
+       still being said. That is not a beat lost: `hover` releases the old row
+       only once the cursor has arrived, so Wholana stays lit through its own
+       clause and the page is simply already moving when this one starts.
 
-       Measured at 0.58: 0.3 of scroll, then 0.24 of travel. */
+       The scroll is longer than it was: cue 9.0 used to have already brought
+       #work up, and now nothing has. 0.75 is an estimate, not a measurement;
+       the 0.6 below it replaced was measured at 0.58 over a shorter trip. Run
+       the tour and re-measure before trusting it. */
     at: 12.5,
-    lead: 0.6,
+    lead: 0.75,
     say: "",
     run: (s) => s.hover(`[data-tour="row:${GROUP_ROWS.client}"]`),
   },
@@ -292,16 +311,16 @@ export const TOUR: TourCue[] = [
        preview" and "before you spend a click", are describing, and it needs no
        cue of its own because the hover already opened it.
 
-       The short lead is the interesting one. This reads like it should cost a
-       scroll, since Loom Cairo is back up the list from Client work, and it
-       was given 0.85 on that assumption and landed 0.59 early. It costs a
-       travel and nothing else: the scroll the previous cue paid for to reach
-       Client work brought Loom Cairo into view on its way past, so
-       `ensureVisible` finds it already on screen and does nothing. Measured at
-       0.26, and given 0.3 rather than 0.26 because that "already on screen" is
-       a fact about a 720px viewport rather than about the page. */
+       The lead used to be 0.3, on the finding that this cost a travel and no
+       scroll: Loom Cairo was three rows up the Work list from Client work, and
+       the previous cue's scroll had carried it into view on the way past. The
+       dedupe moved it to Experience, so it is now a section above the cursor
+       rather than a few rows, and `ensureVisible` has real work to do again.
+
+       0.7 is an estimate. Re-measure it: this is the cue whose lead has been
+       wrong in both directions already. */
     at: 13.5,
-    lead: 0.3,
+    lead: 0.7,
     say: "Rest on a row and you get a preview before you spend a click.",
     run: (s) => s.hover(`[data-tour="row:${CASE_STUDY}"]`),
   },

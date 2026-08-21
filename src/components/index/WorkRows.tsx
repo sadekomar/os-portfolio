@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import Image, { type StaticImageData } from "next/image";
 
-import { Row } from "@/components/index/Row";
+import { Row, type RowBadge } from "@/components/index/Row";
 import { useWorkPreview, WorkPreviewCard, WorkPreviewLayer } from "@/components/index/WorkPreview";
 import type { MarkName } from "@/components/logo/marks";
 
@@ -22,6 +22,16 @@ export type WorkItem = {
   /* The case study's period, right-aligned on the row. Optional: a project
      without a recorded span shows no date rather than a guess. */
   meta?: string;
+  /* Points outward instead of at a case study, and draws the arrow that says
+     so. Only Experience uses it: Dell has no case study to point at. */
+  external?: boolean;
+  /* Optional second destination beside the title. See RowBadge; the Loom
+     Cairo row is the only one carrying it. */
+  badge?: RowBadge;
+  /* Marks this row as where the guided tour's bubble parks. Exactly one row
+     across the page should set it, and it is the attribute TourBubble reads
+     rather than anything about this list. */
+  dock?: boolean;
 };
 
 export type WorkGroup = {
@@ -359,13 +369,15 @@ export function WorkRows({ groups }: { groups: WorkGroup[] }) {
             {group.items.map((item, j) => {
               const index = groupStart[i] + j;
               return (
-                <li key={item.href}>
+                <li key={item.href} data-tour-dock={item.dock ? "" : undefined}>
                   <Row
                     href={item.href}
                     title={item.title}
                     description={item.description}
                     logo={item.logo}
                     meta={item.meta}
+                    external={item.external}
+                    badge={item.badge}
                     index={index}
                     tabIndex={index === tabStop ? 0 : -1}
                     tourId={`row:${item.href}`}

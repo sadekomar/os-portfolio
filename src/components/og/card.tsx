@@ -197,9 +197,8 @@ export async function renderOgCard({ eyebrow, title, subtitle, mark }: OgCardPro
   /* One step down at 25 characters, which is where a title stops fitting on
      a single line at 76px inside the 1016px sheet. Two lines of 76px would
      leave the subtitle nowhere to go; 60px wraps to two comfortably. The
-     threshold is measured against this measure, not guessed. "Loom Cairo
-     (later Univyr)" and "UN Activity Management Platform" are the two that
-     cross it. */
+     threshold is measured against this measure, not guessed. "UN Activity
+     Management Platform" is the one that crosses it. */
   const titleSize = title.length > 25 ? 60 : 76;
 
   return new ImageResponse(

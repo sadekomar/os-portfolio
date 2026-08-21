@@ -12,6 +12,7 @@ export const projectOrder = [
   "alunaut",
   "activity-management-platform",
   "little-lads",
+  "dell-summer-academy",
 ] as const;
 
 export type ProjectKeys = (typeof projectOrder)[number];
@@ -1052,6 +1053,99 @@ export const allProjects: Record<ProjectKeys, Project> = {
         content: [
           "On a final note, working in a collaborate Git environment is valuable, but it has its own set of challenges. It’s important to adhere to commit naming conventions, utilize feature branches to maintain organization. It’s important to maintain a clean commit history, ensuring a smoother dev process and less errors.",
           "This project was well received by the client and will be utilized to streamline their management process and inform better decision-making.",
+        ],
+      },
+    ],
+  },
+
+  /* ── Dell Technologies ──────────────────────────────────────────────────
+     The oldest work on the site and the one with the least surviving
+     material: no repo, no screenshots, and no organiser page still up four
+     years later. Everything below is sourced from two first-party records
+     that agree with each other: my own recap of the program, posted the
+     week it ended and reshared by Dell Egypt’s GM, and the demo day
+     recording, which is the `dell-summer-academy-gnosis` entry in
+     data/talks.ts. The dates, the cohort figures and what the project
+     argued are cross-checked between them. That is the only reason this
+     page can exist at all, and the reason its claims are stated as flatly
+     as they are.
+
+     No `hero` and no figures, deliberately. There are no captures of Gnosis
+     to show, and a stock photo of a Dell campus or a slide rebuilt in Figma
+     four years after the fact would be a picture of something that was
+     never shown. The pitch is on /talks for anyone who wants to see the
+     work move. Figures go in here if the deck ever turns up. */
+  "dell-summer-academy": {
+    title: "Dell Technologies",
+    mark: "dell",
+    link: "dell.com",
+    intro:
+      "Dell Technologies runs a Summer Academy out of its Egypt Center of Excellence: six weeks in Cairo, 38 students drawn from 16 universities, ending in a project pitch to the country’s leadership. I went through the 2022 cohort, on the solutions architecture track, and pitched Gnosis on the final day.",
+    /* Short enough to survive the index's preview panel, which truncates the
+       role at roughly forty characters. "Summer Academy" is in the intro's
+       first line and on the share card's title, so it is not lost by being
+       left out here. */
+    role: "Solutions architecture intern",
+    period: "Aug 2022 – Sep 2022",
+    /* Both figures are the program’s scale rather than mine, and both
+       labels say so. There is no honest third: the project shipped as a
+       pitch, so any number about Gnosis itself would be a projection
+       dressed as an outcome. */
+    stats: [
+      { value: "6 weeks", label: "Program length, Cairo" },
+      { value: "38", label: "Students in the cohort, from 16 universities" },
+    ],
+    /* Empty on purpose, which drops the Stack row rather than filling it.
+       The Academy taught infrastructure and method, not a stack: ISM, CIS
+       and Linux are courses, and listing them as technologies would be the
+       kind of padding the rest of this file avoids. They are named in the
+       prose, where they can be qualified. */
+    technologies: {
+      backend: [],
+      frontend: [],
+    },
+    sections: [
+      {
+        title: "The program",
+        content: [
+          "The Summer Academy is Dell’s internship at the Egypt Center of Excellence in Cairo, created and run by Hesham El Koussy and Rawan A. El Ashry. Six weeks, 38 students out of 16 universities across the country, August into September 2022, ending on 8 September with project pitches to Dell Egypt’s leadership.",
+          "One thing separates it from the internship it could have been: the curriculum was sequenced rather than assembled, and every part of it fed the project you pitched at the end. Nothing was a session you sat through and then never used again, which is the usual failure mode of a program built out of whatever the local team could volunteer to teach.",
+        ],
+      },
+      {
+        title: "Design thinking, before anything technical",
+        content: [
+          "The Academy opened on design thinking. Before ISM, before Linux, before any of it. That ordering is the design of the whole program and it is easy to walk past: a cohort taught the tools first goes and solves whatever problem it can already see, and a cohort taught the method first has to go and find out what the problem is.",
+          "Worth being precise about what that actually bought, because “we ran design thinking at it” is the kind of claim a reader should discount by default. It gave the team a way to keep the problem we assumed we had separate from the one the research kept returning, and a reason to believe the second one when the two disagreed. The project below is what that produced, and it is not what we started on.",
+        ],
+      },
+      {
+        title: "The technical half",
+        content: [
+          "The technical courses were infrastructure rather than application: Dell’s ISM and CIS, plus Linux, covering data center architecture, the types of storage system, storage networking, and business continuity. Solutions architecture is the frame around all of it. What the pieces are, how they connect, and what is supposed to happen when one of them fails.",
+          "I have spent the years since building products rather than data centers, so I will not overclaim what stayed. What stayed is a model of the layer the software I write now sits on top of: replication, failover and continuity as design decisions with costs attached, rather than as properties a managed database advertises on its pricing page.",
+        ],
+      },
+      {
+        title: "Gnosis",
+        content: [
+          "The project was Gnosis, after the Greek for knowledge through observation. It starts from Ebbinghaus: high-school students forget something like 95% of what they were taught, so most of the money and most of the hours spent teaching them are spent twice. In Egypt that sits on top of a second split, where the education that works is priced out of reach and the education people can afford does not.",
+          "The obvious culprits did not survive contact with the research. Disengaged students, disengaged teachers, underfunding: each one is the answer everybody in the room arrives holding, and each one turned out to be a symptom with something underneath it. What was left was pedagogy, the discipline of how information is conveyed, which most teachers are never taught, and which many cannot name as a thing that exists separately from the subject they teach.",
+          "Gnosis was the response. A lecture engine that walks an educator through designing a lecture against pedagogical principles, instead of leaving every one of them to reinvent the craft privately and badly. The target is the lecture as an artifact rather than the teacher as a personality, on the argument that pedagogy is learnable and nobody was teaching it.",
+        ],
+      },
+      {
+        title: "Demo day",
+        content: [
+          "The six weeks ended in pitches on 8 September 2022, to Magued Mahmoud, Ahmed Osama and Haidi Yacoub. The recording of mine is on the talks page, cut from the same clip that went out with my recap of the program that week.",
+          "Pitching was itself part of the curriculum, taught alongside emotional intelligence. That pairing is the part of the Academy least likely to get credit and probably the most useful: the technical courses tell you what to build, and the other half is the reason a room ever hears about it.",
+        ],
+      },
+      {
+        title: "Why it is still here",
+        content: [
+          "This is the oldest thing on the site, and it is here because of where the method came from rather than because of a line on a résumé. Not trusting the first statement of a problem, which is most of what the client work on this page turns on, started in a room in Cairo in the first week of the Academy.",
+          "The tech communication sessions covered AI, networks, DevOps and 5G, and the one that stuck was on software engineering methodologies, run by Yasmin ElDokany. I went in expecting the infrastructure to be the interesting part. Something clicked in that session instead, and everything since has been software.",
         ],
       },
     ],

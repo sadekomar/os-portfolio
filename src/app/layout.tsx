@@ -156,6 +156,18 @@ const personJsonLd = {
      the stricter consumers of this graph do not, and they read the whole
      literal as the address. */
   email: EMAIL,
+  /* The same fact the index states in prose, in the form a crawler can read
+     it. `homeLocation` rather than `address`: this is where I am, not a
+     postal address anyone should be writing to, and Person.address invites
+     the street line that deliberately isn't published anywhere here. */
+  homeLocation: {
+    "@type": "Place",
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Cairo",
+      addressCountry: "EG",
+    },
+  },
   knowsAbout: [
     "Full-Stack Development",
     "Design Engineering",

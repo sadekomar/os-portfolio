@@ -11,7 +11,6 @@ import { LastShipped } from "@/components/contributions/LastShipped";
 import { getContributions } from "@/lib/contributions";
 import { Credits } from "@/components/index/Credits";
 import { Resources } from "@/components/index/Resources";
-import { Row } from "@/components/index/Row";
 import { WorkRows, type WorkItem } from "@/components/index/WorkRows";
 import { allProjects, type ProjectKeys } from "@/app/work/[project]/projects";
 import { DownloadResume } from "@/components/resume/DownloadResume";
@@ -161,7 +160,7 @@ function Intro() {
           it is also the frame in which Wholana reads as a side project and
           the nightly show reads as a distraction; product engineer is the
           only frame where both are evidence. The search term did not have to
-          be given up to make the trade — it still sits in the keywords and in
+          be given up to make the trade; it still sits in the keywords and in
           every description this page emits, where it does the finding without
           doing the positioning.
 
@@ -185,6 +184,33 @@ function Intro() {
           systems that hold up in production.
         </p>
       </div>
+      {/* ── Availability ─────────────────────────────────────────────
+          The one fact a hiring reader needs that the work below cannot
+          supply. Everything else on this page is evidence they can weigh at
+          their own pace; where I am and whether they can employ me is a
+          gate, and a gate left unstated is answered with a guess. The guess
+          is usually the pessimistic one, which costs the whole page.
+
+          It sits here rather than in Elsewhere because it is only useful
+          before the reading, not after it. A visitor who scrolls nine case
+          studies deep and then learns the timezone has already spent the
+          attention this line was supposed to qualify.
+
+          Small type, same colour rung as the sentence above it. Size does
+          the hierarchy so the rung doesn't have to: this is logistics
+          rather than the claim, but it is still text a reader has to be
+          able to read, not a label beside something.
+
+          Written as facts in the order they get asked: where, what hours,
+          what it would take to move. Sponsorship is named outright rather
+          than softened into "open to opportunities worldwide", because the
+          reader who cares is the one who has to budget for it, and finding
+          out late is the version that wastes both sides' time. */}
+      <p className="text-body-sm text-foreground-muted mt-4">
+        Based in Cairo, Egypt (UTC+2/+3), working remotely, on hours that overlap a full
+        European day and most of a US East Coast morning. Open to relocating for the right
+        role, which would need visa sponsorship.
+      </p>
       {/* Left-aligned to the text column rather than centred or floated:
           it's the next thing after the second paragraph, so it sits where
           the next paragraph would. */}
@@ -202,13 +228,12 @@ function Intro() {
    at.
 
    ── Why it is grouped ────────────────────────────────────────────────────
-   These nine ran as one flat column until now, in exactly this order, and
-   the order was doing all of the work: a reader was expected to infer from
-   position alone that Instatus is a job, that Wholana is mine, and that
-   Little Lads was a client who paid an invoice. Nobody infers that. What a
-   flat list of nine actually reads as is nine interchangeable things, three
-   of which say "Argonaut" and therefore look like padding rather than like
-   one deep client relationship.
+   These ran as one flat column until now, in exactly this order, and the
+   order was doing all of the work: a reader was expected to infer from
+   position alone that Wholana is mine and that Little Lads was a client who
+   paid an invoice. Nobody infers that. What a flat list actually reads as is
+   a set of interchangeable things, three of which say "Argonaut" and
+   therefore look like padding rather than like one deep client relationship.
 
    The grouping is by *kind of relationship*, which is the axis a reader is
    already sorting on and the only one that changes how a row should be
@@ -217,14 +242,18 @@ function Intro() {
    rows), and not by discipline (every one of these was both design and
    engineering, which is the point of the intro).
 
-   Order is unchanged from the flat version (Product, then Founded, then
-   Client work) so `projectOrder` still describes the same sequence and the
-   prev/next pager on the case studies is unaffected.
+   ── Why four rows are missing ────────────────────────────────────────────
+   Instatus, Wholana, Loom Cairo and the UN platform are not here because
+   they are in Experience, one section up, and a reader who has just read a
+   row does not need to meet it again four inches later. Experience is the
+   canonical entry for anything with a date range someone else can verify;
+   this list is what is left, which is the founded work and the client work.
 
-   Product has one row in it. That is not a group waiting to be filled out;
-   it is the honest shape of the thing, and a category of one placed first
-   says "this is the current job and it is its own category" more clearly
-   than folding Instatus in with the founded work would. */
+   That empties the Product group, which held Instatus alone, so it is gone
+   rather than kept as an empty heading. `projectOrder` in projects.ts is
+   untouched: it still carries every slug, because it drives the routes
+   and the prev/next pager, and a case study dropping off this index does
+   not make it stop existing. */
 /* `logo` is omitted alongside the rest of the derived fields: the mark is
    recorded once on the case study itself, and a row restating it here could
    only ever be a second copy to keep in sync. Title and description stay
@@ -234,36 +263,19 @@ type WorkRow = Omit<WorkItem, "href" | "preview" | "role" | "logo"> & { slug: Pr
 
 const workGroups: { title: string; items: WorkRow[] }[] = [
   {
-    title: "Product",
+    /* Untitled, and deliberately. The dedupe left one row in here, and a
+       heading over a single row is a label doing less work than the row it
+       labels: "Founded" above one founded thing tells a reader nothing the
+       row's own description does not. Client work below still earns its
+       heading at five rows. WorkRows renders a group with no title as bare
+       rows, so this costs nothing but the string. */
+    title: "",
     items: [
-      {
-        slug: "instatus",
-        title: "Instatus",
-        description:
-          "Status pages serving 10M+ visits a month for Sketch, Harvard, Siemens, and Yum! Brands. Full stack, plus the Slack and Teams integrations.",
-      },
-    ],
-  },
-  {
-    title: "Founded",
-    items: [
-      {
-        slug: "wholana",
-        title: "Wholana",
-        description:
-          "An AI research workspace for TikTok, built for Egyptian creators. Sweeps 900+ creators nightly and decodes what works into a shared craft vocabulary. Solo build, 20 paying users.",
-      },
       {
         slug: "tiktok-news-network",
         title: "TikTok News Network",
         description:
-          "A nightly satirical broadcast about the Egyptian internet. Founded it, host it, built the site it runs on. 12M+ views, 52K+ followers, 260 stories.",
-      },
-      {
-        slug: "loom-cairo",
-        title: "Loom Cairo",
-        description:
-          "A search engine for local fashion aggregating 300+ Egyptian brand sites. 40,000+ users, 70+ brand partnerships, AUC Venture Lab.",
+          "A nightly satirical broadcast about the Egyptian internet. Founded it, host it, built the site it runs on. 20M+ views, 72K+ followers, 260 stories.",
       },
     ],
   },
@@ -293,11 +305,6 @@ const workGroups: { title: string; items: WorkRow[] }[] = [
         title: "Alunaut",
         description:
           "The daily site report for an aluminium and facade contractor, filed from a phone in Arabic, signed on the phone, and emailed to management as a PDF.",
-      },
-      {
-        slug: "activity-management-platform",
-        title: "UN Activity Management Platform",
-        description: "Coordination for a UN agency across regions, scales, and stakeholders.",
       },
       {
         slug: "little-lads",
@@ -336,72 +343,133 @@ function Work() {
   );
 }
 
-function Experience() {
-  return (
-    /* Ordered strictly by start date, newest first, which is the only rule
-       that survives the overlaps: Wholana runs alongside Instatus, and
-       Instatus started while Loom Cairo was still going. Sorting by end date
-       would put an open-ended row above a finished one for no reason a reader
-       could name, and sorting by "current first" would need a second rule the
-       moment two rows are current. Start date needs one.
+/* The employment list, and since the dedupe the canonical entry for anything
+   with a date range: four of these five rows are the only place their case
+   study is linked from the index.
 
-       The list is five rows rather than the two it opened with. The two were
-       not a claim about the length of the career, but they were the only
-       arithmetic on the page, and a reader doing it got twenty months. The
-       missing rows were already here in the Work list and the case studies;
-       this is the same material read as employment. Nothing new is asserted:
-       every date matches the case study it belongs to. */
+   ── Why it renders through WorkRows ──────────────────────────────────────
+   It used to be a plain column of Rows in this server component, and the
+   preview panel was Work's alone. That split stopped making sense the moment
+   the four case-study rows moved up here: the affordance that says "rest on a
+   row and see what you're about to click" was left pointing at the client
+   work while the rows most worth previewing had none.
+
+   So both lists now run through the same component. It is one group with no
+   title, which WorkRows already renders headingless, so nothing about this
+   section's appearance changes except that a hover now opens a panel. The
+   roving tabindex, the arrow keys and the last-input-wins selection come
+   along with it, which this list wanted anyway and never had.
+
+   Every row here now points at a case study, Dell included. It was the one
+   exception for a long time, linking out to dell.com because there was
+   nothing of my own to link to; the Summer Academy write-up closed that.
+   dell.com is still reachable, as the Site field on the case study, which
+   is the right place for it: a reader clicking a row on my site is asking
+   what I did there, not for Dell's front door. */
+function Experience() {
+  const rows: WorkItem[] = [
+    {
+      href: "/work/instatus",
+      title: "Instatus",
+      logo: allProjects.instatus.mark,
+      preview: allProjects.instatus.hero?.images[0]?.src,
+      role: allProjects.instatus.role,
+      meta: "Dec 2024 – Present",
+      description:
+        "Full-stack software engineer. Status pages serving 10M+ visits a month for Sketch, Harvard, Siemens, and Yum! Brands, plus the Slack and Teams integrations.",
+      /* Where the tour's video parks. It is the Instatus row rather than the
+         section because the bubble is aimed at a thing, not at a heading: it
+         comes out of the O, arcs down the column and settles in the gutter
+         beside the row the first spoken line is about. See TourBubble. */
+      dock: true,
+    },
+    {
+      href: "/work/wholana",
+      title: "Wholana",
+      logo: allProjects.wholana.mark,
+      preview: allProjects.wholana.hero?.images[0]?.src,
+      role: allProjects.wholana.role,
+      meta: "Mar 2026 – Present",
+      description:
+        "Founder and engineer. AI content system for TikTok. It enriches videos with a shared subject and craft vocabulary. $100+ MRR and growing!",
+    },
+    {
+      href: "/work/activity-management-platform",
+      title: "UNITAR (UN agency)",
+      logo: allProjects["activity-management-platform"].mark,
+      preview: allProjects["activity-management-platform"].hero?.images[0]?.src,
+      role: allProjects["activity-management-platform"].role,
+      meta: "Sep 2024 – Nov 2024",
+      description:
+        "Software engineering contract. Coordination for a UN agency across regions, scales, and stakeholders.",
+    },
+    {
+      href: "/work/loom-cairo",
+      title: "Loom Cairo",
+      logo: allProjects["loom-cairo"].mark,
+      preview: allProjects["loom-cairo"].hero?.images[0]?.src,
+      role: allProjects["loom-cairo"].role,
+      meta: "Jun 2023 – Oct 2025",
+      description:
+        "Founding engineer. A search engine for local fashion aggregating 300+ Egyptian brand sites. 40,000+ users, 70+ brand partnerships.",
+      /* The one badge on the page, and it is here because this is the one row
+         a reader is most likely to discount. "Founding engineer" at a company
+         that shut down reads, without help, as a side project that ran long.
+         Accepted into AUC Venture Lab is the third-party fact that says
+         otherwise, and it is the kind of claim that has to be checkable to be
+         worth making, so the chip is a link to the recording of the pitch
+         rather than a word next to the title.
+
+         The chip goes to V-Lab itself, because that is where a claim about a
+         credential should point and because a reader checking it wants the
+         granting institution rather than my account of it. The tooltip
+         carries the second destination: the recording of the pitch, on
+         /talks, which is the answer to "what did he actually do there" that
+         an accelerator's homepage cannot give. */
+      badge: {
+        label: "V-Lab ’25",
+        href: "https://business.aucegypt.edu/research/centers/vlab",
+        tooltip: {
+          text: "AUC Venture Lab.",
+          link: { label: "Watch the demo", href: "/talks#loom-cairo-auc-venture-lab" },
+        },
+      },
+    },
+    {
+      href: "/work/dell-summer-academy",
+      title: "Dell Technologies",
+      logo: allProjects["dell-summer-academy"].mark,
+      /* No preview: the case study carries no imagery, because there are no
+         captures of the project left to carry. WorkRows already renders a
+         panel without one, so the row degrades to its text rather than to a
+         hole. */
+      preview: allProjects["dell-summer-academy"].hero?.images[0]?.src,
+      role: allProjects["dell-summer-academy"].role,
+      meta: "Aug 2022 – Sep 2022",
+      description:
+        "Solutions architecture internship at the Egypt Center of Excellence. Six weeks, 38 students, ending in a pitch for Gnosis, a lecture engine built around pedagogy.",
+    },
+  ];
+
+  return (
+    /* Employment first, then everything else by start date, newest first.
+
+       The list used to be sorted by start date alone, and the note here
+       argued for it on the grounds that it was the only rule that survived
+       the overlaps (Wholana runs alongside Instatus, Instatus started while
+       Loom Cairo was still going) and that "current first" would need a
+       second rule the moment two rows were current. Both halves of that are
+       still true. What changed is which question the list is being asked.
+
+       A reader arriving from a job application is looking for the row where
+       somebody else made the hiring decision, and that row was second. So the
+       partition is now employment vs. work I started myself: Instatus is the
+       only current employer, so it leads, and the rest follow on the old rule
+       untouched. It is one rule plus one partition, and the partition has no
+       ties to break: Wholana and Loom Cairo are things I founded, and the
+       date order inside each half is unchanged. */
     <Section title="Experience" id="experience">
-      {/* Wholana and Loom Cairo link to their case studies rather than
-          outward. Instatus and Dell link to the employer because there is an
-          employer to link to; Loom Cairo shut down and the UN dashboard was
-          never public, so an external link would be a dead one. Wholana has a
-          live site, but the case study is the better answer to "what did he
-          do there", which is the question this list is being asked. */}
-      <Row
-        href="/work/wholana"
-        title="Wholana"
-        logo="wholana"
-        meta="Mar 2026 – Present"
-        description="Founder and engineer."
-      />
-      {/* Where the tour's video parks. It is the Instatus row rather than the
-          section because the bubble is aimed at a thing, not at a heading: it
-          comes out of the O, arcs down the column and settles in the gutter
-          beside the row the first spoken line is about. See TourBubble. */}
-      <div data-tour-dock>
-        <Row
-          href="https://instatus.com"
-          external
-          tourId="row:https://instatus.com"
-          title="Instatus"
-          logo="instatus"
-          meta="Dec 2024 – Present"
-          description="Full-stack software engineer."
-        />
-      </div>
-      <Row
-        href="/work/activity-management-platform"
-        title="UNITAR (UN agency)"
-        logo="unitar"
-        meta="Sep 2024 – Nov 2024"
-        description="Software engineering contract."
-      />
-      <Row
-        href="/work/loom-cairo"
-        title="Loom Cairo (later Univyr)"
-        logo="loom"
-        meta="Jun 2023 – Oct 2025"
-        description="Founding engineer."
-      />
-      <Row
-        href="https://dell.com"
-        external
-        title="Dell Technologies"
-        logo="dell"
-        meta="Aug 2022 – Sep 2022"
-        description="Solutions architecture internship."
-      />
+      <WorkRows groups={[{ title: "", items: rows }]} />
     </Section>
   );
 }
@@ -447,11 +515,16 @@ function Section({
     <section id={id} className="mb-14 scroll-mt-24">
       {/* Inverse of the h1: 13px needs 500 to hold its own against the
           body copy beneath it, where 24px did not. */}
+      {/* `muted` rather than the `faint` these headings started on. Faint is
+          the rung for labels beside a thing, and it reads as one at 13px,
+          but it is 2.5:1 on this canvas and a section heading is text. The
+          hierarchy is unchanged, it just moves up a rung with the group
+          headings under it: muted here, subtle for the h3s below. */}
       {/* No px-3. The rows below live in a -mx-3 wrapper that cancels their
           own padding, so their marks sit on the column edge; padding here
           would push the heading 12px inboard of the thing it labels, which
           is the one alignment on the page a reader can see going wrong. */}
-      <h2 className="text-meta text-foreground-faint mb-2 font-medium">{title}</h2>
+      <h2 className="text-meta text-foreground-muted mb-2 font-medium">{title}</h2>
       <div className="-mx-3">{children}</div>
     </section>
   );
