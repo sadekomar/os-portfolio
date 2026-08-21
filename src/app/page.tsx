@@ -310,7 +310,7 @@ const workGroups: { title: string; items: WorkRow[] }[] = [
         slug: "little-lads",
         title: "Little Lads",
         description:
-          "A rebuild of a boys’ apparel brand’s storefront, aimed at brand equity, engagement, and conversion.",
+          "A brand and storefront redesign for a boys’ apparel label on Shopify: identity, typography, and the product page layout.",
       },
     ],
   },
@@ -401,7 +401,7 @@ function Experience() {
       role: allProjects["activity-management-platform"].role,
       meta: "Sep 2024 – Nov 2024",
       description:
-        "Software engineering contract. Coordination for a UN agency across regions, scales, and stakeholders.",
+        "Software engineering contract. Built the React and TypeScript front end for an activity-management proof of concept, and led its UI design in Figma. It stayed a proof of concept.",
     },
     {
       href: "/work/loom-cairo",
