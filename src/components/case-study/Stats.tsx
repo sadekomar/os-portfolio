@@ -15,7 +15,7 @@ import { TextMorph } from "torph/react";
    `TextMorph` animates a segment when its text *changes*, so a figure that
    is fixed for the life of the route has to be given something to change
    from. That something is the same string with every digit set to zero:
-   40,000+ settles out of 00,000+, 12M+ out of 00M+.
+   40,000+ settles out of 00,000+, 20M+ out of 00M+.
 
    Masking rather than counting up is what suits this library. torph splits
    on graphemes and morphs each one in place, so a same-length mask puts
@@ -44,7 +44,7 @@ import { TextMorph } from "torph/react";
    clock gets from its em-space placeholder, reached from the other side:
    layout effects run in the hydration commit, before the browser paints, so
    the mask is in the DOM by the first frame and nobody sees the value it
-   replaced. `useEffect` would not do — it lands after paint, and the reader
+   replaced. `useEffect` would not do: it lands after paint, and the reader
    would watch the real figure appear and then be overwritten by zeros.
 
    Arming also swaps the markup, not just the string. Before it, the figure
@@ -118,7 +118,7 @@ function Stat({ value, revealed, index }: { value: string; revealed: boolean; in
      produces it before paint. `useSyncExternalStore`, which is how
      LastShippedLine reads its clock, checks the client snapshot in a passive
      effect, so the swap would land a frame late and the figure would be seen
-     and then overwritten — the flash this whole arrangement removes. One
+     and then overwritten: the flash this whole arrangement removes. One
      extra render per stat, twice per page, on mount. */
   // eslint-disable-next-line react-hooks/set-state-in-effect
   React.useLayoutEffect(() => setArmed(true), []);

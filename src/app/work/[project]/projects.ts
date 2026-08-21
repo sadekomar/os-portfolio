@@ -203,12 +203,12 @@ export const allProjects: Record<ProjectKeys, Project> = {
     mark: "wholana",
     link: "wholana.com",
     intro:
-      "Wholana is an AI research workspace for TikTok, built for Egyptian and MENA creators. It ingests the region's creators every night, decodes every high performer into a shared craft vocabulary, and turns that research into scripts. I designed and built all of it solo: the product, the pipeline, the infrastructure it runs on, and the brand.",
+      "Wholana is an AI content system for TikTok. It ingests 1k creators every night, decodes every high performer into a shared craft and subject vocabulary, turning the research into scripts. I designed and built it: the product, the pipeline, the infrastructure it runs on, and the brand.",
     role: "Solo: design and engineering",
     period: "2026 – Present",
     stats: [
-      { value: "28K+", label: "Videos in the corpus" },
-      { value: "900+", label: "Creators swept nightly" },
+      { value: "50K+", label: "Videos in the corpus" },
+      { value: "1000+", label: "Creators swept nightly" },
       { value: "$100", label: "MRR, from 20 paying users" },
     ],
     technologies: {
@@ -270,14 +270,14 @@ export const allProjects: Record<ProjectKeys, Project> = {
         title: "Context",
         content: [
           "Wholana helps Egyptian and MENA creators study what is working on TikTok and make their own version of it. Every video is read through three axes: Craft (how the video works), Subject (what it is about), and Creator equity (who is behind it). The point is legibility rather than data volume, so the user closes a video page able to say exactly why it hit.",
-          "The corpus is Arabic-first, in Egyptian dialect, which is most of the reason the tooling had to be built rather than bought. I designed and built the whole thing solo: a monorepo of seven first-party deployables that run as eleven services in production around one Postgres, plus the marketing site and the brand.",
+          "The corpus is Arabic-first, in Egyptian dialect. Wholana is a monorepo of 7 first-party deployables that run as 11 services in production around one Postgres, plus the marketing site and the brand.",
         ],
       },
       {
         title: "Decoding a video",
         content: [
-          "The craft pass is the technical heart of the product. Ingest ends when a video's subtitles are downloaded and stored; everything after that is enrichment. The pass reads the transcript, plus the video's own outlier comments as audience ground truth, and returns a structured decomposition across five axes: hook archetype, narrative structure, stake type, shareability driver, and format. Those five are a closed vocabulary, which is what makes two videos comparable instead of separately described.",
-          "Getting structured output reliably out of a model, over messy real-world Arabic speech, is the hard part. The prompt is primed with the creator's own knowledge subgraph so it knows who the recurring characters are, the pass runs success-only so we are not paying to analyse videos nobody watched, and the whole chain is composed once in a single file because the stage order is load-bearing and I did not want it re-implemented per caller.",
+          "The craft pass is the technical heart of the product. Ingest ends when a video's subtitles are downloaded and stored; everything after that is enrichment. The pass reads the transcript, plus the video's own outlier comments as audience ground truth, and returns a structured decomposition across five axes: hook archetype, narrative structure, stake type, shareability driver, and format. Those five are a closed vocabulary.",
+          "Getting structured output reliably out of a model, over messy real-world Arabic speech, is the hard part. The prompt is primed with the creator's own knowledge subgraph so it knows who the recurring characters are.",
           "The ranking signal sits underneath all of it: a video's outlier score is its views over its own creator's median, so a large account posting normally never reads as a breakout, and a small account with a real hit does.",
         ],
         artifact: "wholana-decoder",
@@ -285,8 +285,8 @@ export const allProjects: Record<ProjectKeys, Project> = {
       {
         title: "The product surface",
         content: [
-          "Explore is the home surface: natural-language search over the corpus, a filter builder across subject, craft, creator and video metrics, sorting by outlier score, and saved filter sets called lenses. Around it sit the swipe file (collections of saved videos with notes), Scripts, creator profiles with a craft signature, the five craft vocabularies as browsable libraries, a personal dashboard that benchmarks the user's own account against their niche, and Your Videos, which grades their posted work and hands them back into research.",
-          "Ask Wholana is the conversational layer over all of it: an in-app agent that searches videos, pulls a video's craft analysis, and can drive the Explore filters on the user's behalf. Behind the product there is an admin Control Room and a Newsroom, both internal.",
+          "Explore is the home surface: natural-language search over the corpus, a filter builder across subject, craft, creator and video metrics, sorting by outlier score, and saved filter sets called lens tabs. Around it sit the swipe file (collections of saved videos with notes), Scripts, creator profiles with a craft signature, the five craft vocabularies as browsable libraries, a personal dashboard that benchmarks the user's own account against their niche, and Your Videos, which grades their posted work and loops them back into research.",
+          "Ask Wholana is the conversational layer over all of it: an in-app agent that searches videos, pulls a video's craft analysis, and can drive the Explore filters on the user's behalf.",
         ],
         figure: {
           images: [
@@ -322,7 +322,7 @@ export const allProjects: Record<ProjectKeys, Project> = {
       {
         title: "Ingestion as durable workflows",
         content: [
-          "The nightly sweep is a fan-out then fan-in pipeline: scrape and ingest each record in one transaction, fan out per video for comments, subtitles and the enrichment chain, then fan in across the whole corpus for entity resolution, rollups, a freshness watermark, and notifications. The invariant is that a video row visible to a reader already has its images mirrored to R2, so no surface ever needs an is-ready flag.",
+          "The nightly sweep is a fan-out then fan-in pipeline: scrape and ingest each record in one transaction, fan out per video for comments, subtitles and the enrichment chain, then fan in across the whole corpus for entity resolution, rollups, a freshness watermark (Unstable metrics), and notifications.",
           "All of it runs on Temporal. Workflow code is deterministic and every piece of I/O is an activity, which buys two things that mattered more than they sound: a deploy in the middle of a sweep resumes rather than losing the night, and exactly-one-sweep-at-a-time is enforced by the workflow engine instead of a global boolean that only holds within one process.",
           "The same machinery runs the paths a user waits on. Onboarding and shared links are multiplexed by batcher workflows that hold a short window so near-simultaneous requests become one scrape run, then process the bundle newest-first, so a new user gets a tailored reveal in minutes while the rest of their backlog fills in behind it.",
         ],
@@ -339,7 +339,7 @@ export const allProjects: Record<ProjectKeys, Project> = {
       {
         title: "Writing our own scraper",
         content: [
-          "The pipeline started on a paid third-party actor. It now runs mostly on a scraper I wrote, deployed as its own service that knows nothing about Wholana: usernames in over HTTP, generic posts and authors out, no database and no domain types. Comments are the one path still on the paid provider, which the design accounts for rather than hides.",
+          "The pipeline started on a paid third-party actor (apify). It now runs mostly on a scraper I wrote, deployed as its own service that knows nothing about Wholana: usernames in over HTTP, generic posts and authors out, no database and no domain types. Comments are the one path still on the paid provider, which the design accounts for rather than hides.",
           "Both live behind one seam. A Scraper knows how to start a run and how to fetch the binaries it produced, and no module, route or type is allowed to bake a vendor's name into its identifiers, so swapping providers touches the adapter and nothing downstream.",
           "My own scraper goes out on stock HTTP: no proxy, no browser, no challenge solver, and zod as its only runtime dependency. The last full sweep measured 860 clean responses out of 860 handles. A canary endpoint watches for the day the upstream's bot cohort changes underneath us, and the answer if it ever does is to move egress rather than to start bolting on a solver.",
         ],
@@ -347,7 +347,7 @@ export const allProjects: Record<ProjectKeys, Project> = {
       {
         title: "Local-first reads",
         content: [
-          "Explore reads and writes through Rocicorp Zero. The browser holds a replicated subset of the database, queries stay live rather than being re-fetched, and writes apply optimistically on the client before landing authoritatively in a Postgres transaction. Read permissions are resolved in exactly one place, server-side, so a client cannot ask for rows it should not see by rewriting a query.",
+          "The dashboard's reads and writes use Rocicorp Zero. The browser holds a replicated subset of the database, queries stay live rather than being re-fetched, and writes apply optimistically on the client before landing authoritatively in a Postgres transaction. Read permissions are resolved in exactly one place, server-side, so a client cannot ask for rows it should not see by rewriting a query.",
           "The cost is real and worth stating: a schema change becomes a four-step lockstep of migration, replication publication, replica resync and client deploy. I paid for that with a written runbook and a check in the build that fails when the publication drifts from the schema, because the failure mode is a table that silently stops syncing rather than an error anybody sees.",
         ],
       },
@@ -382,7 +382,7 @@ export const allProjects: Record<ProjectKeys, Project> = {
       {
         title: "A knowledge graph per creator",
         content: [
-          "Alongside the craft pass, a second pass builds a knowledge graph per creator: nodes for the people, places, organisations and moments a creator keeps returning to, and edges that carry the facts connecting them. Facts live on edges, never on nodes, so a claim always has both of its ends.",
+          "Alongside the craft pass, a second pass builds a knowledge graph per creator: nodes for the people, places, organizations and moments a creator keeps returning to, and edges that carry the facts connecting them. Facts live on edges, never on nodes, so a claim always has both of its ends.",
           "It has four verbs and they are the vocabulary the code uses. Match resolves a surface form to an existing node. Mint creates a new one. Dream settles the parked pile of unresolved nodes on its own schedule. Prime feeds a creator's subgraph back in as grounding, which is what makes the craft pass read a video the way someone who watches that creator would.",
         ],
       },
@@ -396,7 +396,7 @@ export const allProjects: Record<ProjectKeys, Project> = {
       {
         title: "Owning the infrastructure",
         content: [
-          "The stack started on managed platforms and outgrew them. I moved production onto two Hetzner boxes: Postgres with pgvector, PgBouncer, the sync engine, the ingestion API, the MCP server, Temporal and the app itself, all Docker Swarm services managed through Dokploy, behind a single Traefik ingress with Cloudflare in front. Images are built in CI and pushed to a private registry on the box rather than built on it.",
+          "The stack started on railway but that was too expensive. I moved production onto two Hetzner boxes: Postgres with pgvector, PgBouncer, the sync engine, the ingestion API, the MCP server, Temporal and the app itself, all Docker Swarm services managed through Dokploy, behind a single Traefik ingress with Cloudflare in front. Images are built in CI and pushed to a private registry on the box rather than built on it.",
           "The cutover happened in one night: a final dump restored, the replica re-replicated, and a scripted DNS flip. The rollback path was written down before the flip rather than improvised after it, which is the only reason a one-person migration of a live system is a reasonable thing to attempt.",
           "What runs on top of it is the unglamorous half: nightly database backups to R2, a watchdog cron that alerts by email and to Sentry if a night's ingestion never happened, per-pull-request preview environments on their own subdomains, and a habit of diffing stored configuration against what the running services actually have, which is a lesson a six-hour outage taught me rather than a practice I arrived with.",
         ],
@@ -451,12 +451,12 @@ export const allProjects: Record<ProjectKeys, Project> = {
     mark: "tnn",
     link: "tiktoknewsnetwork.com",
     intro:
-      "TNN is a nightly satirical news broadcast about the Egyptian internet. I founded it, host it, and built the site it lives on. It runs on Wholana's data pipeline, and has grown to 12M+ views, 52K+ followers, and 260 stories covered across five recurring formats.",
+      "TNN is a nightly satirical news broadcast about the Egyptian internet. I founded it, host it, and built the site it lives on. It runs on Wholana's data pipeline, and has grown to 20M+ views, 72K+ followers, and 260 stories covered across five recurring formats.",
     role: "Founder, anchor and engineer",
     period: "2026 – Present",
     stats: [
-      { value: "12M+", label: "Views" },
-      { value: "52K+", label: "Followers" },
+      { value: "20M+", label: "Views" },
+      { value: "72K+", label: "Followers" },
       { value: "260", label: "Stories covered" },
     ],
     technologies: {
@@ -485,7 +485,7 @@ export const allProjects: Record<ProjectKeys, Project> = {
         title: "Context",
         content: [
           "TNN treats Egyptian TikTok culture with the deadpan gravitas of a broadcast news desk. The tagline is “Where high-stakes journalism meets low-stakes internet beef.” It airs nightly at 21:00 Cairo time, and I founded it, anchor it, and built the platform behind it.",
-          "It started in March 2026 with no studio and no crew. It has since grown into five recurring formats (The Nightly, The Debates, Field Reports, TNN Stocks, and On the Record) with a team of correspondents and co-anchors, 260 stories covered, 12M+ views, and 52K+ followers.",
+          "It started in March 2026 with no studio and no crew. It has since grown into five recurring formats (The Nightly, The Debates, Field Reports, TNN Stocks, and On the Record) with a team of correspondents and co-anchors, 260 stories covered, 20M+ views, and 72K+ followers.",
         ],
       },
       {
@@ -531,7 +531,7 @@ export const allProjects: Record<ProjectKeys, Project> = {
     ],
   },
   "loom-cairo": {
-    title: "Loom Cairo (later Univyr)",
+    title: "Loom Cairo",
     mark: "loom",
     intro:
       "Loom Cairo, later rebranded as Univyr, was a search engine for local fashion that aggregated over 300 Egyptian brand websites into a single platform. Operated 2023 to 2025, reached 70+ brand partnerships and 40,000+ unique visitors at its peak, and was accepted into AUC Venture Lab. It shut down because it never had a place to charge anybody, which is the part of it worth reading.",
@@ -590,7 +590,7 @@ export const allProjects: Record<ProjectKeys, Project> = {
       {
         title: "Labelling Algorithm & Data Analysis",
         content: [
-          "To enable the filters and improved search, I created an algorithm that labels the items. The loom database is quite large: 20,000 items, 92,000 images, and 8,059 distinct raw size strings, because every brand writes its sizes its own way. That is the catalogue Loom kept live across its partner brands, not what a crawl moves — after the Univyr rebuild below, a single run reads far more than it retains. I started out with cleaning and preprocessing the data such as fixing spelling inconsistencies, such as blue and bluee. Then, I did data normalization by grouping together synonyms of colors such sky and blue into a single parent color. All of it collapses down to 19 canonical colours, 19 materials and 48 categories, which is what makes a filter panel possible at all.",
+          "To enable the filters and improved search, I created an algorithm that labels the items. The loom database is quite large: 20,000 items, 92,000 images, and 8,059 distinct raw size strings, because every brand writes its sizes its own way. That is the catalogue Loom kept live across its partner brands, not what a crawl moves; after the Univyr rebuild below, a single run reads far more than it retains. I started out with cleaning and preprocessing the data such as fixing spelling inconsistencies, such as blue and bluee. Then, I did data normalization by grouping together synonyms of colors such sky and blue into a single parent color. All of it collapses down to 19 canonical colours, 19 materials and 48 categories, which is what makes a filter panel possible at all.",
           "Based on the uncovered synonyms, inconsistencies, and data gathered from the original websites, I created a labeler that works really well on new items from new brands. It enables very rich filters and search all automatically.",
           "Try to go on other platforms and search for White Shirt and see which one has the most relevant results!!",
         ],
@@ -656,9 +656,9 @@ export const allProjects: Record<ProjectKeys, Project> = {
       {
         title: "Why it ended",
         content: [
-          "In June 2025 I pitched Univyr at AUC Venture Lab: $150K for 10%. The traction slide was honest and, for its size, good — 4,700 monthly active users, 76% of them returning, 3.5 minutes of average retention against a market average of two. It did not close. The objection was not the growth and not the engineering; it was that nobody could point at the moment money changed hands. An aggregator that sends free traffic to brands it does not take a cut from has 300 suppliers and no customers.",
-          "Then the demand showed up anyway. A TechTalk appearance put the product in front of a national audience and traffic went to 40,000+ unique visitors, roughly eight times the base it had been growing off. I do not have retention data from that window — the analytics went with the product — so I will not claim the spike stuck. What I can say is the thing that matters: the biggest audience Univyr ever had arrived after the raise had already failed, and there was still no toll booth for them to walk through. The investors had been right, and the traffic proved it rather than rescuing it.",
-          "The mistake was not the scraper or the search or the two years. It was sequencing: I built a supply-side pipeline of real technical difficulty for a market where I had never established who pays, and by the time the answer mattered the only lever left was a raise. The rule I took out of it is unglamorous and I have applied it since — find the point where money changes hands before building the thing that depends on it. Wholana has seat billing in it, and paying users on it, because this one did not.",
+          "In June 2025 I pitched Univyr at AUC Venture Lab: $150K for 10%. The traction slide was honest and, for its size, good: 4,700 monthly active users, 76% of them returning, 3.5 minutes of average retention against a market average of two. It did not close. The objection was not the growth and not the engineering; it was that nobody could point at the moment money changed hands. An aggregator that sends free traffic to brands it does not take a cut from has 300 suppliers and no customers.",
+          "Then the demand showed up anyway. A TechTalk appearance put the product in front of a national audience and traffic went to 40,000+ unique visitors, roughly eight times the base it had been growing off. I do not have retention data from that window (the analytics went with the product), so I will not claim the spike stuck. What I can say is the thing that matters: the biggest audience Univyr ever had arrived after the raise had already failed, and there was still no toll booth for them to walk through. The investors had been right, and the traffic proved it rather than rescuing it.",
+          "The mistake was not the scraper or the search or the two years. It was sequencing: I built a supply-side pipeline of real technical difficulty for a market where I had never established who pays, and by the time the answer mattered the only lever left was a raise. The rule I took out of it is unglamorous and I have applied it since: find the point where money changes hands before building the thing that depends on it. Wholana has seat billing in it, and paying users on it, because this one did not.",
         ],
       },
     ],
