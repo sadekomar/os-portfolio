@@ -87,11 +87,22 @@
 
          foreground  titles, the name in the nav, an inline link's own text
          muted       body copy, the paragraphs under a heading
-         subtle      secondary text: a row's description, a footer link
-         faint       labels and glyphs that name a thing they sit beside
+         subtle      secondary text: a row's description, a footer link,
+                     a date range, a group heading. The floor for anything
+                     a reader is meant to *read*: it is the quietest rung
+                     that clears 4.5:1 on the page canvas, and the two below
+                     it clear nothing.
+         faint       glyphs that name a thing they sit beside: the external
+                     arrow on a link, the mark in a Stack pill
          ghost       marks that are only there to be *not quite absent*,
                      an underline at rest, the dot in a markless pill, the
                      spent arrow at the end of the pager
+
+       The bottom two rungs are for marks, which WCAG exempts, so they hold
+       their values honestly. Put text on them and the exemption stops
+       applying and the value stops being defensible; that is the one way to
+       use this scale wrongly. On a sunken or recessed fill the floor rises
+       again, and `muted` is the answer there.
 
        Dark is not the inverse of these values, it is its own ramp: the
        spread is wider at the quiet end (34% → 98%, against light's 84% →
@@ -967,7 +978,11 @@
   background: transparent;
   padding: 4px 10px;
   border-radius: 48px;
-  color: hsl(var(--foreground-faint));
+  /* A rung darker than the meta text beside it, because the unselected
+     options are the only 11px labels on the site sitting on the sunken
+     track rather than on the canvas, and that fill takes about half a point
+     of contrast off whatever stands on it. */
+  color: hsl(var(--foreground-muted));
   cursor: pointer;
   transition: color 250ms cubic-bezier(0.22, 1, 0.36, 1);
 }

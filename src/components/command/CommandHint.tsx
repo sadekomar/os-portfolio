@@ -6,8 +6,11 @@ import { useCommandPalette } from "./CommandPaletteProvider";
 
 /* ── The affordance ───────────────────────────────────────────────────────
    One quiet thing, in the nav, sized and coloured like the site's meta text
-   (11px at `foreground-faint`, the same rung as the footer's copyright and
-   a case study's caption). A layperson will never press ⌘K unbidden, and the
+   (11px at `foreground-subtle`, the same rung as the footer's copyright).
+   Subtle rather than the `faint` it started on, because this is a label
+   someone is meant to read: at 11px on the page canvas, faint lands at
+   2.5:1 and the quietest rung that clears AA is subtle. A layperson will
+   never press ⌘K unbidden, and the
    fix for that is to show them the chord where they are already looking, not
    to put a floating button over the page or a banner above it. It sits at
    the end of the nav list because that is where the row already ends, so it
@@ -53,7 +56,7 @@ export function CommandHint() {
       onClick={openPalette}
       aria-label="Open command palette"
       aria-keyshortcuts="Meta+K Control+K"
-      className="text-micro text-foreground-faint hover:text-foreground hover:bg-wash focus-visible:ring-ring/20 hidden rounded-full px-2.5 py-1.5 font-medium tabular-nums transition-colors duration-150 ease-out focus-visible:ring-2 focus-visible:outline-none sm:inline-flex"
+      className="text-micro text-foreground-subtle hover:text-foreground hover:bg-wash focus-visible:ring-ring/20 hidden rounded-full px-2.5 py-1.5 font-medium tabular-nums transition-colors duration-150 ease-out focus-visible:ring-2 focus-visible:outline-none sm:inline-flex"
     >
       <kbd className="font-sans">{isApple ? "⌘K" : "Ctrl K"}</kbd>
     </button>

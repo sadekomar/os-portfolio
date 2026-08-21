@@ -138,7 +138,7 @@ export function Credits() {
             does the job the dithered logotype does in the original, which is
             to mark the change of register before a single credit is read. */}
         <Line className="col-span-2 mb-8 grid grid-cols-subgrid">
-          <p className="text-micro text-foreground-faint col-start-2 font-mono tracking-wider uppercase">
+          <p className="text-micro text-foreground-subtle col-start-2 font-mono tracking-wider uppercase">
             This site
             <br />
             and what it is made of
@@ -147,7 +147,7 @@ export function Credits() {
 
         {lines.map((line) => (
           <Line key={line.name} className="col-span-2 grid grid-cols-subgrid items-baseline">
-            <span className="text-meta text-foreground-faint text-right">{line.role}</span>
+            <span className="text-meta text-foreground-subtle text-right">{line.role}</span>
             <span className="text-body-sm text-foreground">{line.name}</span>
           </Line>
         ))}

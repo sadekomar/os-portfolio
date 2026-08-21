@@ -73,7 +73,7 @@ export function Footer() {
           is the taller object, so aligning on the text baseline would hang
           it below the line it closes. */}
       <div className="mt-12 flex items-center justify-between gap-6">
-        <p className="text-meta text-foreground-faint tabular-nums">
+        <p className="text-meta text-foreground-subtle tabular-nums">
           © {new Date().getFullYear()} Omar Sadek
         </p>
         <ThemeToggle />
@@ -91,7 +91,7 @@ function FooterList({
 }) {
   return (
     <div>
-      <h2 className="text-meta mb-3 font-medium text-foreground-faint">{title}</h2>
+      <h2 className="text-meta mb-3 font-medium text-foreground-muted">{title}</h2>
       <ul className="text-body-sm grid gap-2">
         {links.map((link) => (
           <li key={link.href}>

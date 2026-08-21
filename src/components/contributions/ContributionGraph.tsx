@@ -116,7 +116,7 @@ const useContributionGraph = () => {
   return context;
 };
 
-/* Exported for tests only — nothing else imports either this or
+/* Exported for tests only; nothing else imports either this or
    `groupByWeeks`. They are the two functions in this file that can be wrong
    without being loud: a dropped day or a mis-padded first week renders as a
    calendar that looks entirely plausible and is off by a column. */
@@ -467,7 +467,7 @@ export const ContributionGraphLegend = ({
       style={{ gap: blockMargin }}
       {...props}
     >
-      <span className="text-foreground-faint mr-1">{labels.legend?.less || "Less"}</span>
+      <span className="text-foreground-subtle mr-1">{labels.legend?.less || "Less"}</span>
 
       {new Array(maxLevel + 1).fill(undefined).map((_, level) =>
         children ? (
@@ -487,7 +487,7 @@ export const ContributionGraphLegend = ({
         ),
       )}
 
-      <span className="text-foreground-faint ml-1">{labels.legend?.more || "More"}</span>
+      <span className="text-foreground-subtle ml-1">{labels.legend?.more || "More"}</span>
     </div>
   );
 };

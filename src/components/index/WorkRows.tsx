@@ -351,13 +351,20 @@ export function WorkRows({ groups }: { groups: WorkGroup[] }) {
       {groups.map((group, i) => (
         <div key={group.title || i} className={i > 0 ? "mt-8" : undefined}>
           {/* One rung quieter than the "Work" heading above it, and at
-              regular weight where that one is medium. Two tonal steps is
-              enough to read as a level down. A second heading at the same
-              weight would compete with the section it lives inside, and a
-              rule or an all-caps label would be louder than the distinction
-              it is drawing. */}
+              regular weight where that one is medium. One tonal step plus
+              the weight is enough to read as a level down. A second heading
+              at the same weight would compete with the section it lives
+              inside, and a rule or an all-caps label would be louder than
+              the distinction it is drawing.
+
+              `subtle`, not the `ghost` this used to sit on: ghost is for
+              marks that are only there to be not quite absent, and a group
+              name is text a reader is meant to read. It measured 1.4:1 on
+              the page canvas. Subtle is the quietest rung that clears AA,
+              and it is the same rung Stack's category headings already use,
+              so the two h3s down the page now match. */}
           {group.title && (
-            <h3 className="text-meta mb-1 px-3 text-foreground-ghost">{group.title}</h3>
+            <h3 className="text-meta mb-1 px-3 text-foreground-subtle">{group.title}</h3>
           )}
 
           {/* Real list markup, which the flat column of anchors was not. It
@@ -416,7 +423,7 @@ export function WorkRows({ groups }: { groups: WorkGroup[] }) {
                  eight rows and silently does nothing on the ninth is worse
                  than one that always answers. Set to the same aspect as a
                  real one so the empty case doesn't resize the card either. */
-              <div className="bg-surface-recessed text-meta flex aspect-video w-full items-center justify-center rounded-md text-foreground-faint">
+              <div className="bg-surface-recessed text-meta flex aspect-video w-full items-center justify-center rounded-md text-foreground-muted">
                 No preview yet
               </div>
             )}

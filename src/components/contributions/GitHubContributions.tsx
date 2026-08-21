@@ -80,7 +80,7 @@ export function GitHubContributions({
            is a render's worth of delay to express something the style engine
            already knows. */
         className={cn(
-          "text-meta text-foreground-faint fade-in-on-mount ease-out-quint opacity-100 transition-opacity duration-200",
+          "text-meta text-foreground-subtle fade-in-on-mount ease-out-quint opacity-100 transition-opacity duration-200",
           className,
         )}
         data={data}

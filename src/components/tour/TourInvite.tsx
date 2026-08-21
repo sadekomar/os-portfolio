@@ -48,7 +48,7 @@ export function TourInviteLabel({ inviting }: { inviting: boolean }) {
       {inviting && (
         <motion.span
           aria-hidden
-          className="text-meta text-foreground-faint pointer-events-none absolute top-full left-1/2 mt-1 -translate-x-1/2 whitespace-nowrap"
+          className="text-meta text-foreground-subtle pointer-events-none absolute top-full left-1/2 mt-1 -translate-x-1/2 whitespace-nowrap"
           initial={{ opacity: 0, y: -3 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, transition: { duration: 0.35 } }}
