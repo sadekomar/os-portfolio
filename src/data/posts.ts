@@ -30,6 +30,142 @@ export type Post = {
 
 export const posts: Post[] = [
   {
+    slug: "the-write-that-already-happened",
+    title: "The write that already happened",
+    description:
+      "A sync engine buys you an instant UI by writing to the browser first. Everything difficult about it follows from the interface having already told the user yes.",
+    date: "2026-08-18",
+    blocks: [
+      {
+        type: "p",
+        text: "Wholana\u2019s dashboard reads and writes through Zero. Saving a video to a collection updates the row in the browser\u2019s own replica, React re-renders off that, and Postgres hears about it afterwards. The list reorders inside a frame and there is no spinner anywhere in the path. That is the entire pitch for a sync engine and it is not oversold \u2014 the feeling is real and you get it on every interaction in the app.",
+      },
+      {
+        type: "p",
+        text: "What the pitch leaves out is that \u201cthe UI updated first\u201d is not a rendering strategy. It is a promise made to a person before anyone checked whether it could be kept. Every hard thing I have hit in this data layer is a consequence of that one sentence.",
+      },
+      { type: "h", text: "A failed write is not an exception" },
+      {
+        type: "p",
+        text: "The first surprise: `zero.mutate(...)` does not reject when a write fails. It hands back a pair of promises and both of them resolve \u2014 to a discriminated result whose `type` may be `\"error\"`.",
+      },
+      {
+        type: "code",
+        code: `// Resolves. Both of them. Always.
+const { client, server } = zero.mutate.saveToSwipeFile({ videoId, swipeFileId });
+
+const res = await server;
+if (res.type === "error") {
+  // the only place you will ever hear about this
+}`,
+        caption: "The shape every call site has to know about, whether or not it acts on it.",
+      },
+      {
+        type: "p",
+        text: "That is defensible. A rejected promise nobody awaits is an unhandled rejection, and most writes in an app like this are fire-and-forget. What it means in practice is that a try/catch around the mutate call catches nothing at all.",
+      },
+      {
+        type: "p",
+        text: "We had that try/catch. In several places. Each one looked like careful code and each one was decoration: a `Forbidden`, a `No active workspace`, a length check thrown from inside the mutator \u2014 all of them came back as a resolved object, got dropped, and the only thing the user saw was their row sliding quietly back to where it had been. Optimistic UI ships with a built-in failure animation, and it is indistinguishable from a bug.",
+      },
+      {
+        type: "p",
+        text: "The fix is not clever. It is a single module every surface writes through, so the reading of the result can only be forgotten in one place:",
+      },
+      {
+        type: "code",
+        code: `export async function runMutation(
+  write: ZeroWrite,
+  { fallback, wait = "server" }: { fallback: string; wait?: "server" | "client" },
+): Promise<MutationOutcome> {
+  try {
+    const res = await (wait === "client" ? write.client : write.server);
+    if (res?.type === "error")
+      return { ok: false, message: mutationErrorMessage(res.error, fallback) };
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, message: mutationErrorMessage(error, fallback) };
+  }
+}`,
+        caption: "src/zero/run-mutation.ts. The catch is for transport and aborts; the branch above it is for everything the product can actually do wrong.",
+      },
+      {
+        type: "p",
+        text: "The part worth arguing about is `wait: \"server\"` as the default. Awaiting `client` is faster and it is what the word optimistic seems to be asking for. It is also the promise that resolves before anything authoritative has looked at the write. A collection name that is free in the local replica and taken on the server, a permission the stale replica cannot see \u2014 those only ever come back on `server`. Await `client`, toast success, and you have built an interface that congratulates people on writes that are about to vanish.",
+      },
+      { type: "h", text: "The mutator runs two or three times" },
+      {
+        type: "p",
+        text: "A custom mutator runs optimistically on the client, sometimes twice if a retry fires, and then once for real against Postgres on the server. Same function, same arguments, two or three executions of the body. So the body has to be something you can run repeatedly and end up in the same place.",
+      },
+      {
+        type: "p",
+        text: "The rule that falls out of that is mundane and absolute: no non-idempotent side effects, and no `crypto.randomUUID()` in the body unless something is guarding it.",
+      },
+      {
+        type: "code",
+        code: `// Wrong. Three runs, three ids, three rows.
+await tx.mutate.VideoIdea.insert({ id: crypto.randomUUID(), userId, text });
+
+// Either the id comes from the caller, so every run writes the same row \u2014
+// or you read first, and the second run finds its own work already done.
+const existing = await tx.run(zql.VideoIdea.where("videoId", videoId).one());
+if (existing) return;`,
+        caption: "Both patterns are in the repo. The read-then-guard one is what makes the existing insert mutators safe.",
+      },
+      {
+        type: "p",
+        text: "It reads like a footnote and it is the most load-bearing rule in the layer. Nothing in the types enforces it. A mutator that breaks it works perfectly in development, because in development the retry never fires \u2014 you find the duplicate rows on somebody else\u2019s connection.",
+      },
+      { type: "h", text: "The replica has a key, and choosing it is your job" },
+      {
+        type: "p",
+        text: "Zero keeps its client-side replica in IndexedDB, keyed by user. That is the right default and it was wrong for us the day workspaces shipped: two workspaces belonging to the same person shared one store, so switching between them reopened the previous workspace\u2019s cached rows, painted them, and swapped them out a beat later once the org-scoped query re-synced. It looked exactly like a stale-cache bug because that is what it was.",
+      },
+      {
+        type: "code",
+        code: `// Partition the replica per workspace so each one hydrates from its own store.
+storageKey: organizationID ?? undefined,`,
+        caption: "src/zero/provider.tsx. One line, and the flash on every workspace switch was gone.",
+      },
+      {
+        type: "p",
+        text: "I keep this one as the example of what the abstraction is really doing, because until it bit me I had been treating the replica as an implementation detail. It is not. It is a cache with a lifetime and a key, sitting on someone\u2019s disk, outliving the tab. The moment the app has more than one scope of data in it, that key is a decision, and the library is not going to make it for you.",
+      },
+      { type: "h", text: "The client\u2019s copy of the auth context is a lie you tell deliberately" },
+      {
+        type: "p",
+        text: "Mutators and queries authorize off a context, and both runs get one: the server derives it from the session cookie, and the client mirrors it in from the provider. The client\u2019s copy exists for exactly one reason \u2014 so the optimistic run doesn\u2019t throw before it starts \u2014 and it is never the trust boundary. Neither are the arguments, which the client also controls.",
+      },
+      {
+        type: "p",
+        text: "What that buys, when you keep the two in step, is that the optimistic run and the real one agree about what is allowed. When they disagree, the write lands, paints, and rolls back, which is the worst of both: the user was told yes and then told nothing. So the client context is not an optimization to be trimmed. It is the thing keeping the optimism honest.",
+      },
+      { type: "h", text: "The interface has to be able to say \u201cnot yet\u201d" },
+      {
+        type: "p",
+        text: "If writes can be in flight and reads can be stale, the interface owes the reader a way to know. So there is a pill in the header, always rendered, whose steady state is a calm \u201cSynced\u201d and whose other four states are the ones Zero can actually be in: connecting, disconnected, session expired, and errored. Two of them are clickable, because they are the two Zero will not retry on its own.",
+      },
+      {
+        type: "p",
+        text: "It is the smallest component in the feature and I would not ship the feature without it. Every write in a local-first app is a claim the app is making on its own behalf, and the pill is the only thing on the screen qualifying it.",
+      },
+      { type: "h", text: "Whether it was worth it" },
+      {
+        type: "p",
+        text: "Yes, and not for the speed. TanStack Query already made most of this app feel fast, and a well-placed optimistic update in a mutation callback gets you a good way toward the same feeling for a fraction of the work.",
+      },
+      {
+        type: "p",
+        text: "What the sync engine actually bought is that the read path stopped being code I write. There is no invalidation. There is no list of keys to bump when a write lands, no argument about which views a mutation touches, no bug where the sidebar count and the list disagree for four seconds. A query is live because a query is live, and every view of a row updates because they are all reading the same row.",
+      },
+      {
+        type: "p",
+        text: "The bill for that is the five sections above, and most of it is paid once. But it is worth being precise about who pays it: every problem in this post is a problem the sync engine created and then declined to solve. Repeated execution, silent rollback, the replica\u2019s key, the second copy of the auth context \u2014 none of those exist in an app that awaits its writes. That is a trade I would make again on this product, and the honest version of the local-first pitch is the one that says both halves of it out loud.",
+      },
+    ],
+  },
+  {
     slug: "data-that-outlives-its-app",
     title: "Data that outlives its app",
     description:
