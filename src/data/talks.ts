@@ -129,7 +129,7 @@ export const talks: Talk[] = [
        after: "Last Thursday, I finished the Dell Technologies Summer Academy
        Program", and the pitches were the final day of it. 8 September 2022 was
        a Thursday. Cited because this is the entry whose date looks least
-       defensible — four years back, no organiser page still up — and it is in
+       defensible (four years back, no organiser page still up) and it is in
        fact the best-evidenced one here. */
     date: "8 September 2022",
     location: "Cairo, Egypt",
@@ -150,6 +150,19 @@ export const talks: Talk[] = [
          default. */
       "The part worth keeping is that the team ran design thinking at it and landed somewhere other than where they started. The obvious culprits (disengaged students, disengaged teachers, underfunding) didn’t survive contact with the research. What was left was pedagogy: the discipline of how information is conveyed, which most teachers are never taught and many can’t name. Gnosis was the response, built around a lecture engine that walks an educator through designing a lecture against pedagogical principles rather than leaving them to reinvent it.",
     ],
+    /* The recap post cited above, as Dell Egypt’s GM shared it. Worth the
+       link for the same reason the date note cites it: this is the entry
+       with the least surviving organiser evidence, and a first-party
+       account from the person running Dell in the country is better
+       corroboration than anything else still online.
+
+       Tracking parameters stripped off the share URL. `utm_*` and `rcm`
+       carry who sent it and from where, which is LinkedIn’s business and
+       not something to hand every reader of this page. */
+    link: {
+      label: "Recap, shared by Dell Egypt’s GM",
+      href: "https://www.linkedin.com/posts/magued-mahmoud-039277_last-thursday-i-finished-the-dell-technologies-activity-6974303886694080512-7APP",
+    },
   },
   {
     slug: "creative-industry-summit",
@@ -164,7 +177,7 @@ export const talks: Talk[] = [
     video: { youtubeId: "uAv6y67whGs", width: 576, height: 1024, poster: "maxresdefault" },
     description: [
       "A panel on building brands in a region that doesn’t hand you the numbers: no reliable market data, no benchmarks worth trusting, and decisions that have to get made anyway. I moderated.",
-      /* The roster is not in the clip — 31 seconds of an outdoor stage
+      /* The roster is not in the clip: 31 seconds of an outdoor stage
          establishes that the session happened, not who was on it. It comes
          from Samar Abdelaal's own LinkedIn recap of the summit, which names
          all four panellists with their titles and names me as moderator, so
@@ -172,9 +185,16 @@ export const talks: Talk[] = [
          something reconstructed off the video. Titles are as she gave them;
          hers she didn't state, so she gets her company and not a guess. */
       "On it: Sherif El Madany, Marketing Director at Mountain View; Rokaya El Maraashly, Managing Director at TAC Universe; Ahmed ElBatt, Strategy & Planning Director at Peace Cake; and Samar Abdelaal of Awe Research, the summit’s research partner. A client-side marketer, an agency MD, a strategy director and a researcher: four different places to be standing when the numbers aren’t there, which is the only reason a panel on this beats one person saying it.",
-      "Where I steered it: off the complaint and onto the method. The easy version of this session is forty minutes of agreeing that MENA data is bad. The useful version is what each of them actually does on a Monday without it — what you can infer, what you have to go and measure yourself, and which decisions you make anyway rather than waiting for a number that is never arriving. Insight as the thing that reduces uncertainty enough to move, not as the line item you fund once there's budget spare.",
+      "Where I steered it: off the complaint and onto the method. The easy version of this session is forty minutes of agreeing that MENA data is bad. The useful version is what each of them actually does on a Monday without it: what you can infer, what you have to go and measure yourself, and which decisions you make anyway rather than waiting for a number that is never arriving. Insight as the thing that reduces uncertainty enough to move, not as the line item you fund once there's budget spare.",
     ],
-    link: { label: "Creative Industry Summit", href: "https://creativeindmena.com" },
+    /* The speaker page rather than the summit's front door: it is the page
+       that carries the session and my name on it, and the homepage rotates
+       to whichever edition is next, so a reader following it a year from now
+       would land on a programme this panel is not in. */
+    link: {
+      label: "Creative Industry Summit",
+      href: "https://creativeindmena.com/speaker/omar-sadek/",
+    },
   },
   {
     slug: "tnn-live-e7kky",
