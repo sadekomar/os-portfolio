@@ -1,0 +1,27 @@
+# Baseline Widely Available, pinned explicitly rather than inherited.
+#
+# Next 16 already defaults to `chrome 111, edge 111, firefox 111, safari 16.4`
+# (see next/dist/shared/lib/modern-browserslist-target.js), so this is not a
+# widening of the floor and it is not meant to be one. Writing it down does two
+# things the default cannot: it names the mobile and alternate Chromium engines
+# a real visitor is likely to arrive on, and it stops a future Next upgrade
+# from quietly moving the floor under the site without a diff to review.
+#
+# The floor is set by what the runtime has to support natively so that SWC does
+# not downlevel it: Array.prototype.at lands in Chrome 92 / Safari 15.4, .flat
+# in Chrome 69 / Safari 12, Object.hasOwn in Chrome 93 / Safari 15.4. Everything
+# here clears those with room to spare, which is the point of using the Baseline
+# 30-month line instead of hand-picking versions per feature.
+#
+# Deliberately not `> 0.5%` or `last 2 versions`: usage queries drift with the
+# global stats snapshot in caniuse-lite, so the compile target would change on
+# a lockfile bump. Explicit versions do not.
+
+chrome >= 111
+edge >= 111
+firefox >= 111
+safari >= 16.4
+ios_saf >= 16.4
+opera >= 97
+samsung >= 22
+not dead
