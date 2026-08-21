@@ -5,6 +5,8 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+import { previousPathname } from "@/components/sequence/NavHistory";
+
 import { Icon } from "@/components/icon/Icon";
 /* One named export off a module of pure declarations, so this costs the
    case-study bundle the predicate and nothing else: `createStage` and the rest
@@ -169,7 +171,28 @@ function useSequenceKeys({
         router.push(`${basePath}/${previous.slug}`);
       } else if (event.key === "Escape") {
         event.preventDefault();
-        router.push(indexPath);
+        /* Back rather than push whenever back goes where push would.
+
+           Escape means "out of here", and out of here is a place the reader
+           has usually just been. Going back returns them to the exact row
+           they opened, because scroll restoration on a popstate belongs to
+           the browser and it is better at it than any code here would be,
+           and it leaves the history stack the length it was, so Back still
+           means "leave", rather than pointing at the page just escaped.
+
+           `indexPath` is compared without its fragment: the work pager sends
+           Escape to `/#work`, and the fragment is there to aim a *push* at
+           the right section. A back needs no aim; it is returning to a
+           position that already exists, which is the better answer to the
+           same question and the reason this branch exists at all.
+
+           Push stays as the fallback for every reader whose previous page
+           is not the index: a deep link, a second case study reached with
+           J or K, a tab opened from search. For them the fragment is doing
+           real work and there is no position to restore. */
+        const index = indexPath.split("#")[0] || "/";
+        if (previousPathname() === index) router.back();
+        else router.push(indexPath);
       }
     };
 

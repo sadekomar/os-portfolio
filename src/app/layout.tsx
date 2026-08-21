@@ -5,6 +5,7 @@ import { CommandPaletteProvider } from "@/components/command/CommandPaletteProvi
 import { MobileMenu } from "@/components/navbar/MobileMenu";
 import { NavBar } from "@/components/navbar/Navbar";
 import { PrintIdentity } from "@/components/print/PrintIdentity";
+import { NavHistory } from "@/components/sequence/NavHistory";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { TourProvider } from "@/components/tour/TourProvider";
 import { EMAIL } from "@/data/contact";
@@ -260,6 +261,11 @@ export default function RootLayout({
             __html: JSON.stringify([personJsonLd, websiteJsonLd, profilePageJsonLd]),
           }}
         />
+        {/* Above the providers and outside them: it renders nothing, it
+            subscribes to the pathname, and every route change has to reach
+            it, including the ones onto the index, where no pager exists to
+            do the recording itself. See NavHistory. */}
+        <NavHistory />
         <ThemeProvider>
           {/* Inside ThemeProvider, because "Switch to dark theme" is one of
               the rows and it has to reach the same store the footer switch
