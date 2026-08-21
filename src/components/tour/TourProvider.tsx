@@ -53,7 +53,7 @@ import { TourContext, type TourValue } from "@/components/tour/context";
    idle prefetch would download the animation runtime on every single page
    load whether or not anyone ever goes near the tour, which is most loads.
    Hovering the letter costs nothing to anyone who never hovers it. */
-const TourEngine = dynamic(() => import("./TourEngine").then((m) => m.TourEngine), {
+const TourEngine = dynamic(() => import("@/components/tour/lazy").then((m) => m.TourEngine), {
   ssr: false,
 });
 

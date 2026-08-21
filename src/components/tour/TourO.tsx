@@ -10,12 +10,15 @@ import { useTour } from "@/components/tour/TourProvider";
    would otherwise need `motion`. See components/tour/TourInvite.tsx: they are
    aria-hidden, out of flow, shown once ever and 1.5s after paint, so there is
    nothing here that has to be in the HTML or on the critical path. Both point
-   at the same module, so this is one chunk and one request. */
-const TourKnock = dynamic(() => import("@/components/tour/TourInvite").then((m) => m.TourKnock), {
+   at the same module, so this is one chunk and one request. That module is
+   now components/tour/lazy.ts rather than TourInvite directly, so the chunk
+   is shared with the engine instead of the two of them carrying a private
+   copy of `motion` each. */
+const TourKnock = dynamic(() => import("@/components/tour/lazy").then((m) => m.TourKnock), {
   ssr: false,
 });
 const TourInviteLabel = dynamic(
-  () => import("@/components/tour/TourInvite").then((m) => m.TourInviteLabel),
+  () => import("@/components/tour/lazy").then((m) => m.TourInviteLabel),
   { ssr: false },
 );
 
