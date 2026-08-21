@@ -49,16 +49,22 @@ const serverIsApple = () => true;
 export function CommandHint() {
   const { openPalette } = useCommandPalette();
   const isApple = useSyncExternalStore(noopSubscribe, readIsApple, serverIsApple);
+  const chord = isApple ? "⌘K" : "Ctrl K";
 
   return (
     <button
       type="button"
       onClick={openPalette}
-      aria-label="Open command palette"
+      /* The chord is repeated into the name rather than left out of it. The
+         label has to start with what the control does, since "⌘K" alone
+         tells a screen-reader user nothing, but a name that drops the
+         visible text leaves voice control with nothing to say either: "click
+         ⌘K" would match no control on the page. Both, in that order. */
+      aria-label={`Open command palette (${chord})`}
       aria-keyshortcuts="Meta+K Control+K"
       className="text-micro text-foreground-subtle hover:text-foreground hover:bg-wash focus-visible:ring-ring/20 hidden rounded-full px-2.5 py-1.5 font-medium tabular-nums transition-colors duration-150 ease-out focus-visible:ring-2 focus-visible:outline-none sm:inline-flex"
     >
-      <kbd className="font-sans">{isApple ? "⌘K" : "Ctrl K"}</kbd>
+      <kbd className="font-sans">{chord}</kbd>
     </button>
   );
 }
