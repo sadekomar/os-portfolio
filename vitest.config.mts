@@ -4,7 +4,7 @@ import { defineConfig } from "vitest/config";
 
 /* ── Tests ────────────────────────────────────────────────────────────────
    There is no jsdom here and no React Testing Library, on purpose. What is
-   worth testing in this repo is not whether a component renders — the build
+   worth testing in this repo is not whether a component renders; the build
    already fails if it doesn't, and a snapshot of a div tells nobody
    anything. It is the handful of pure functions that silently produce a
    *wrong* answer instead of an error: a sitemap date that is quietly the

@@ -39,15 +39,15 @@ export const metadata: Metadata = {
   /* This carried `robots: { index: false, follow: true }` for as long as
      data/talks.ts had a literal "TODO" string inside a description array, on
      the reasoning that the worst thing a search result can lead with is the
-     word TODO. That placeholder is gone — the Summit panel now names its four
-     panellists, sourced to a panellist's own recap — so the directive goes
+     word TODO. That placeholder is gone (the Summit panel now names its four
+     panellists, sourced to a panellist's own recap) so the directive goes
      with it and the sitemap entry comes back.
 
      The stated reason had also gone stale, which is worth recording as a
      caution about comments that outlive their subject: it claimed "two of the
      three entries still carry a placeholder date, and one a placeholder
      title". There are four entries, every date is real, and three of the four
-     are corroborated outside this repo — a deck's own traction slide, a recap
+     are corroborated outside this repo: a deck's own traction slide, a recap
      post plus a weekday check, and a panellist's account. The noindex rested
      on one description line, not on the dates or the titles. */
 };

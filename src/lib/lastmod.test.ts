@@ -7,7 +7,7 @@ const FALLBACK = "2026-07-31T00:00:00.000Z";
 
 /* The thing being defended against is not a crash. It is a sitemap that
    validates, deploys, and tells every crawler that twenty URLs changed at
-   the same instant — which is the one claim a crawler checks for free, and
+   the same instant, which is the one claim a crawler checks for free, and
    permanently discounts the field for once it catches you. */
 describe("resolveLastModified", () => {
   it("returns the mapped date for a known route", () => {

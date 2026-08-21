@@ -16,7 +16,7 @@ import "./globals.css";
      globals.css   imported, or this renders as unstyled black-on-white
      Inter         re-declared; the layout's instance is not in scope
      Newsreader    dropped. It sets display type this page has none of
-     theme script  dropped, deliberately — see below
+     theme script  dropped, deliberately (see below)
      nav, footer   dropped. Both are the layout that just failed
 
    No theme script. It is an inline blocking script that reads localStorage to
@@ -43,8 +43,8 @@ export default function GlobalError() {
             Something failed before the page could be assembled. Reloading usually clears it.
           </p>
           {/* A plain anchor, not next/link, and the lint rule is wrong about
-              this one case. Link navigates through the client router — which
-              lives inside the tree that just threw — and its whole advantage
+              this one case. Link navigates through the client router, which
+              lives inside the tree that just threw, and its whole advantage
               is not reloading the document, when reloading the document is
               precisely the recovery being offered. */}
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}

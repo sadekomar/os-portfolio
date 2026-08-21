@@ -4,13 +4,13 @@ import Link from "next/link";
 
 /* ── Route error boundary ─────────────────────────────────────────────────
    Without this file a render throw anywhere inside the layout unwound to the
-   React root and the reader got a blank white document. Not a broken page — a
+   React root and the reader got a blank white document. Not a broken page: a
    blank one, with no title, no way back, and nothing to report. The status
    code was 200.
 
    The copy does not apologise twice and does not speculate about the cause.
    It says what happened, offers the one action that usually works (this
-   route, again — most of what reaches here is transient: a fetch that
+   route, again, because most of what reaches here is transient: a fetch that
    timed out, a hydration mismatch on a slow connection), and then a route
    home for when it doesn't.
 
@@ -31,7 +31,7 @@ export default function Error({ reset }: { error: Error & { digest?: string }; r
           Something went wrong here
         </h1>
         <p className="max-w-measure text-body text-foreground-muted">
-          This page failed to render. It is usually worth trying again — if it keeps happening, the
+          This page failed to render. It is usually worth trying again. If it keeps happening, the
           rest of the site is unaffected.
         </p>
       </div>

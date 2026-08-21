@@ -36,7 +36,7 @@ jobs:
       - run: pnpm lint
 
       # next-env.d.ts is gitignored, and it is the file that pulls in
-      # next/image-types/global — the only thing declaring a module for a
+      # next/image-types/global, the only thing declaring a module for a
       # png/jpg/webp import. A fresh clone has no copy, so tsc ran blind to
       # every image in the tree and failed with 66 TS2307s that reproduce
       # nowhere locally, because a local checkout always has one left behind
@@ -54,7 +54,7 @@ jobs:
 
       # Visibility, not a gate. `build` regenerates src/data/lastModified.ts
       # from `git log`, so any commit that touches a route's own sources moves
-      # that route's date — which means the committed copy is always exactly
+      # that route's date, which means the committed copy is always exactly
       # one commit behind and `--exit-code` here would fail on nearly every
       # PR. The deployed sitemap is regenerated at build and is always right;
       # the committed copy is a mirror for readers of the repo. Printing the

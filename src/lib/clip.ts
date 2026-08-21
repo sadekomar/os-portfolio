@@ -12,7 +12,7 @@
    quiet edge: `lastIndexOf` returns -1 when there is no space in range, and
    `slice(0, -1)` then silently drops the final character of the string and
    appends an ellipsis to it. That needs a 156-character first word to fire,
-   so no case study triggers it today — but it fails by producing plausible
+   so no case study triggers it today, but it fails by producing plausible
    wrong output rather than by throwing, which is exactly the class of thing
    worth pinning down while it is cheap. A word longer than the limit is now
    hard-cut at the limit instead. */

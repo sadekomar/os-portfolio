@@ -83,7 +83,7 @@ export function NavBar() {
                the reader is looking at that section. Home already lights up on
                the index, and lighting Work up beside it would claim a
                precision this test does not have. Stated rather than left to
-               fall out of the comparisons below — it does fall out of them
+               fall out of the comparisons below; it does fall out of them
                today, by accident, and that is not a thing to rely on. */
             const active = page.slug.includes("#")
               ? false

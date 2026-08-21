@@ -814,7 +814,7 @@
 
    This used to be `transition: none`, which turned Copy→Check into a hard
    cut. That is a regression against the standard rather than a concession to
-   it — see .agents/skills/emil-design-eng, "Keep opacity and color
+   it; see .agents/skills/emil-design-eng, "Keep opacity and color
    transitions that aid comprehension. Remove movement and position
    animations." A cut removes the comprehension and keeps nothing. */
 @media (prefers-reduced-motion: reduce) {
@@ -997,7 +997,7 @@
 
 /* Sorted by what each one actually animates, rather than by which component
    it belongs to. `.t-tab` and `.t-switch-option` transition `color` and
-   nothing else — they were in this list for years with nothing to remove, so
+   nothing else: they were in this list for years with nothing to remove, so
    the only effect was to make the two instruments that never moved feel
    cheaper than the ones that did. They are now left alone deliberately.
 
@@ -1308,7 +1308,7 @@
 }
 
 /* ── Command palette ──────────────────────────────────────────────────────
-   The panel does not animate. Not gently, not quickly — at all.
+   The panel does not animate. Not gently, not quickly, not at all.
 
    It used to: opacity, a 2% scale and 6px of travel over 200ms, on the site's
    one curve, and the argument written here was that this is the restrained
@@ -1325,7 +1325,7 @@
    200ms of the input not being ready, paid every single time, and the reader
    who pays it most is the one who liked the feature enough to learn the
    shortcut. Worse, Radix unmounts on close, so ⌘K pressed twice in quick
-   succession restarted the frames from scale 0.98 rather than retargeting —
+   succession restarted the frames from scale 0.98 rather than retargeting:
    keyframes cannot be interrupted, which is the failure the skill's
    "keyframes on a rapidly-triggered element" rule is about.
 

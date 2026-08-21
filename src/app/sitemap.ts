@@ -58,7 +58,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
        submitting a URL you have asked not to be indexed is a contradictory
        signal. Both are back: /blog when it had posts, /talks now that the
        placeholder line in data/talks.ts is filled in and its `noindex` has
-       come off. The rule those two omissions encoded is the one to keep —
+       come off. The rule those two omissions encoded is the one to keep:
        this list and the routes' own `robots` have to agree, and the sitemap
        is the copy that gets noticed last.
 
@@ -113,7 +113,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
        mistake as the build-time dates this file was written to remove.
 
        Priority above the component pages and below /blog. It is third-party
-       evidence — someone else's stage, someone else's invitation — which is a
+       evidence (someone else's stage, someone else's invitation), which is a
        different kind of claim from anything self-published here. */
     {
       url: `${siteUrl}/talks`,

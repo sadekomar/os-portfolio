@@ -5,8 +5,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 /* ── Books that changed a specific project ────────────────────────────────
    These four used to live at the bottom of three case studies, under the
    heading "Books I read that were relevant to this project". That put a
-   reading list in the retrospective slot — the place a reader looks for what
-   you would do differently — and on the Loom page it sat directly after the
+   reading list in the retrospective slot, the place a reader looks for what
+   you would do differently, and on the Loom page it sat directly after the
    post-mortem, so the last thing a two-year company said for itself was that
    its founder had read Clean Code.
 
@@ -23,7 +23,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
    The trigger is a real button, not a span with a tabIndex. Radix opens on
    focus as well as hover, so the note has to be reachable by keyboard, and a
    button is the only element that gets that for free. The dotted underline is
-   the affordance — nothing else on this page has one, which is what makes it
+   the affordance: nothing else on this page has one, which is what makes it
    legible as "there is more here" rather than as a link.
 
    No hrefs. The covers above all link out to Goodreads, and I do not have
@@ -49,7 +49,7 @@ const projectBooks: ProjectBook[] = [
     title: "Thoughts on Design",
     author: "Paul Rand",
     project: "Loom Cairo",
-    note: "Rand on his own approach to design and how he tackles everything — the book that made me treat the storefront as a designed object rather than a rendered database.",
+    note: "Rand on his own approach to design and how he tackles everything: the book that made me treat the storefront as a designed object rather than a rendered database.",
   },
   {
     title: "Thinking With Type",
@@ -61,7 +61,7 @@ const projectBooks: ProjectBook[] = [
     title: "Change by Design",
     author: "Tim Brown",
     project: "UNITAR",
-    note: "Where the design thinking came from — the process that took the UNITAR research past the obvious culprits and landed it somewhere other than where it started.",
+    note: "Where the design thinking came from: the process that took the UNITAR research past the obvious culprits and landed it somewhere other than where it started.",
   },
 ];
 

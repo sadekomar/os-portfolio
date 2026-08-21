@@ -11,7 +11,7 @@
      map value unparseable       a build that could not reach git
 
    Both resolve to the fallback, because a sitemap that is slightly stale is
-   worth more than no sitemap. Neither is *detected* here — that is the CI
+   worth more than no sitemap. Neither is *detected* here; that is the CI
    drift check's job, not a runtime concern. */
 export function resolveLastModified(
   map: Record<string, string>,
