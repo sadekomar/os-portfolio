@@ -71,13 +71,13 @@ export async function generateMetadata({
    article jump.
 
    Worth being accurate about what the split actually buys, because it is
-   less than it looks. All nine case studies are one route, `/work/[project]`,
+   less than it looks. Every case study is one route, `/work/[project]`,
    so Next emits one client manifest for the set, and the block's chunk is
    requested on every project page rather than only on the one whose data
    names it. It also lands in the same chunk as the contents rail, which
    already pulls `motion` on every case study regardless. The real marginal
    cost of the artifact is therefore its own code and its frozen rows, a few
-   KB gzipped, on eight pages that don't render it, which is the price of
+   KB gzipped, on every page that doesn't render it, which is the price of
    keeping the ninth free of layout shift, and the right way round. */
 const artifacts: Record<Artifact, React.ComponentType> = {
   "wholana-decoder": dynamic(() =>
@@ -144,7 +144,7 @@ export default async function Project({ params }: { params: Promise<{ project: s
 
   /* CreativeWork rather than Article: the page documents something that was
      built, not something that was published. Article expects a headline and
-     a datePublished/dateModified pair, and none of the nine case studies
+     a datePublished/dateModified pair, and none of the case studies
      carry a publication date, only the period the work ran. Choosing
      Article would mean inventing those dates, which is the one way a case
      study can be wrong in a way a machine acts on.

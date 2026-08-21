@@ -155,7 +155,7 @@ export default function CommandPalette({
             className="surface surface-stack"
             /* cmdk's own filter, with keywords folded in. Left as the
                default substring-scoring rather than swapped for a fuzzy
-               matcher: nine projects and ~twenty actions is a list you
+               matcher: eleven projects and ~twenty actions is a list you
                read, not one you have to guess at, and fuzzy matching at
                this size mostly buys false positives. */
           >

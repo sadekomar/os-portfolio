@@ -42,9 +42,9 @@ const EPOCH = "2026-07-31T00:00:00.000Z";
 /* Which files each URL is rendered from. Coarser than one file per page in
    the two places the repo is itself coarse:
 
-   - Every case study lives in the single `projects.ts` module, so all ten
-     /work URLs share one date. That is not a rounding error, it is the
-     truth: an edit to any case study rewrites the module all ten import.
+   - Every case study lives in the single `projects.ts` module, so every
+     /work URL shares one date. That is not a rounding error, it is the
+     truth: an edit to any case study rewrites the module they all import.
    - The component pages share a route shell and a registry, and a change
      to either really does change every rendered page, so they share that
      part of their pathspec and differ by their own component directory.

@@ -40,8 +40,8 @@ function modified(route: string): Date {
 }
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  /* All ten case studies live in one module, so they genuinely do change
-     together: an edit to any of them rewrites the file the other nine are
+  /* Every case study lives in one module, so they genuinely do change
+     together: an edit to any of them rewrites the file the rest are
      read from. One shared date is the honest answer here, not a
      simplification. */
   const workModified = modified("/work");
